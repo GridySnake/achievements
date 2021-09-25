@@ -1,15 +1,5 @@
 import hashlib
-import asyncpgsa
-from config.common import BaseConfig
 import asyncpg
-from asyncpgsa import pg
-database = asyncpgsa.create_pool(
-        host=BaseConfig.host,
-        port=BaseConfig.port,
-        database=BaseConfig.database_name,
-        user=BaseConfig.user,
-        password=BaseConfig.password
-    )
 
 
 class User:
