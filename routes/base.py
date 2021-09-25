@@ -5,6 +5,7 @@ from handlers.messages import MessageView
 from handlers.achievements import AchievementsView
 from handlers.personal_page import PersonalPageView
 from handlers.chat import ChatView
+from handlers.user import UserInfoView
 from config.common import BaseConfig
 from sqlalchemy import create_engine
 
@@ -31,6 +32,8 @@ def setup_routes(app):
     app.router.add_get('/my_friends', MyFriendsView.get, name='my_friends')
     app.router.add_get('/achievements', AchievementsView.get, name='achievements')
     app.router.add_post('/add_achievement', AchievementsView.post, name='add_achievement')
+    app.router.add_post('/user_info', UserInfoView.post, name='user_info')
+    app.router.add_get('/user_info', UserInfoView.get, name='user_info')
     for i in range(len_users):
         app.router.add_get(f'/{i}', PersonalPageView.get, name=f'personal_page_{i}')
         app.router.add_get(f'/chat_{i}', ChatView.get, name=f'chat_{i}')
