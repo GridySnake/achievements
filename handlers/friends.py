@@ -1,0 +1,35 @@
+import aiohttp_jinja2
+from aiohttp import web
+
+from models.user import User
+
+
+class FriendsView(web.View):
+
+    @aiohttp_jinja2.template('friends.html')
+    async def get(self):
+        if 'user' not in self.session:
+            return web.HTTPForbidden()
+
+        users = await User.get_user_friends_suggestions(user_id=self.session['user']['id'])
+        return dict(users=users)
+
+    async def post(self):
+        if 'user' not in self.session:
+            return web.HTTPForbidden()
+
+        data = await self.post()
+        await User.add_friend(user_id=self.session['user']['id'], friend_id=data['uid'])
+        print(data['uid'])
+        location = self.app.router['friends'].url_for()
+        return web.HTTPFound(location=location)
+
+
+class MyFriendsView(web.View):
+
+    @aiohttp_jinja2.template('my_friends.html')
+    async def get(self):
+        if 'user' not in self.session:
+            return web.HTTPForbidden()
+        users = await User.get_user_friends_names(user_id=self.session['user']['id'])
+        return dict(users=users)

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% set title = "My friends" %}
+
+{% block content %}
+    {% if users %}
+        {% for user in users %}
+            <p><a href={{ user.id }}>{{ user.first_name }} {{ user.last_name }}</a></p>
+        {% endfor %}
+    {% endif %}
+{% endblock %}
