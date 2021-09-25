@@ -63,7 +63,7 @@ CREATE TABLE "user_statistics" (
 	"friends" integer NOT NULL,
 	"likes" integer NOT NULL,
 	"comments" integer NOT NULL,
-	"reccomendations" integer NOT NULL,
+	"recommendations" integer NOT NULL,
 	"achievements" integer NOT NULL,
 	"courses" integer NOT NULL,
 	CONSTRAINT "user_statistics_pk" PRIMARY KEY ("user_id")

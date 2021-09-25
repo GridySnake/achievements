@@ -24,7 +24,6 @@ class User:
         user = dict(user)
         if user:
             user['id'] = int(user['user_id'])
-            #user['friends'] = [str(uid) for uid in user['friends']]
             return user
         else:
             return dict(error='User with {} {} not found'.format(type, email))
@@ -57,30 +56,16 @@ class User:
     @staticmethod
     async def create_user_info(data):
         conn = await asyncpg.connect('postgresql://gachi_achi:achi_for_gachi@204.2.63.15:10485/achievements')
-        id = await conn.fetchrow(f"""SELECT MAX(user_id) FROM user_main""")
-        id = int(dict(id)['max']) + 1
-        if id:
-            id = id
-        else:
-            id = 0
-        await conn.execute(f"""
-                        insert INTO user_information (user_id, country_id, city_id, sex, date_born, age, bio, name, 
-                        surname, relation_ship_id, language_id, wedding, communication_conditions, status_work, 
-                        position, company_id, school_id, bachelor_id, master_id, image_id) values(
-                        {id}, null, null, null, null, null, null, null, null,
-                        ARRAY []::integer[], null, null, ARRAY []::text[], null, null, null, null, null, 
-                        null, ARRAY []::integer[])
-                        """)
-        await conn.execute(f"""
-                                insert INTO authentication (email, phone, user_name, password, second_authentication) 
-                                values(
-                                '{data['email']}', '{data['phone']}', '{data['user_name']}', '{data['password']}',
-                                False, {id})
-                                """)
         result = await conn.execute(f"""
-                                insert INTO users_main (user_id, user_name, email, phone) values(
-                                {id}, '{data['user_name']}', '{data['email']}', '{data['phone']}')
-                                """)
+                        UPDATE users_information
+                        SET 
+                            age = {data['age']},
+                            bio = '{data['bio']}',
+                            name = '{data['name']}',
+                            surname = '{data['surname']}'
+                        WHERE user_id = {data['id']}
+                        """)
+
         return result
 
     @staticmethod
@@ -115,12 +100,12 @@ class User:
                                {id}, '{data['user_name']}', '{data['email']}', '{data['phone']}')
                                """)
             await conn.execute(f"""
-                               insert INTO authentication (email, phone, user_name, password, second_authentication, user_id) 
-                               values(
+                               insert INTO authentication (email, phone, user_name, password, second_authentication, 
+                               user_id) values(
                                '{data['email']}', '{data['phone']}', '{data['user_name']}', '{data['password']}',
                                False, {id})
                                """)
-            result = await conn.execute(f"""
+            await conn.execute(f"""
                             insert INTO users_information (user_id, country_id, city_id, sex, date_born, age, bio, name, 
                             surname, relation_ship_id, language_id, wedding, communication_conditions, status_work, 
                             position, company_id, school_id, bachelor_id, master_id, image_id) values(
@@ -128,7 +113,21 @@ class User:
                             ARRAY []::integer[], null, null, ARRAY []::text[], null, null, null, null, null, 
                             null, ARRAY []::integer[])
                             """)
+            await conn.execute(f"""
+                                insert INTO user_statistics (user_id, friends, likes, comments, recommendations, 
+                                achievements, courses) values(
+                                {id}, null, null, null, null, null, null)
+                                """)
+            await conn.execute(f"""
+                                insert INTO user_calendar (user_id, from_date, to_date, free) values(
+                                {id}, null, null, null)
+                                """)
 
+            result = await conn.execute(f"""
+                                        insert INTO friends (relationship_id, user_id, users_id, status_id, last_update) 
+                                        values(
+                                        {id}, {id}, ARRAY []::integer[], ARRAY []::integer[], null)
+                                        """)
 
             return result
         else:
