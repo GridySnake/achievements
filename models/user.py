@@ -15,7 +15,7 @@ database = asyncpgsa.create_pool(
 class User:
     @staticmethod
     async def get_user_by_email_phone(email: str, type: str):
-        conn = await asyncpg.connect('postgresql://postgres:12041999alex@localhost:5433/demo')
+        conn = await asyncpg.connect('postgresql://gachi_achi:achi_for_gachi@204.2.63.15:10485/achievements')
         user = await conn.fetchrow(f"""
         SELECT * 
         FROM authentication
@@ -23,7 +23,7 @@ class User:
         """)
         user = dict(user)
         if user:
-            user['id'] = int(user['id'])
+            user['id'] = int(user['user_id'])
             #user['friends'] = [str(uid) for uid in user['friends']]
             return user
         else:
@@ -57,10 +57,30 @@ class User:
     @staticmethod
     async def create_user_info(data):
         conn = await asyncpg.connect('postgresql://gachi_achi:achi_for_gachi@204.2.63.15:10485/achievements')
-        result = await conn.execute(f"""
-                        insert INTO user_information (id, first_name, last_name, email, password) values(
-                        {id}, '{data['first_name']}', '{data['last_name']}', '{data['email']}', '{data['password']}')
+        id = await conn.fetchrow(f"""SELECT MAX(user_id) FROM user_main""")
+        id = int(dict(id)['max']) + 1
+        if id:
+            id = id
+        else:
+            id = 0
+        await conn.execute(f"""
+                        insert INTO user_information (user_id, country_id, city_id, sex, date_born, age, bio, name, 
+                        surname, relation_ship_id, language_id, wedding, communication_conditions, status_work, 
+                        position, company_id, school_id, bachelor_id, master_id, image_id) values(
+                        {id}, null, null, null, null, null, null, null, null,
+                        ARRAY []::integer[], null, null, ARRAY []::text[], null, null, null, null, null, 
+                        null, ARRAY []::integer[])
                         """)
+        await conn.execute(f"""
+                                insert INTO authentication (email, phone, user_name, password, second_authentication) 
+                                values(
+                                '{data['email']}', '{data['phone']}', '{data['user_name']}', '{data['password']}',
+                                False, {id})
+                                """)
+        result = await conn.execute(f"""
+                                insert INTO users_main (user_id, user_name, email, phone) values(
+                                {id}, '{data['user_name']}', '{data['email']}', '{data['phone']}')
+                                """)
         return result
 
     @staticmethod
@@ -79,21 +99,37 @@ class User:
         if data['user_name'] and data['password'] and (data['phone'] or data['email']):
             data = dict(data)
             data['password'] = hashlib.sha256(data['password'].encode('utf8')).hexdigest()
-            #id = await conn.fetchrow(f"""SELECT MAX(id) FROM users""")
-            #id = int(dict(id)['max']) + 1
+            id = await conn.fetchrow(f"""SELECT MAX(user_id) FROM users_main""")
+            try:
+                id = int(dict(id)['max']) + 1
+            except:
+                id = 0
             if data['email'] and data['phone']:
                 None
             elif data['email']:
                 data['phone'] = None
             else:
                 data['email'] = None
-            result = await conn.execute(f"""
-                insert INTO users (id, first_name, last_name, email, password) values(
-                {id}, '{data['first_name']}', '{data['last_name']}', '{data['email']}', '{data['password']}')
-                """)
             await conn.execute(f"""
-                insert INTO friends(user_id, friend) values( {id}, ARRAY []::integer[]
-                """)
+                               insert INTO users_main (user_id, user_name, email, phone) values(
+                               {id}, '{data['user_name']}', '{data['email']}', '{data['phone']}')
+                               """)
+            await conn.execute(f"""
+                               insert INTO authentication (email, phone, user_name, password, second_authentication, user_id) 
+                               values(
+                               '{data['email']}', '{data['phone']}', '{data['user_name']}', '{data['password']}',
+                               False, {id})
+                               """)
+            result = await conn.execute(f"""
+                            insert INTO users_information (user_id, country_id, city_id, sex, date_born, age, bio, name, 
+                            surname, relation_ship_id, language_id, wedding, communication_conditions, status_work, 
+                            position, company_id, school_id, bachelor_id, master_id, image_id) values(
+                            {id}, null, null, null, null, null, null, null, null,
+                            ARRAY []::integer[], null, null, ARRAY []::text[], null, null, null, null, null, 
+                            null, ARRAY []::integer[])
+                            """)
+
+
             return result
         else:
             return dict(error='Missing user data parameters')

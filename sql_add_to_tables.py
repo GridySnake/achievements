@@ -36,9 +36,7 @@ engine = create_engine(db_url)
 #             LIMIT 20
 #             """).fetchall()
 # print(post)
-# ava = engine.execute(f"""
-# SELECT *
-# FROM avatars
-# WHERE user_id = 0
-# """).fetchall()
-# print(ava)
+ava = engine.execute(f"""
+Select * from users_main
+""").fetchall()
+print(ava)

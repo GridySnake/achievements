@@ -39,6 +39,14 @@ class Signup(web.View):
 
     async def post(self):
         data = await self.post()
+        if data['email']:
+            None
+        else:
+            data['email'] = None
+        if data['phone']:
+            None
+        else:
+            data['phone'] = None
         result = await User.create_new_user(data=data)
         if not result:
             location = self.app.router['signup'].url_for()
