@@ -22,5 +22,5 @@ class Avatar(web.View):
             f.write(content)
 
         await User.save_avatar_url(user_id=user['id'], url=f"{avatar.filename}")
-        location = self.app.router['index'].url_for()
+        location = str(f"/{session['user']['id']}")
         return web.HTTPFound(location=location)

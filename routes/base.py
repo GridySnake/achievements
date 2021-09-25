@@ -5,7 +5,7 @@ from handlers.messages import MessageView
 from handlers.achievements import AchievementsView
 from handlers.personal_page import PersonalPageView
 from handlers.chat import ChatView
-from handlers.user import UserInfoView
+from handlers.user_info import UserInfoView
 from config.common import BaseConfig
 from sqlalchemy import create_engine
 

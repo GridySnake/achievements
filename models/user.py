@@ -30,26 +30,30 @@ class User:
 
     @staticmethod
     async def get_user_by_id(user_id: str):
-        conn = await asyncpg.connect('postgresql://postgres:12041999alex@localhost:5433/demo')
+        conn = await asyncpg.connect('postgresql://gachi_achi:achi_for_gachi@204.2.63.15:10485/achievements')
         user = await conn.fetchrow(f"""
-                SELECT users.*, avatars.url
-                FROM users
-                LEFT JOIN avatars ON avatars.user_id = users.id
-                WHERE id = '{user_id}'
+                SELECT *
+                FROM users_information
+                WHERE user_id = {user_id}
                 """)
-        # friends = await conn.fetchrow(f"""SELECT u.*
-        #                              FROM users as u
-        #                              WHERE u.id in (SELECT unnest(friend)
-        #                                                FROM friends
-        #                                                WHERE user_id = {user_id})
-        #                              AND u.id <> {user_id}
-        #         """)
-        user = dict(user)
-        #friends = dict(friends)
         if user:
-            user['id'] = int(user['id'])
-            #user['friends'] = [str(uid) for uid in friends['friend']]
+            user = dict(user)
             return user
+        else:
+            return None
+
+    @staticmethod
+    async def get_avatar_by_user_id(user_id: str):
+        conn = await asyncpg.connect('postgresql://gachi_achi:achi_for_gachi@204.2.63.15:10485/achievements')
+        avatar = await conn.fetchrow(f"""
+                SELECT images.href
+                FROM images
+                INNER JOIN users_information as us ON images.image_id = ANY(us.image_id)
+                WHERE us.user_id = {user_id}
+                """)
+        if avatar:
+            avatar = dict(avatar)
+            return avatar
         else:
             return None
 
@@ -135,23 +139,21 @@ class User:
 
     @staticmethod
     async def save_avatar_url(user_id: str, url: str):
-        conn = await asyncpg.connect('postgresql://postgres:12041999alex@localhost:5433/demo')
+        conn = await asyncpg.connect('postgresql://gachi_achi:achi_for_gachi@204.2.63.15:10485/achievements')
         if url is not None and user_id is not None:
-            us_id = await conn.fetchrow(f"""SELECT user_id FROM avatars WHERE user_id = {user_id}""")
-            #url = 'C:/Users/kunil/PycharmProjects/social-network/static/avatars/' + url
-            if us_id is None:
-                avatar_id = await conn.fetchrow(f"""SELECT MAX(avatar_id) FROM avatars""")
-                avatar_id = int(dict(avatar_id)['max']) + 1
-                await conn.execute(f"""
-                                insert INTO avatars (avatar_id, user_id, url) values(
-                                {avatar_id}, {user_id}, '{url}')
+            image_id = await conn.fetchrow(f"""SELECT MAX(image_id) FROM images""")
+            try:
+                image_id = int(dict(image_id)['max']) + 1
+            except:
+                image_id = 0
+            await conn.execute(f"""
+                                insert INTO images (image_id, href, image_type) values(
+                                {image_id}, '{url}', 'user')
                                 """)
-            else:
-                await conn.execute(f"""
-                                                UPDATE avatars 
-                                                SET url = '{url}' 
-                                                WHERE user_id = {user_id}
-                                                """)
+            await conn.execute(f"""
+                                UPDATE users_information
+                                SET image_id = array_append(image_id, {image_id})
+                                """)
             return url
 
     @staticmethod
@@ -195,8 +197,8 @@ class User:
             if friends is not None:
                 pass
             else:
-                await conn.execute(
-                f"""UPDATE friends
+                await conn.execute(f"""
+                    UPDATE friends
                     SET friend = array_append(friend, {friend_id})
                     WHERE user_id = {user_id}
                    """)

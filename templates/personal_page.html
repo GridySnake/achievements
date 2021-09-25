@@ -6,12 +6,16 @@
 <h3>{{ title }}</h3>
 
 {% if user %}
-    <p>{{ user.first_name }} {{ user.last_name }}!</p>
-    <br>
-    {% if user.url %}
+    {% if user.name and user.surname and user.bio and user.age %}
+        <p>{{ user.name }} {{ user.surname }}</p>
+        <p>Age: {{ user.age }}</p>
+        <p>{{ user.bio }}</p>
+        <br>
+    {% endif %}
+    {% if avatar.href %}
         <div>
             <figure class="image is-128x128">
-                <img src="{{ url('static', filename='avatars/'+user.url) }}">
+                <img src="{{ url('static', filename='avatars/'+avatar.href) }}">
             </figure>
         </div>
     {% endif %}
