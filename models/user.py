@@ -202,3 +202,23 @@ class User:
                 f"""insert INTO friends (user_id, friend) values(
            {user_id}, ARRAY[{friend_id}])
 """)
+
+    @staticmethod
+    async def confirm_friend(user_id: str, friend_id: str):
+        conn = await asyncpg.connect('postgresql://postgres:12041999alex@localhost:5433/demo')
+        friends = User.get_user_friends(user_id)
+        if friends is not None:
+            friends = await conn.fetchrow(f"""SELECT friend FROM friends WHERE user_id = {user_id} AND {friend_id} = ANY(friend)""")
+            if friends is not None:
+                pass
+            else:
+                await conn.execute(f"""
+                    UPDATE friends
+                    SET friend = array_append(friend, {friend_id})
+                    WHERE user_id = {user_id}
+                   """)
+        else:
+            await conn.execute(
+                f"""insert INTO friends (user_id, friend) values(
+           {user_id}, ARRAY[{friend_id}])
+""")
