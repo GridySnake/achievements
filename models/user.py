@@ -1,11 +1,13 @@
 import hashlib
 import asyncpg
+from config.common import BaseConfig
+connection_url = BaseConfig.database_url
 
 
 class User:
     @staticmethod
     async def get_user_by_email_phone(email: str, type: str):
-        conn = await asyncpg.connect('postgresql://gachi_achi:achi_for_gachi@204.2.63.15:10485/achievements')
+        conn = await asyncpg.connect(connection_url)
         user = await conn.fetchrow(f"""
         SELECT * 
         FROM authentication
@@ -20,7 +22,7 @@ class User:
 
     @staticmethod
     async def get_user_by_id(user_id: str):
-        conn = await asyncpg.connect('postgresql://gachi_achi:achi_for_gachi@204.2.63.15:10485/achievements')
+        conn = await asyncpg.connect(connection_url)
         user = await conn.fetchrow(f"""
                 SELECT *
                 FROM users_information
@@ -34,7 +36,7 @@ class User:
 
     @staticmethod
     async def get_avatar_by_user_id(user_id: str):
-        conn = await asyncpg.connect('postgresql://gachi_achi:achi_for_gachi@204.2.63.15:10485/achievements')
+        conn = await asyncpg.connect(connection_url)
         avatar = await conn.fetch(f"""
                 SELECT images.href
                 FROM images
@@ -48,7 +50,7 @@ class User:
 
     @staticmethod
     async def create_user_info(data):
-        conn = await asyncpg.connect('postgresql://gachi_achi:achi_for_gachi@204.2.63.15:10485/achievements')
+        conn = await asyncpg.connect(connection_url)
         result = await conn.execute(f"""
                         UPDATE users_information
                         SET 
@@ -65,7 +67,7 @@ class User:
     async def create_new_user(data):
         email = data['email']
         phone = data['phone']
-        conn = await asyncpg.connect('postgresql://gachi_achi:achi_for_gachi@204.2.63.15:10485/achievements')
+        conn = await asyncpg.connect(connection_url)
         user = await conn.fetchrow(f"""
                 SELECT * 
                 FROM authentication
@@ -128,7 +130,7 @@ class User:
 
     @staticmethod
     async def save_avatar_url(user_id: str, url: str):
-        conn = await asyncpg.connect('postgresql://gachi_achi:achi_for_gachi@204.2.63.15:10485/achievements')
+        conn = await asyncpg.connect(connection_url)
         if url is not None and user_id is not None:
             image_id = await conn.fetchrow(f"""SELECT MAX(image_id) FROM images""")
             try:
@@ -165,7 +167,7 @@ class User:
         users = await conn.fetch(f"""SELECT u.id, u.first_name, u.last_name, a.url
                                      FROM users as u 
                                      LEFT JOIN avatars as a ON a.user_id = u.id
-                                     WHERE u.id in (SELECT unnest(f.friend) 
+                                     WHERE u.user_id in (SELECT unnest(f.friend) 
                                                        FROM friends as f
                                                        WHERE f.user_id = {user_id})
                                      LIMIT {limit}
@@ -175,7 +177,10 @@ class User:
     @staticmethod
     async def get_user_friends(user_id: str, limit=20):
         conn = await asyncpg.connect('postgresql://postgres:12041999alex@localhost:5433/demo')
-        user_friends = await conn.fetchrow(f"""SELECT friend FROM friends WHERE user_id = {user_id} LIMIT {limit}""")
+        user_friends = await conn.fetchrow(f"""SELECT friend 
+                                               FROM friends 
+                                               WHERE user_id = {user_id} LIMIT {limit}
+                                            """)
         return user_friends
 
     @staticmethod

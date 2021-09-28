@@ -1,11 +1,14 @@
 from datetime import datetime
 import asyncpg
+from config.common import BaseConfig
+
+connection_url = BaseConfig.database_url
 
 
 class Message:
     @staticmethod
     async def create_message(from_user: str, to_user: str, message: str, type1: str, type2: str):
-        conn = await asyncpg.connect('postgresql://gachi_achi:achi_for_gachi@204.2.63.15:10485/achievements')
+        conn = await asyncpg.connect(connection_url)
         data = {
             'from_user': from_user,
             'to_user': to_user,
@@ -28,8 +31,27 @@ class Message:
                             """)
 
     @staticmethod
+    async def get_messages(user_id: str, friend):
+        conn = await asyncpg.connect(connection_url)
+        messages = await conn.fetch(f"""
+                                    SELECT u.user_id,  u.surname, u.name, m.message, m.datetime 
+                                    FROM messages as m
+                                    INNER JOIN users_information as u ON u.user_id = m.from_user
+                                    WHERE (m.message_id IN (
+									SELECT message_id 
+									FROM messages
+									WHERE messages.from_user = {user_id} AND messages.to_user = {friend}
+									) OR (m.message_id IN (
+									SELECT message_id 
+									FROM messages
+									WHERE messages.from_user = {friend} AND messages.to_user = {user_id})))
+									ORDER BY datetime
+									""")
+        return messages
+
+    @staticmethod
     async def get_inbox_messages_by_user(user_id: str, friend, limit=20):
-        conn = await asyncpg.connect('postgresql://gachi_achi:achi_for_gachi@204.2.63.15:10485/achievements')
+        conn = await asyncpg.connect(connection_url)
         messages = await conn.fetch(f"""
                             SELECT u.user_id, u.surname, u.name, m.message, m.datetime 
                             FROM messages as m
@@ -41,7 +63,7 @@ class Message:
 
     @staticmethod
     async def get_send_messages_by_user(user_id: str, friend, limit=20):
-        conn = await asyncpg.connect('postgresql://gachi_achi:achi_for_gachi@204.2.63.15:10485/achievements')
+        conn = await asyncpg.connect(connection_url)
         messages = await conn.fetch(f"""
                                     SELECT u.user_id,  u.surname, u.name, m.message, m.datetime 
                                     FROM messages as m
@@ -53,12 +75,12 @@ class Message:
 
     @staticmethod
     async def get_users_chats(user_id: str):
-        conn = await asyncpg.connect('postgresql://gachi_achi:achi_for_gachi@204.2.63.15:10485/achievements')
+        conn = await asyncpg.connect(connection_url)
         messages = await conn.fetch(f"""
                                         SELECT distinct(u.user_id), u.name, u.surname
                                         FROM users_information as u
                                         LEFT JOIN messages as m ON m.from_user = u.user_id
-											OR m.to_user = u.user_id
+										    OR m.to_user = u.user_id
                                         WHERE (m.message_id IN (
                                             SELECT m1.message_id
                                             FROM messages as m1
@@ -74,18 +96,17 @@ class Message:
 
     @staticmethod
     async def get_last_messages(user_id: str, user):
-        conn = await asyncpg.connect('postgresql://gachi_achi:achi_for_gachi@204.2.63.15:10485/achievements')
+        conn = await asyncpg.connect(connection_url)
         last_messages = []
         for i in user:
             messages = await conn.fetch(f"""
                                         SELECT m.message, m.datetime, u.name, u.surname
                                         FROM messages as m
                                         LEFT JOIN users_information as u ON m.from_user = user_id
-                                        WHERE (from_user = {i} OR to_user = {i}) AND (from_user = {user_id} OR to_user = {user_id})
+                                        WHERE (from_user = {i} OR to_user = {i}) AND (from_user = {user_id} 
+                                        OR to_user = {user_id})
                                         ORDER BY datetime DESC
                                         LIMIT 1
-                                            """)
+                                        """)
             last_messages += messages
         return last_messages
-
-

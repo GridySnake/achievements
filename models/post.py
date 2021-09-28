@@ -1,5 +1,7 @@
 import asyncpg
 import datetime
+from config.common import BaseConfig
+connection_url = BaseConfig.database_url
 
 
 class Post:
