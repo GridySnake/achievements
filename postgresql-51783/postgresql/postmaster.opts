@@ -1,0 +1,1 @@
+/usr/lib/postgresql/12/bin/postgres "-c" "ssl=on" "-c" "ssl_cert_file=/ssl/server-cert.pem" "-c" "ssl_key_file=/ssl/server-key.pem"
