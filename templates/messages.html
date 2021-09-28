@@ -19,13 +19,13 @@
                     </div>
                         <div class="media-content">
                             <div class="content">
-                                <p><a href='chat_{{ users[i].id }}'>{{ users[i].first_name }} {{ users[i].last_name }}</a></p>
+                                <p><a href='chat_{{ users[i].user_id }}'>{{ users[i].name }} {{ users[i].surname }}</a></p>
                                 <div class="content">
                                     <p>
-                                        <small>{{ messages[i].first_name }}</small>
-                                        <small>{{ messages[i].last_name }}</small>
+                                        <small>{{ messages[i].name }}</small>
+                                        <small>{{ messages[i].surname }}</small>
                                         <small>{{ messages[i].message }}</small>
-                                        <small>{{ messages[i].date_created }}</small>
+                                        <small>{{ messages[i].datetime }}</small>
                                     </p>
                                 </div>
                                 <nav class="level is-mobile">

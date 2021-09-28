@@ -17,12 +17,19 @@
                     </div>
                     <div class="media-content">
                         <div class="content">
-                            <p>
-                                <a href={{ friend_id }}><small>{{ message.last_name }}</small>
-                                <small>{{ message.first_name }}</small></a>
-                                <small>{{ message.message }}</small>
-                                <small>{{ message.date_created }}</small>
-                            </p>
+                            {% if message.user_id == friend_id %}
+                                <p>
+                                    <a href={{ friend_id }}><small>{{ message.surname }}&nbsp</small><small>{{ message.name }}</small></a>
+                                    <small>{{ message.message }}</small>
+                                    <small>{{ message.datetime }}</small>
+                                </p>
+                            {% else %}
+                                <p>
+                                    <a href={{ user_id }}><small>{{ message.surname }}&nbsp</small><small>{{ message.name }}</small></a>
+                                    <small>{{ message.message }}</small>
+                                    <small>{{ message.datetime }}</small>
+                                </p>
+                            {% endif %}
                         </div>
                         <nav class="level is-mobile">
                             <div class="level-left">

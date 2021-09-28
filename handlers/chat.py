@@ -15,6 +15,5 @@ class ChatView(web.View):
         outbox = await Message.get_send_messages_by_user(user_id=self.session['user']['id'], friend=friend_id)
         message = inbox + outbox
         session = await get_session(self)
-        # допилить айдишник юзеров чтобы ссылки правильные были
         return dict(messages=message, friend_id=friend_id, user_id=session['user']['id'])
 

@@ -35,14 +35,13 @@ class User:
     @staticmethod
     async def get_avatar_by_user_id(user_id: str):
         conn = await asyncpg.connect('postgresql://gachi_achi:achi_for_gachi@204.2.63.15:10485/achievements')
-        avatar = await conn.fetchrow(f"""
+        avatar = await conn.fetch(f"""
                 SELECT images.href
                 FROM images
                 INNER JOIN users_information as us ON images.image_id = ANY(us.image_id)
                 WHERE us.user_id = {user_id}
                 """)
         if avatar:
-            avatar = dict(avatar)
             return avatar
         else:
             return None
@@ -143,6 +142,7 @@ class User:
             await conn.execute(f"""
                                 UPDATE users_information
                                 SET image_id = array_append(image_id, {image_id})
+                                WHERE user_id = {user_id}
                                 """)
             return url
 
