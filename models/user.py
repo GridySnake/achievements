@@ -1,5 +1,7 @@
 import hashlib
 import asyncpg
+from config.common import BaseConfig
+connection_url = BaseConfig.database_url
 
 CONN = 'postgresql://gachi_achi:achi_for_gachi@204.2.63.15:10485/achievements'
 # await asyncpg.connect(CONN)
@@ -7,6 +9,7 @@ class User:
     @staticmethod
     async def get_user_by_email_phone(email: str, type: str):
         conn = await asyncpg.connect(CONN)
+        conn = await asyncpg.connect(connection_url)
         user = await conn.fetchrow(f"""
         SELECT * 
         FROM authentication
@@ -21,7 +24,7 @@ class User:
 
     @staticmethod
     async def get_user_by_id(user_id: str):
-        conn = await asyncpg.connect(CONN)
+        conn = await asyncpg.connect(connection_url)
         user = await conn.fetchrow(f"""
                 SELECT *
                 FROM users_information
@@ -35,22 +38,21 @@ class User:
 
     @staticmethod
     async def get_avatar_by_user_id(user_id: str):
-        conn = await asyncpg.connect(CONN)
-        avatar = await conn.fetchrow(f"""
+        conn = await asyncpg.connect(connection_url)
+        avatar = await conn.fetch(f"""
                 SELECT images.href
                 FROM images
                 INNER JOIN users_information as us ON images.image_id = ANY(us.image_id)
                 WHERE us.user_id = {user_id}
                 """)
         if avatar:
-            avatar = dict(avatar)
             return avatar
         else:
             return None
 
     @staticmethod
     async def create_user_info(data):
-        conn = await asyncpg.connect(CONN)
+        conn = await asyncpg.connect(connection_url)
         result = await conn.execute(f"""
                         UPDATE users_information
                         SET 
@@ -65,16 +67,25 @@ class User:
 
     @staticmethod
     async def create_new_user(data):
+        # TODO: make just phone or email
         email = data['email']
         phone = data['phone']
-        conn = await asyncpg.connect(CONN)
+        conn = await asyncpg.connect(connection_url)
         user = await conn.fetchrow(f"""
                 SELECT * 
                 FROM authentication
                 WHERE email = '{email}' or phone = '{phone}'
                 """)
+        user_1 = await conn.fetchrow(f"""
+                SELECT * 
+                FROM authentication
+                WHERE (email = '{email}' or phone = '{phone}') and verified <> True
+                """)
         if user is not None:
             return dict(error='user with email {} exist'.format(email))
+
+        if user_1 is not None:
+            return dict(error='user with email {} exist, but not verified'.format(email))
 
         if data['user_name'] and data['password'] and (data['phone'] or data['email']):
             data = dict(data)
@@ -130,7 +141,7 @@ class User:
 
     @staticmethod
     async def save_avatar_url(user_id: str, url: str):
-        conn = await asyncpg.connect(CONN)
+        conn = await asyncpg.connect(connection_url)
         if url is not None and user_id is not None:
             image_id = await conn.fetchrow(f"""SELECT MAX(image_id) FROM images""")
             try:
@@ -144,6 +155,7 @@ class User:
             await conn.execute(f"""
                                 UPDATE users_information
                                 SET image_id = array_append(image_id, {image_id})
+                                WHERE user_id = {user_id}
                                 """)
             return url
 

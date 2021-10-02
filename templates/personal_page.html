@@ -4,7 +4,8 @@
 
 {% block content %}
 <h3>{{ title }}</h3>
-
+<script src="myscripts.js"></script>
+<link href="carousel.css" rel="stylesheet">
 {% if user %}
     {% if user.name and user.surname and user.bio and user.age %}
         <p>{{ user.name }} {{ user.surname }}</p>
@@ -12,12 +13,25 @@
         <p>{{ user.bio }}</p>
         <br>
     {% endif %}
-    {% if avatar.href %}
-        <div>
-            <figure class="image is-128x128">
-                <img src="{{ url('static', filename='avatars/'+avatar.href) }}">
-            </figure>
+    {% if avatar %}
+        {% for i in range(avatar|length) %}
+        <div class="slideshow-container fade">
+            <div class="Containers">
+                <div class="MessageInfo">{{ i+1 }} / {{ avatar|length }}</div>
+                <figure class="image is-128x128">
+                <img src="{{ url('static', filename='avatars/'+avatar[i].href) }}">
+                </figure>
+                <div class="Info">{{ i+1 }} caption</div>
+            </div>
+            <a class="Back" onclick="plusSlides(-1)">&#10094;</a>
+            <a class="forward" onclick="plusSlides(1)">&#10095;</a>
         </div>
+        <div style="text-align:center">
+          <span class="dots" onclick="currentSlide(1)"></span>
+          <span class="dots" onclick="currentSlide(2)"></span>
+          <span class="dots" onclick="currentSlide(3)"></span>
+        </div>
+        {% endfor %}
     {% endif %}
     <br><br><br><br>
     {% if me %}
@@ -31,7 +45,7 @@
         <form action="{{ url('send_message') }}" method="post">
                 <label for="message_text">Send message</label>
                 <input id="message_text" name="message_text" type="text" value=""/>
-                <input type="hidden" name="to_user" value="{{ user.id }}">
+                <input type="hidden" name="to_user" value="{{ user.user_id }}">
                 <button type="submit">Send...</button>
         </form>
     {% endif %}

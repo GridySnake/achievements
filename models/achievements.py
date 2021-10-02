@@ -1,19 +1,13 @@
-import asyncpgsa
-from config.common import BaseConfig
 import asyncpg
-database = asyncpgsa.create_pool(
-        host=BaseConfig.host,
-        port=BaseConfig.port,
-        database=BaseConfig.database_name,
-        user=BaseConfig.user,
-        password=BaseConfig.password
-    )
+from config.common import BaseConfig
+
+connection_url = BaseConfig.database_url
 
 
 class Achievements:
     @staticmethod
     async def get_user_achievements(user_id: str):
-        conn = await asyncpg.connect('postgresql://postgres:12041999alex@localhost:5433/demo')
+        conn = await asyncpg.connect(connection_url)
         achievements = await conn.fetch(f"""
         SELECT name, description
         FROM achievements
@@ -23,7 +17,7 @@ class Achievements:
 
     @staticmethod
     async def create_new_achievement(user_id: str, name: str, description: str):
-        conn = await asyncpg.connect('postgresql://postgres:12041999alex@localhost:5433/demo')
+        conn = await asyncpg.connect(connection_url)
         id = await conn.fetchrow(f"""
                 SELECT MAX(achievement_id)
                 FROM achievements

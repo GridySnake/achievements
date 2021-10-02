@@ -1,6 +1,5 @@
 import aiohttp_jinja2
 from aiohttp import web
-
 from models.user import User
 
 
@@ -20,7 +19,6 @@ class FriendsView(web.View):
 
         data = await self.post()
         await User.add_friend(user_id=self.session['user']['id'], friend_id=data['uid'])
-        print(data['uid'])
         location = self.app.router['friends'].url_for()
         return web.HTTPFound(location=location)
 

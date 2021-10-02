@@ -16,10 +16,10 @@ class MessageView(web.View):
     async def post(self):
         if 'user' not in self.session:
             return web.HTTPForbidden()
-
+        type1 = 'user'
+        type2 = 'user'
         data = await self.post()
         await Message.create_message(from_user=self.session['user']['id'],
-                                     to_user=data['to_user'], message=data['message_text'])
-        location = str(self).split('/')[-1]
-        print(location)
+                                     to_user=data['to_user'], message=data['message_text'], type1=type1, type2=type2)
+
         return web.HTTPFound(location=self.app.router[f'chat_{data["to_user"]}'].url_for())
