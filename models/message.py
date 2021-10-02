@@ -34,9 +34,10 @@ class Message:
     async def get_messages(user_id: str, friend):
         conn = await asyncpg.connect(connection_url)
         messages = await conn.fetch(f"""
-                                    SELECT u.user_id,  u.surname, u.name, m.message, m.datetime 
+                                    SELECT u.user_id,  u.surname, u.name, m.message, m.datetime, img.href
                                     FROM messages as m
                                     INNER JOIN users_information as u ON u.user_id = m.from_user
+                                    LEFT JOIN images as img ON img.image_id = u.image_id[array_upper(u.image_id, 1)]
                                     WHERE (m.message_id IN (
 									SELECT message_id 
 									FROM messages
@@ -77,10 +78,11 @@ class Message:
     async def get_users_chats(user_id: str):
         conn = await asyncpg.connect(connection_url)
         messages = await conn.fetch(f"""
-                                        SELECT distinct(u.user_id), u.name, u.surname
+                                        SELECT distinct(u.user_id), u.name, u.surname, img.href
                                         FROM users_information as u
                                         LEFT JOIN messages as m ON m.from_user = u.user_id
 										    OR m.to_user = u.user_id
+                                        LEFT JOIN images as img ON img.image_id = u.image_id[array_upper(u.image_id, 1)]
                                         WHERE (m.message_id IN (
                                             SELECT m1.message_id
                                             FROM messages as m1

@@ -4,6 +4,11 @@ from aiohttp import web
 from aiohttp_session import get_session
 from models.user import User
 from models.post import Post
+from config.common import BaseConfig
+from email.message import EmailMessage
+import smtplib
+import ssl
+from aiosmtplib import send
 
 
 class Login(web.View):
@@ -42,15 +47,35 @@ class Signup(web.View):
         if data['email']:
             None
         else:
-            data['email'] = None
+            data['email'] = 'None'
         if data['phone']:
             None
         else:
-            data['phone'] = None
+            data['phone'] = 'None'
         result = await User.create_new_user(data=data)
         if not result:
             location = self.app.router['signup'].url_for()
             return web.HTTPFound(location=location)
+        message = EmailMessage()
+        message["From"] = BaseConfig.email_mail
+        message["To"] = data['email']
+        message["Subject"] = "Hello World!"
+        message.set_content("Sent via aiosmtplib")
+        context = ssl.create_default_context()
+        with smtplib.SMTP_SSL(BaseConfig.smtp_server, BaseConfig.email_port, context=context) as server:
+            #server.ehlo()
+            #server.starttls(context=context)
+            #server.ehlo()
+            server.login(BaseConfig.email_user, BaseConfig.email_password)
+            server.sendmail(BaseConfig.email_mail, data['email'], message)
+        # await send(
+        #         message,
+        #         hostname=BaseConfig.smtp_server,
+        #         port=BaseConfig.port,
+        #         username=BaseConfig.email_user,
+        #         password=BaseConfig.email_password,
+        #         start_tls=True, tls_context=context
+        #     )
 
         location = self.app.router['login'].url_for()
         return web.HTTPFound(location=location)

@@ -65,6 +65,7 @@ class User:
 
     @staticmethod
     async def create_new_user(data):
+        # TODO: make just phone or email
         email = data['email']
         phone = data['phone']
         conn = await asyncpg.connect(connection_url)
@@ -73,8 +74,16 @@ class User:
                 FROM authentication
                 WHERE email = '{email}' or phone = '{phone}'
                 """)
+        user_1 = await conn.fetchrow(f"""
+                SELECT * 
+                FROM authentication
+                WHERE (email = '{email}' or phone = '{phone}') and verified <> True
+                """)
         if user is not None:
             return dict(error='user with email {} exist'.format(email))
+
+        if user_1 is not None:
+            return dict(error='user with email {} exist, but not verified'.format(email))
 
         if data['user_name'] and data['password'] and (data['phone'] or data['email']):
             data = dict(data)
@@ -167,7 +176,7 @@ class User:
         users = await conn.fetch(f"""SELECT u.id, u.first_name, u.last_name, a.url
                                      FROM users as u 
                                      LEFT JOIN avatars as a ON a.user_id = u.id
-                                     WHERE u.user_id in (SELECT unnest(f.friend) 
+                                     WHERE u.id in (SELECT unnest(f.friend) 
                                                        FROM friends as f
                                                        WHERE f.user_id = {user_id})
                                      LIMIT {limit}
