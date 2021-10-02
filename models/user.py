@@ -3,10 +3,12 @@ import asyncpg
 from config.common import BaseConfig
 connection_url = BaseConfig.database_url
 
-
+CONN = 'postgresql://gachi_achi:achi_for_gachi@204.2.63.15:10485/achievements'
+# await asyncpg.connect(CONN)
 class User:
     @staticmethod
     async def get_user_by_email_phone(email: str, type: str):
+        conn = await asyncpg.connect(CONN)
         conn = await asyncpg.connect(connection_url)
         user = await conn.fetchrow(f"""
         SELECT * 
@@ -160,10 +162,10 @@ class User:
 
     @staticmethod
     async def get_user_friends_suggestions(user_id: str, limit=20):
-        conn = await asyncpg.connect('postgresql://postgres:12041999alex@localhost:5433/demo')
-        users = await conn.fetch(f"""SELECT u.* 
-                                     FROM users as u 
-                                     WHERE u.id not in (SELECT unnest(friend) 
+        conn = await asyncpg.connect(CONN)
+        users = await conn.fetch(f"""SELECT u.user_id, u.name, u.surname 
+                                     FROM users_information as u 
+                                     WHERE u.id not in (SELECT unnest(users_id) 
                                                        FROM friends 
                                                        WHERE user_id = {user_id})
                                      AND u.id <> {user_id}
@@ -171,64 +173,50 @@ class User:
         """)
         return users
 
-    @staticmethod
-    async def get_user_friends_names(user_id: str, limit=20):
-        conn = await asyncpg.connect('postgresql://postgres:12041999alex@localhost:5433/demo')
-        users = await conn.fetch(f"""SELECT u.id, u.first_name, u.last_name, a.url
-                                     FROM users as u 
-                                     LEFT JOIN avatars as a ON a.user_id = u.id
-                                     WHERE u.id in (SELECT unnest(f.friend) 
-                                                       FROM friends as f
-                                                       WHERE f.user_id = {user_id})
-                                     LIMIT {limit}
-        """)
-        return users
-
-    @staticmethod
-    async def get_user_friends(user_id: str, limit=20):
-        conn = await asyncpg.connect('postgresql://postgres:12041999alex@localhost:5433/demo')
-        user_friends = await conn.fetchrow(f"""SELECT friend 
-                                               FROM friends 
-                                               WHERE user_id = {user_id} LIMIT {limit}
-                                            """)
-        return user_friends
-
-    @staticmethod
-    async def add_friend(user_id: str, friend_id: str):
-        conn = await asyncpg.connect('postgresql://postgres:12041999alex@localhost:5433/demo')
-        friends = User.get_user_friends(user_id)
-        if friends is not None:
-            friends = await conn.fetchrow(f"""SELECT friend FROM friends WHERE user_id = {user_id} AND {friend_id} = ANY(friend)""")
-            if friends is not None:
-                pass
-            else:
-                await conn.execute(f"""
-                    UPDATE friends
-                    SET friend = array_append(friend, {friend_id})
-                    WHERE user_id = {user_id}
-                   """)
-        else:
-            await conn.execute(
-                f"""insert INTO friends (user_id, friend) values(
-           {user_id}, ARRAY[{friend_id}])
-""")
-
-    @staticmethod
-    async def confirm_friend(user_id: str, friend_id: str):
-        conn = await asyncpg.connect('postgresql://postgres:12041999alex@localhost:5433/demo')
-        friends = User.get_user_friends(user_id)
-        if friends is not None:
-            friends = await conn.fetchrow(f"""SELECT friend FROM friends WHERE user_id = {user_id} AND {friend_id} = ANY(friend)""")
-            if friends is not None:
-                pass
-            else:
-                await conn.execute(f"""
-                    UPDATE friends
-                    SET friend = array_append(friend, {friend_id})
-                    WHERE user_id = {user_id}
-                   """)
-        else:
-            await conn.execute(
-                f"""insert INTO friends (user_id, friend) values(
-           {user_id}, ARRAY[{friend_id}])
-""")
+#     @staticmethod
+#     async def get_user_friends_names(user_id: str, limit=20):
+#         conn = await asyncpg.connect(CONN)
+#         users = await conn.fetch(f"""
+#             SELECT u.user_id, u.name, u.surname, a.href
+#             FROM users_information as u
+#             LEFT JOIN images as a
+#                 ON a.image_id = u.image_id[array_upper(u.image_id, 1)]
+#             WHERE u.user_id in (SELECT unnest(f.users_id)
+#                                 FROM friends as f
+#                                 WHERE 1 = any(f.status_id)
+#                                     and f.user_id = {user_id})
+#             LIMIT {limit}
+#         """)
+#         return users
+#
+#     @staticmethod
+#     async def get_user_friends(user_id: str, limit=20):
+#         conn = await asyncpg.connect(CONN)
+#         user_friends = await conn.fetchrow(f"""SELECT friend
+#                                                FROM friends
+#                                                WHERE user_id = {user_id}
+#                                                LIMIT {limit}""")
+#         return user_friends
+#
+#     @staticmethod
+#     async def add_friend(user_id: str, friend_id: str):
+#         conn = await asyncpg.connect(CONN)
+#         friends = User.get_user_friends(user_id)
+#         if friends is not None:
+#             friends = await conn.fetchrow(f"""SELECT friend
+#                                               FROM friends
+#                                               WHERE user_id = {user_id}
+#                                                 AND {friend_id} = ANY(friend)""")
+#             if friends is not None:
+#                 pass
+#             else:
+#                 await conn.execute(f"""
+#                     UPDATE friends
+#                     SET friend = array_append(friend, {friend_id})
+#                     WHERE user_id = {user_id}
+#                    """)
+#         else:
+#             await conn.execute(
+#                 f"""insert INTO friends (user_id, friend) values(
+#            {user_id}, ARRAY[{friend_id}])
+# """)
