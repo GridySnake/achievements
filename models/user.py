@@ -88,6 +88,7 @@ class User:
         if data['user_name'] and data['password'] and (data['phone'] or data['email']):
             data = dict(data)
             data['password'] = hashlib.sha256(data['password'].encode('utf8')).hexdigest()
+            data['token'] = hashlib.sha256(data['user_name'].encode('utf8')).hexdigest()
             id = await conn.fetchrow(f"""SELECT MAX(user_id) FROM users_main""")
             try:
                 id = int(dict(id)['max']) + 1
@@ -105,9 +106,9 @@ class User:
                                """)
             await conn.execute(f"""
                                insert INTO authentication (email, phone, user_name, password, second_authentication, 
-                               user_id) values(
+                               user_id, verified, verifying_token) values(
                                '{data['email']}', '{data['phone']}', '{data['user_name']}', '{data['password']}',
-                               False, {id})
+                               False, {id}, False, {data['token']})
                                """)
             await conn.execute(f"""
                             insert INTO users_information (user_id, country_id, city_id, sex, date_born, age, bio, name, 

@@ -9,12 +9,16 @@ from handlers.user_info import UserInfoView
 from config.common import BaseConfig
 from sqlalchemy import create_engine
 
-db_url = 'postgresql://postgres:12041999alex@localhost:5433/demo'
-engine = create_engine(db_url)
+engine = create_engine(BaseConfig.database_url)
 len_users = len(engine.execute(f"""
-SELECT * 
-FROM users
+SELECT user_id
+FROM users_main
 """).fetchall())
+verify = engine.execute(f"""
+SELECT verifying_token
+FROM authentication
+Where verifying_token <> null
+""").fetchall()
 
 
 def setup_routes(app):
@@ -37,6 +41,8 @@ def setup_routes(app):
     for i in range(len_users):
         app.router.add_get(f'/{i}', PersonalPageView.get, name=f'personal_page_{i}')
         app.router.add_get(f'/chat_{i}', ChatView.get, name=f'chat_{i}')
+    for i in verify:
+        app.router.add_get(f'/verify/{i}', ChatView.get, name=f'/verify/{i}')
 
 
 def setup_static_routes(app):
