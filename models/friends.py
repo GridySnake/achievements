@@ -3,6 +3,7 @@ import asyncpg
 
 CONN = 'postgresql://gachi_achi:achi_for_gachi@204.2.63.15:10485/achievements'
 
+
 class Friends:
     @staticmethod
     async def get_user_friends_suggestions(user_id: str, limit=20):

@@ -1,8 +1,16 @@
 from sqlalchemy import create_engine
 import datetime
+from config.common import BaseConfig
 
-db_url = 'postgresql://gachi_achi:achi_for_gachi@204.2.63.15:10485/achievements'
-engine = create_engine(db_url)
+engine = create_engine(BaseConfig.database_url)
+
+t = engine.execute(f"""
+SELECT verifying_token
+FROM authentication
+Where verifying_token IS NOT null
+""").fetchall()
+print(t[0][0])
+
 # engine.execute('''
 # insert INTO users_main (user_id, user_name, email, phone) values(1, 'Abba', 'APatt@tatoine.ga', '12345');
 # ''')
@@ -36,7 +44,7 @@ engine = create_engine(db_url)
 #             LIMIT 20
 #             """).fetchall()
 # print(post)
-ava = engine.execute(f"""
-Select * from users_main
-""").fetchall()
-print(ava)
+# ava = engine.execute(f"""
+# Select * from users_main
+# """).fetchall()
+# print(ava)

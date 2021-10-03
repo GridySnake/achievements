@@ -51,7 +51,8 @@ class Signup(web.View):
             None
         else:
             data['phone'] = 'None'
-        result = await User.create_new_user(data=data)
+        token = hashlib.sha256(data['user_name'].encode('utf8')).hexdigest()
+        result = await User.create_new_user(data=data, token=token)
         if not result:
             location = self.app.router['signup'].url_for()
             return web.HTTPFound(location=location)
@@ -60,14 +61,32 @@ class Signup(web.View):
             f'To: <{data["email"]}>\n'
             'Subject: Activation account\n'
             '\n'
-            f'{"www.google.com"}\n')
+            f"http://127.0.0.1:8080/verify/{token}\n")
         smtp_server = SMTP_SSL(BaseConfig.smtp_server, port=BaseConfig.email_port)
         smtp_server.login(BaseConfig.email_mail, BaseConfig.email_password)
         smtp_server.sendmail(BaseConfig.email_mail, data['email'], message.as_string())
         smtp_server.quit()
 
-        location = self.app.router['login'].url_for()
+        location = self.app.router['verify'].url_for()
         return web.HTTPFound(location=location)
+
+
+class Verify(web.View):
+
+    @aiohttp_jinja2.template('verify.html')
+    async def get(self):
+        location = str(self).split('/verify/')[-1][:-2]
+        result = await User.verify_user(href=location)
+        if result:
+            web.HTTPForbidden()
+        return dict()
+
+
+class NeedVerify(web.View):
+
+    @aiohttp_jinja2.template('need_verify.html')
+    async def get(self):
+        return dict()
 
 
 class Logout(web.View):

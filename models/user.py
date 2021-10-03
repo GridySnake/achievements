@@ -66,7 +66,26 @@ class User:
         return result
 
     @staticmethod
-    async def create_new_user(data):
+    async def verify_user(href):
+        conn = await asyncpg.connect(connection_url)
+        verify = await conn.fetchrow(f"""
+                            SELECT user_name 
+                            FROM authentication
+                            WHERE verifying_token = '{href}'
+                            """)
+        if verify:
+            await conn.execute(f"""
+                        UPDATE authentication
+                        SET verified = True,
+                            verifying_token = null
+                        WHERE verifying_token = '{href}'
+                        """)
+        else:
+            verify = False
+        return verify
+
+    @staticmethod
+    async def create_new_user(data, token):
         # TODO: make just phone or email
         email = data['email']
         phone = data['phone']
@@ -90,7 +109,6 @@ class User:
         if data['user_name'] and data['password'] and (data['phone'] or data['email']):
             data = dict(data)
             data['password'] = hashlib.sha256(data['password'].encode('utf8')).hexdigest()
-            data['token'] = hashlib.sha256(data['user_name'].encode('utf8')).hexdigest()
             id = await conn.fetchrow(f"""SELECT MAX(user_id) FROM users_main""")
             try:
                 id = int(dict(id)['max']) + 1
@@ -110,7 +128,7 @@ class User:
                                insert INTO authentication (email, phone, user_name, password, second_authentication, 
                                user_id, verified, verifying_token) values(
                                '{data['email']}', '{data['phone']}', '{data['user_name']}', '{data['password']}',
-                               False, {id}, False, {data['token']})
+                               False, {id}, False, '{token}')
                                """)
             await conn.execute(f"""
                             insert INTO users_information (user_id, country_id, city_id, sex, date_born, age, bio, name, 

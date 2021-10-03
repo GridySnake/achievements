@@ -1,4 +1,4 @@
-from handlers.base import Login, Signup, Logout, PostView
+from handlers.base import Login, Signup, Logout, PostView, Verify, NeedVerify
 from handlers.avatar import Avatar
 from handlers.friends import FriendsView, MyFriendsView
 from handlers.messages import MessageView
@@ -14,11 +14,11 @@ len_users = len(engine.execute(f"""
 SELECT user_id
 FROM users_main
 """).fetchall())
-verify = engine.execute(f"""
+verify = [str(i[0]) for i in engine.execute(f"""
 SELECT verifying_token
 FROM authentication
-Where verifying_token <> null
-""").fetchall()
+WHERE verifying_token IS NOT null
+""").fetchall()]
 
 
 def setup_routes(app):
@@ -42,7 +42,8 @@ def setup_routes(app):
         app.router.add_get(f'/{i}', PersonalPageView.get, name=f'personal_page_{i}')
         app.router.add_get(f'/chat_{i}', ChatView.get, name=f'chat_{i}')
     for i in verify:
-        app.router.add_get(f'/verify/{i}', ChatView.get, name=f'/verify/{i}')
+        app.router.add_get(f'/verify/{i}', Verify.get, name=f'verify_{i}')
+    app.router.add_get('/verify', NeedVerify.get, name='verify')
 
 
 def setup_static_routes(app):
