@@ -13,10 +13,17 @@ class User:
         FROM authentication
         WHERE {type} = '{email}' and verified = True
         """)
-        user = dict(user)
+        user1 = await conn.fetchrow(f"""
+                SELECT * 
+                FROM authentication
+                WHERE {type} = '{email}' and verified = False
+                """)
         if user:
+            user = dict(user)
             user['id'] = int(user['user_id'])
             return user
+        elif user1:
+            return 'verify'
         else:
             return dict(error='User with {} {} not found'.format(type, email))
 

@@ -3,6 +3,41 @@
 {% set title = "My friends" %}
 
 {% block content %}
+    {% if actual_requests %}
+        <div class="columns">
+            <div class="column">
+                <p>My requests:</p>
+                    {% for user in users %}
+                        <div class="box">
+                            <article class="media">
+                                <div class="media-left">
+                                    {% if actual_requests.href is not none %}
+                                    <figure class="image is-32x32">
+                                        <img src="{{ url('static', filename='avatars/' + user.href) }}">
+                                    </figure>
+                                    {% endif %}
+                                </div>
+                                <div class="media-content">
+                                    <div class="content">
+                                        <p><a href={{ actual_requests.user_id }}>{{ actual_requests.name }} {{ actual_requests.surname }}</a></p>
+                                    </div>
+                                </div>
+                                <div class="media-right">
+                                    <form action="{{ url('confirm_friend') }}" method="post">
+                                        <input type="hidden" name="uid" value="{{ subscriber.user_id }}">
+                                        <input type="hidden" name="action" value=True>
+                                        <button type="submit">Accept</button>
+                                    </form>
+                                    <form action="{{ url('confirm_friend') }}" method="post">
+                                        <input type="hidden" name="uid" value="{{ subscriber.user_id }}">
+                                        <input type="hidden" name="action" value=False>
+                                        <button type="submit">Decline</button>
+                                    </form>
+                                </div>
+                            </article>
+                        </div>
+                    {% endfor %}
+    {% endif %}
     {% if users %}
         <div class="columns">
             <div class="column">
@@ -11,9 +46,11 @@
                         <div class="box">
                             <article class="media">
                                 <div class="media-left">
+                                    {% if user.href is not none %}
                                     <figure class="image is-32x32">
                                         <img src="{{ url('static', filename='avatars/' + user.href) }}">
                                     </figure>
+                                    {% endif %}
                                 </div>
                                 <div class="media-content">
                                     <div class="content">
@@ -36,26 +73,16 @@
                         <div class="box">
                             <article class="media">
                                 <div class="media-left">
+                                    {% if subscriber.href is not none %}
                                     <figure class="image is-32x32">
                                         <img src="{{ url('static', filename='avatars/' + subscriber.href) }}">
                                     </figure>
+                                    {% endif %}
                                 </div>
                                 <div class="media-content">
                                     <div class="content">
                                         <p><a href={{ subscriber.user_id }}>{{ subscriber.name }} {{ subscriber.surname }}</a></p>
                                     </div>
-                                </div>
-                                <div class="media-right">
-                                    <form action="{{ url('confirm_friend') }}" method="post">
-                                        <input type="hidden" name="uid" value="{{ subscriber.user_id }}">
-                                        <input type="hidden" name="action" value=True>
-                                        <button type="submit">Accept</button>
-                                    </form>
-                                    <form action="{{ url('confirm_friend') }}" method="post">
-                                        <input type="hidden" name="uid" value="{{ subscriber.user_id }}">
-                                        <input type="hidden" name="action" value=False>
-                                        <button type="submit">Decline</button>
-                                    </form>
                                 </div>
                             </article>
                         </div>
@@ -73,9 +100,11 @@
                 <div class="box">
                     <article class="media">
                         <div class="media-left">
+                            {% if subscriber.href is not none %}
                             <figure class="image is-32x32">
                                 <img src="{{ url('static', filename='avatars/' + subscriber.href) }}">
                             </figure>
+                            {% endif %}
                         </div>
                         <div class="media-content">
                             <div class="content">

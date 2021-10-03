@@ -23,10 +23,11 @@ class Login(web.View):
         else:
             type = 'phone'
         user = await User.get_user_by_email_phone(email=data['email'], type=type)
-        if user.get('error'):
+        if user == 'verify':
+            return web.HTTPFound(location=self.app.router['verify'].url_for())
+        elif user.get('error'):
             return web.HTTPNotFound()
-
-        if user['password'] == hashlib.sha256(data['password'].encode('utf8')).hexdigest():
+        elif user and user['password'] == hashlib.sha256(data['password'].encode('utf8')).hexdigest():
             session = await get_session(self)
             session['user'] = user
             location = str(f"/{session['user']['id']}")

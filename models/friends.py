@@ -9,7 +9,7 @@ class Friends:
         conn = await asyncpg.connect(connection_url)
         users = await conn.fetch(f"""SELECT u.user_id, u.name, u.surname, img.href
                                      FROM users_information as u 
-                                     LEFT JOIN images as img ON img.image_id = ANY(u.image_id)
+                                     LEFT JOIN images as img ON img.image_id = u.image_id[array_upper(u.image_id, 1)]
                                      WHERE u.user_id not in (SELECT unnest(users_id) 
                                                        FROM friends 
                                                        WHERE user_id = {user_id})
@@ -26,10 +26,9 @@ class Friends:
                 FROM users_information as u
                 LEFT JOIN images as a
                     ON a.image_id = u.image_id[array_upper(u.image_id, 1)]
-                WHERE u.user_id in (SELECT unnest(f.users_id)
+                WHERE u.user_id in (SELECT f.users_id[unnest(array_positions(f.status_id, 1))]
                                     FROM friends as f
-                                    WHERE 1 = any(f.status_id)
-                                        and f.user_id = {user_id})
+                                    WHERE f.user_id = {user_id})
                 LIMIT {limit}
             """)
         return users
@@ -59,31 +58,24 @@ class Friends:
     async def friends_confirm(user_active_id: str,
                               user_passive_id: str,
                               confirm: bool):
-        user_active_id = int(user_active_id)
-        user_passive_id = int(user_passive_id)
         conn = await asyncpg.connect(connection_url)
         if confirm:
+            print(confirm)
             await conn.execute(f"""
                 update friends
-                    set status_id[array_to_string(array_positions(status_id, 2), ',')::int] = 1
-                    -- status_id[array_positions(status_id, 2)] = 1
-                where user_id={user_active_id}
-                    and array_positions(status_id, 0) = array_positions(users_id, {user_passive_id})
+                set status_id[array_position(users_id, {user_passive_id})] = 1
+                where user_id = {user_active_id}
             """)
             result = await conn.execute(f"""
                 update friends
-                    set status_id[array_to_string(array_positions(status_id, 0), ',')::int] = 1
-                    -- status_id[array_positions(status_id, 0)] = 1
+                set status_id[array_position(users_id, {user_active_id})] = 1
                 where user_id = {user_passive_id}
-                    and array_positions(status_id, 2) = array_positions(users_id, {user_active_id})
             """)
         else:
             result = await conn.execute(f"""
                 update friends
-                    set status_id[array_to_string(array_positions(status_id, 0), ',')::int] = -1
-                    --status_id[array_positions(status_id, 0)] = -1
+                set status_id[array_position(users_id, {user_active_id})] = -1
                 where user_id = {user_passive_id}
-                    and array_positions(status_id, 0) = array_positions(users_id, {user_passive_id})
             """)
         return result
 
@@ -132,11 +124,21 @@ class Friends:
     async def get_subscribers(user_id: str):
         conn = await asyncpg.connect(connection_url)
         friends = await conn.fetch(f"""
-                        select u.user_id, u.name, u.surname, array_to_string(f.status_id, ',')::int as status_id, 
+                        select distinct(u.user_id), u.name, u.surname, 
+                        f.status_id[array_position(f.users_id, u.user_id)] as status_id_active, 
+                        f.status_id[array_position(f.users_id, 0)] as status_id_passive,
                         img.href
                         from friends as f
-                        inner join users_information as u on u.user_id = any(f.users_id)
+                        inner join users_information as u on u.user_id = f.user_id
 						left join images as img on img.image_id = u.image_id[array_upper(u.image_id, 1)]
-                        where f.user_id = {user_id} and (0 = any(f.status_id) or 2 = any(f.status_id))
+                        where u.user_id in (
+                                    select users_id[unnest(array_positions(f.status_id, 0))]
+                                    FROM friends as f
+                                    WHERE f.user_id = {user_id})
+                        or
+                        u.user_id in (
+                                    select users_id[unnest(array_positions(f.status_id, 2))]
+                                    FROM friends as f
+                                    WHERE f.user_id = {user_id})
                         """)
         return friends
