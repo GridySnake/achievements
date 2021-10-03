@@ -4,8 +4,90 @@
 
 {% block content %}
     {% if users %}
-        {% for user in users %}
-            <p><a href={{ user.id }}>{{ user.first_name }} {{ user.last_name }}</a></p>
-        {% endfor %}
+        <div class="columns">
+            <div class="column">
+                <p>My friends:</p>
+                    {% for user in users %}
+                        <div class="box">
+                            <article class="media">
+                                <div class="media-left">
+                                    <figure class="image is-32x32">
+                                        <img src="{{ url('static', filename='avatars/' + user.href) }}">
+                                    </figure>
+                                </div>
+                                <div class="media-content">
+                                    <div class="content">
+                                        <p><a href={{ user.user_id }}>{{ user.name }} {{ user.surname }}</a></p>
+                                    </div>
+                                </div>
+                            </article>
+                        </div>
+                    {% endfor %}
+    {% else %}
+                <p>You don't have friends yet :(</p>
+                </div>
+        </div>
+    {% endif %}
+    {% if subscribers_active %}
+        <div class="columns">
+            <div class="column">
+                <p>My subscribers:</p>
+                    {% for subscriber in subscribers_active %}
+                        <div class="box">
+                            <article class="media">
+                                <div class="media-left">
+                                    <figure class="image is-32x32">
+                                        <img src="{{ url('static', filename='avatars/' + subscriber.href) }}">
+                                    </figure>
+                                </div>
+                                <div class="media-content">
+                                    <div class="content">
+                                        <p><a href={{ subscriber.user_id }}>{{ subscriber.name }} {{ subscriber.surname }}</a></p>
+                                    </div>
+                                </div>
+                                <div class="media-right">
+                                    <form action="{{ url('confirm_friend') }}" method="post">
+                                        <input type="hidden" name="uid" value="{{ subscriber.user_id }}">
+                                        <input type="hidden" name="action" value=True>
+                                        <button type="submit">Accept</button>
+                                    </form>
+                                    <form action="{{ url('confirm_friend') }}" method="post">
+                                        <input type="hidden" name="uid" value="{{ subscriber.user_id }}">
+                                        <input type="hidden" name="action" value=False>
+                                        <button type="submit">Decline</button>
+                                    </form>
+                                </div>
+                            </article>
+                        </div>
+                    {% endfor %}
+    {% else %}
+        <p>You don't have subscribers yet :(</p>
+            </div>
+        </div>
+    {% endif %}
+    {% if subscribers_passive %}
+        <div class="columns">
+            <div class="column">
+                <p>I subscribed on:</p>
+                    {% for subscriber in subscribers_passive %}
+                <div class="box">
+                    <article class="media">
+                        <div class="media-left">
+                            <figure class="image is-32x32">
+                                <img src="{{ url('static', filename='avatars/' + subscriber.href) }}">
+                            </figure>
+                        </div>
+                        <div class="media-content">
+                            <div class="content">
+                                <p><a href={{ subscriber.user_id }}>{{ subscriber.name }} {{ subscriber.surname }}</a></p>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+                    {% endfor %}
+    {% else %}
+        <p>You don't have subscribed yet :(</p>
+            </div>
+        </div>
     {% endif %}
 {% endblock %}

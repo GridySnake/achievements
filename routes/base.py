@@ -38,6 +38,7 @@ def setup_routes(app):
     app.router.add_post('/add_achievement', AchievementsView.post, name='add_achievement')
     app.router.add_post('/user_info', UserInfoView.post, name='user_info')
     app.router.add_get('/user_info', UserInfoView.get, name='user_info')
+    app.router.add_post('/confirm_friend', MyFriendsView.post, name='confirm_friend')
     for i in range(len_users):
         app.router.add_get(f'/{i}', PersonalPageView.get, name=f'personal_page_{i}')
         app.router.add_get(f'/chat_{i}', ChatView.get, name=f'chat_{i}')
