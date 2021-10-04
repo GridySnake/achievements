@@ -31,10 +31,10 @@ class MyFriendsView(web.View):
             return web.HTTPForbidden()
         users = await Friends.get_user_friends_names(user_id=self.session['user']['id'])
         subscribers = await Friends.get_subscribers(user_id=self.session['user']['id'])
-        actual_requests = [i for i in subscribers if i['status_id_active'] == 2 and i['status_id_passive'] != -1]
-        subscribers_active = [i for i in subscribers if i['status_id_active'] == 2 and i['status_id_passive'] == -1]
-        subscribers_passive = [i for i in subscribers if i['status_id_active'] == 0]
-        print(actual_requests, subscribers_active, subscribers_passive)
+        actual_requests = [i for i in subscribers if i['status_id_passive'] == 0]
+        subscribers_active = [i for i in subscribers if i['status_id_passive'] == -1]
+        subscribers_passive = [i for i in subscribers if i['status_id_passive'] == 2]
+        print(subscribers, actual_requests, subscribers_active, subscribers_passive)
         return dict(users=users, subscribers_active=subscribers_active, subscribers_passive=subscribers_passive, actual_requests=actual_requests)
 
     async def post(self):

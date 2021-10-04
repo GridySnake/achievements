@@ -7,29 +7,29 @@
         <div class="columns">
             <div class="column">
                 <p>My requests:</p>
-                    {% for user in users %}
+                    {% for actual_request in actual_requests %}
                         <div class="box">
                             <article class="media">
                                 <div class="media-left">
-                                    {% if actual_requests.href is not none %}
+                                    {% if actual_request.href is not none %}
                                     <figure class="image is-32x32">
-                                        <img src="{{ url('static', filename='avatars/' + user.href) }}">
+                                        <img src="{{ url('static', filename='avatars/' + actual_request.href) }}">
                                     </figure>
                                     {% endif %}
                                 </div>
                                 <div class="media-content">
                                     <div class="content">
-                                        <p><a href={{ actual_requests.user_id }}>{{ actual_requests.name }} {{ actual_requests.surname }}</a></p>
+                                        <p><a href={{ actual_request.user_id }}>{{ actual_request.name }} {{ actual_request.surname }}</a></p>
                                     </div>
                                 </div>
                                 <div class="media-right">
                                     <form action="{{ url('confirm_friend') }}" method="post">
-                                        <input type="hidden" name="uid" value="{{ subscriber.user_id }}">
+                                        <input type="hidden" name="uid" value="{{ actual_request.user_id }}">
                                         <input type="hidden" name="action" value=True>
                                         <button type="submit">Accept</button>
                                     </form>
                                     <form action="{{ url('confirm_friend') }}" method="post">
-                                        <input type="hidden" name="uid" value="{{ subscriber.user_id }}">
+                                        <input type="hidden" name="uid" value="{{ actual_request.user_id }}">
                                         <input type="hidden" name="action" value=False>
                                         <button type="submit">Decline</button>
                                     </form>

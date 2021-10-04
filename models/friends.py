@@ -124,9 +124,8 @@ class Friends:
     async def get_subscribers(user_id: str):
         conn = await asyncpg.connect(connection_url)
         friends = await conn.fetch(f"""
-                        select distinct(u.user_id), u.name, u.surname, 
-                        f.status_id[array_position(f.users_id, u.user_id)] as status_id_active, 
-                        f.status_id[array_position(f.users_id, 0)] as status_id_passive,
+                        select distinct(u.user_id), u.name, u.surname,
+                        f.status_id[array_position(f.users_id, {user_id})] as status_id_passive,
                         img.href
                         from friends as f
                         inner join users_information as u on u.user_id = f.user_id
