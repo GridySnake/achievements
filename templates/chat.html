@@ -10,11 +10,13 @@
         {% for message in messages %}
             <div class="box">
                 <article class="media">
+                    {% if message.href %}
                     <div class="media-left">
                         <figure class="image is-64x64">
                             <img src="{{ url('static', filename='avatars/' + message.href) }}">
                         </figure>
                     </div>
+                    {% endif %}
                     <div class="media-content">
                         <div class="content">
                             {% if message.user_id == friend_id %}

@@ -12,11 +12,13 @@
         <div class="column">
             <div class="box">
                 <article class="media">
+                    {% if users[i].href %}
                     <div class="media-left">
                         <figure class="image is-64x64">
                             <img src="{{ url('static', filename='avatars/' + users[i].href) }}">
                         </figure>
                     </div>
+                    {% endif %}
                         <div class="media-content">
                             <div class="content">
                                 <p><a href='chat_{{ users[i].user_id }}'>{{ users[i].name }} {{ users[i].surname }}</a></p>
