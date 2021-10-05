@@ -41,6 +41,7 @@
             <input type="submit" value="submit"/>
         </form>
     {% endif %}
+    {% if block != 3 %}
     {% if not me %}
         <form action="{{ url('send_message') }}" method="post">
                 <label for="message_text">Send message</label>
@@ -69,16 +70,18 @@
     {% if me %}
     <p>My friends:</p>
     {% else %}
-    <p>{{ user.first_name }} friends:</p>
+    <p>{{ user.name }} friends:</p>
     {% endif %}
     <br>
     <ul>
         {% for friend in friends %}
-            <li><a href={{ friend.id }}>{{ friend.first_name }} {{ friend.last_name }}</a></li>
+            <li><a href={{ friend.id }}>{{ friend.name }} {{ friend.surname }}</a></li>
             <br>
         {% endfor %}
     </ul>
 
+    {% else %}
+    <p>You was blocked by {{ user.name }} {{ user.surname }}</p>
+    {% endif %}
 {% endif %}
-
 {% endblock %}

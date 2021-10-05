@@ -28,6 +28,11 @@
                                         <small>{{ messages[i].datetime }}</small>
                                     </p>
                                 </div>
+                                {% if messages[i].is_read %}
+                                <p>Read</p>
+                                {% else %}
+                                <p>Unread</p>
+                                {% endif %}
                                 <nav class="level is-mobile">
                                     <div class="level-left">
                                         <a class="level-item" aria-label="reply">
