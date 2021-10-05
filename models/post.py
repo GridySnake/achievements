@@ -3,19 +3,32 @@ import datetime
 from config.common import BaseConfig
 connection_url = BaseConfig.database_url
 
+
 class Post:
     @staticmethod
     async def create_post(user_id: str,
-                          community_id: str,
-                          course_id: str,
-                          message: str):
+                          message: str,
+                          community_id: str = None,
+                          course_id: str = None):
         conn = await asyncpg.connect(connection_url)
         post_id = await conn.fetchrow(f"""SELECT MAX(post_id) FROM posts""")
+        if post_id['max'] is not None:
+            post_id = int(post_id['max']) + 1
+        else:
+            post_id = 0
+        if community_id is None:
+            community_id = 'null'
+        else:
+            community_id = int(community_id)
+        if course_id is None:
+            course_id = 'null'
+        else:
+            course_id = int(course_id)
         data = {
-            'post_id': int(dict(post_id)['max'])+1,
+            'post_id': post_id,
             'user_id': int(user_id),
-            'community_id': int(community_id),
-            'course_id': int(course_id),
+            'community_id': community_id,
+            'course_id': course_id,
             'message': message,
             'date_created': datetime.datetime.now()
         }
@@ -27,18 +40,18 @@ class Post:
 
     @staticmethod
     async def get_posts_by_user(user_id: str,
-                                community_id: str,
-                                course_id: str,
+                                community_id: str = None,
+                                course_id: str = None,
                                 limit=20):
         conn = await asyncpg.connect(connection_url)
         if user_id:
             posts = await conn.fetch(f"""
                 SELECT p.user_id, p.message, 
-                        u.name, u.surname, im.href
+                        u.name, u.surname, im.href, p.date_created
                 FROM posts as p
                 INNER JOIN users_information as u 
                     ON u.user_id = p.user_id
-                INNER JOIN images as im 
+                LEFT JOIN images as im 
                     on im.image_id = p.image_id
                 WHERE p.user_id = {user_id}
                 LIMIT {limit}

@@ -62,7 +62,7 @@
 
     <ul>
     {% for post in posts %}
-        <li><a href={{ post.user_id }}>{{ post.last_name }} {{ post.first_name }}</a> {{ post.message }} {{ post.date_created }}</li>
+        <li><a href={{ post.user_id }}>{{ post.name }} {{ post.surname }}</a> {{ post.message }} {{ post.date_created }}</li>
     {% endfor %}
     </ul>
     <br>

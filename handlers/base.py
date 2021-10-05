@@ -106,6 +106,6 @@ class PostView(web.View):
         session = await get_session(self)
         if 'user' in session and data['message']:
             await Post.create_post(user_id=session['user']['id'], message=data['message'])
-            return web.HTTPFound(location=self.app.router['index'].url_for())
-
+            location = str(f"/{session['user']['id']}")
+            return web.HTTPFound(location=location)
         return web.HTTPForbidden()
