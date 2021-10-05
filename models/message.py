@@ -102,13 +102,21 @@ class Message:
         last_messages = []
         for i in user:
             messages = await conn.fetch(f"""
-                                        SELECT m.message, m.datetime, u.name, u.surname
+                                        SELECT m.message, m.datetime, u.name, u.surname, m.is_read
                                         FROM messages as m
                                         LEFT JOIN users_information as u ON m.from_user = user_id
                                         WHERE (from_user = {i} OR to_user = {i}) AND (from_user = {user_id} 
                                         OR to_user = {user_id})
                                         ORDER BY datetime DESC
-                                        LIMIT 1
                                         """)
             last_messages += messages
         return last_messages
+
+    @staticmethod
+    async def is_read(user_id: str, chat_id: str):
+        conn = await asyncpg.connect(connection_url)
+        await conn.fetch(f"""
+                         update messages
+                         set is_read = True
+                         WHERE from_user = {chat_id} and to_user = {user_id}
+                        """)

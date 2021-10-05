@@ -19,6 +19,11 @@ class PersonalPageView(web.View):
         avatar = await User.get_avatar_by_user_id(user_id=location)
         friends = await Friends.get_user_friends_names(user_id=location)
         posts = await Post.get_posts_by_user(user_id=location)
+        block = await Friends.is_block(user_active_id=session['user']['id'], user_passive_id=location)
+        if block:
+            block = block[0]['status_id']
+        else:
+            block = 0
         if str(session['user']['id']) == location:
             my_page = True
-        return dict(user=user, friends=friends, posts=posts, me=my_page, avatar=avatar)
+        return dict(user=user, friends=friends, posts=posts, me=my_page, avatar=avatar, block=block)
