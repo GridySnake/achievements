@@ -60,7 +60,6 @@ class Friends:
                               confirm: bool):
         conn = await asyncpg.connect(connection_url)
         if confirm:
-            print(confirm)
             await conn.execute(f"""
                 update friends
                 set status_id[array_position(users_id, {user_passive_id})] = 1
@@ -85,19 +84,13 @@ class Friends:
         conn = await asyncpg.connect(connection_url)
         await conn.execute(f"""
             update friends
-                set status_id[array_to_string(array_positions(status_id, 1), ',')::int] = -2
-                --status_id[array_positions(status_id, 1)] = -2
-            where user_id = {user_passive_id}
-                and array_positions(status_id, 1) = array_positions(users_id, {user_active_id})
+                set status_id[array_position(users_id, {user_active_id})] = 3
+                where user_id = {user_passive_id}
         """)
         await conn.execute(f"""
             update friends
-                set status_id[array_to_string(array_positions(status_id, 1), ',')::int] = null,
-                --status_id[array_positions(status_id, 1)] = null,
-                    users_id[array_to_string(array_positions(users_id, {user_passive_id}), ',')::int] = null
-                --users_id[array_positions(users_id, user_passive_id] = null
-            where user_id = {user_active_id}
-                and array_positions(status_id, 1) = array_positions(users_id, {user_passive_id})
+                set status_id[array_position(users_id, {user_passive_id})] = -2
+                where user_id = {user_active_id}
         """)
 
     @staticmethod
@@ -105,39 +98,64 @@ class Friends:
                             user_passive_id: str):
         conn = await asyncpg.connect(connection_url)
         await conn.execute(f"""
-                    update friends
-                        set status_id[array_to_string(array_positions(status_id, 1), ',')::int] = 2
-                        --status_id[array_positions(status_id, 1)] = 2
-                    where user_id = {user_active_id}
-                        and array_positions(status_id, 1) = array_positions(users_id, {user_passive_id})
+                update friends
+                set status_id[array_position(users_id, {user_passive_id})] = -1
+                where user_id = {user_active_id}
                 """)
 
         await conn.execute(f"""
-            update friends
-                set status_id[array_to_string(array_positions(status_id, 1), ',')::int] = -1
-                --status_id[array_positions(status_id, 1)] = -1
-            where user_id = {user_passive_id}
-                and array_positions(status_id, 1) = array_positions(users_id, {user_active_id})
+                update friends
+                set status_id[array_position(users_id, {user_active_id})] = 0
+                where user_id = {user_passive_id}
+        """)
+
+    @staticmethod
+    async def unsubscribe_friend(user_active_id: str,
+                                 user_passive_id: str):
+        conn = await asyncpg.connect(connection_url)
+        await conn.execute(f"""
+                update friends
+                    set users_id = users_id[:(select array_position(f.users_id, '{user_passive_id}')
+                                    FROM friends as f
+                                    WHERE f.user_id = '{user_active_id}')-1] ||
+					                users_id[(select array_position(f.users_id, '{user_passive_id}')
+                                    FROM friends as f
+                                    WHERE f.user_id = '{user_active_id}')+1:],
+                        status_id = status_id[:(select array_position(f.users_id, '{user_passive_id}')
+                                    FROM friends as f
+                                    WHERE f.user_id = '{user_active_id}')-1] ||
+									status_id[(select array_position(f.users_id, '{user_passive_id}')
+                                    FROM friends as f
+                                    WHERE f.user_id = '{user_active_id}')+1:]
+                    WHERE user_id = '{user_active_id}'
+                """)
+
+        await conn.execute(f"""
+                update friends
+                    set users_id = users_id[:(select array_position(f.users_id, '{user_active_id}')
+                                FROM friends as f
+                                WHERE f.user_id = '{user_passive_id}')-1] ||
+					            users_id[(select array_position(f.users_id, '{user_active_id}')
+                                FROM friends as f
+                                WHERE f.user_id = '{user_passive_id}')+1:],
+                        status_id = status_id[:(select array_position(f.users_id, '{user_active_id}')
+                                FROM friends as f
+                                WHERE f.user_id = '{user_passive_id}')-1] ||
+					            status_id[(select array_position(f.users_id, '{user_active_id}')
+                                FROM friends as f
+                                WHERE f.user_id = '{user_passive_id}')+1:]
+                    WHERE user_id = '{user_passive_id}'
         """)
 
     @staticmethod
     async def get_subscribers(user_id: str):
         conn = await asyncpg.connect(connection_url)
         friends = await conn.fetch(f"""
-                        select distinct(u.user_id), u.name, u.surname,
-                        f.status_id[array_position(f.users_id, {user_id})] as status_id_passive,
-                        img.href
-                        from friends as f
-                        inner join users_information as u on u.user_id = f.user_id
+                        select distinct(u.user_id), u.name, u.surname, f.status_id, img.href
+                        from 
+                        (select user_id, unnest(users_id) as users_id, unnest(status_id) as status_id from friends) as f
+                        inner join users_information as u on u.user_id = f.users_id
 						left join images as img on img.image_id = u.image_id[array_upper(u.image_id, 1)]
-                        where u.user_id in (
-                                    select users_id[unnest(array_positions(f.status_id, 0))]
-                                    FROM friends as f
-                                    WHERE f.user_id = {user_id})
-                        or
-                        u.user_id in (
-                                    select users_id[unnest(array_positions(f.status_id, 2))]
-                                    FROM friends as f
-                                    WHERE f.user_id = {user_id})
+                        where f.user_id = {user_id}
                         """)
         return friends

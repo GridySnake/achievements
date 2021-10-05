@@ -29,19 +29,27 @@ class MyFriendsView(web.View):
     async def get(self):
         if 'user' not in self.session:
             return web.HTTPForbidden()
-        users = await Friends.get_user_friends_names(user_id=self.session['user']['id'])
         subscribers = await Friends.get_subscribers(user_id=self.session['user']['id'])
-        actual_requests = [i for i in subscribers if i['status_id_passive'] == 0]
-        subscribers_active = [i for i in subscribers if i['status_id_passive'] == -1]
-        subscribers_passive = [i for i in subscribers if i['status_id_passive'] == 2]
-        print(subscribers, actual_requests, subscribers_active, subscribers_passive)
-        return dict(users=users, subscribers_active=subscribers_active, subscribers_passive=subscribers_passive, actual_requests=actual_requests)
+        actual_requests = [i for i in subscribers if i['status_id'] == 2]
+        subscribers_active = [i for i in subscribers if i['status_id'] == -1]
+        subscribers_passive = [i for i in subscribers if i['status_id'] == 0]
+        friends = [i for i in subscribers if i['status_id'] == 1]
+        blocked = [i for i in subscribers if i['status_id'] == -2]
+        return dict(users=friends, subscribers_active=subscribers_active, subscribers_passive=subscribers_passive,
+                    actual_requests=actual_requests, blocked=blocked)
 
     async def post(self):
         if 'user' not in self.session:
             return web.HTTPForbidden()
 
         data = await self.post()
-        await Friends.friends_confirm(user_active_id=self.session['user']['id'], user_passive_id=data['uid'], confirm=eval(data['action']))
+        if 'action' in data.keys():
+            await Friends.friends_confirm(user_active_id=self.session['user']['id'], user_passive_id=data['uid'], confirm=eval(data['action']))
+        elif 'unsubscribe' in data.keys() or 'unblock' in data.keys():
+            await Friends.unsubscribe_friend(user_active_id=self.session['user']['id'], user_passive_id=data['uid'])
+        elif 'delete' in data.keys():
+            await Friends.delete_friend(user_active_id=self.session['user']['id'], user_passive_id=data['uid'])
+        elif 'block' in data.keys():
+            await Friends.block_friend(user_active_id=self.session['user']['id'], user_passive_id=data['uid'])
         location = self.app.router['my_friends'].url_for()
         return web.HTTPFound(location=location)
