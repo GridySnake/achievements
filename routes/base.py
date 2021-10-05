@@ -1,4 +1,5 @@
-from handlers.base import Login, Signup, Logout, PostView, Verify, NeedVerify
+from handlers.base import Login, Signup, Logout, Verify, NeedVerify
+from handlers.posts import PostView
 from handlers.avatar import Avatar
 from handlers.friends import FriendsView, MyFriendsView
 from handlers.messages import MessageView

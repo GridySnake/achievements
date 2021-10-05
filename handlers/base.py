@@ -3,7 +3,6 @@ import aiohttp_jinja2
 from aiohttp import web
 from aiohttp_session import get_session
 from models.user import User
-from models.post import Post
 from config.common import BaseConfig
 from smtplib import SMTP_SSL
 from email.parser import Parser
@@ -97,15 +96,3 @@ class Logout(web.View):
         del session['user']
         location = self.app.router['login'].url_for()
         return web.HTTPFound(location=location)
-
-
-class PostView(web.View):
-
-    async def post(self):
-        data = await self.post()
-        session = await get_session(self)
-        if 'user' in session and data['message']:
-            await Post.create_post(user_id=session['user']['id'], message=data['message'])
-            location = str(f"/{session['user']['id']}")
-            return web.HTTPFound(location=location)
-        return web.HTTPForbidden()
