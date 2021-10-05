@@ -3,22 +3,27 @@ import asyncpg
 from config.common import BaseConfig
 connection_url = BaseConfig.database_url
 
-CONN = 'postgresql://gachi_achi:achi_for_gachi@204.2.63.15:10485/achievements'
-# await asyncpg.connect(CONN)
+
 class User:
     @staticmethod
     async def get_user_by_email_phone(email: str, type: str):
-        conn = await asyncpg.connect(CONN)
         conn = await asyncpg.connect(connection_url)
         user = await conn.fetchrow(f"""
         SELECT * 
         FROM authentication
-        WHERE {type} = '{email}'
+        WHERE {type} = '{email}' and verified = True
         """)
-        user = dict(user)
+        user1 = await conn.fetchrow(f"""
+                SELECT * 
+                FROM authentication
+                WHERE {type} = '{email}' and verified = False
+                """)
         if user:
+            user = dict(user)
             user['id'] = int(user['user_id'])
             return user
+        elif user1:
+            return 'verify'
         else:
             return dict(error='User with {} {} not found'.format(type, email))
 
@@ -66,7 +71,26 @@ class User:
         return result
 
     @staticmethod
-    async def create_new_user(data):
+    async def verify_user(href):
+        conn = await asyncpg.connect(connection_url)
+        verify = await conn.fetchrow(f"""
+                            SELECT user_name 
+                            FROM authentication
+                            WHERE verifying_token = '{href}'
+                            """)
+        if verify:
+            await conn.execute(f"""
+                        UPDATE authentication
+                        SET verified = True,
+                            verifying_token = null
+                        WHERE verifying_token = '{href}'
+                        """)
+        else:
+            verify = False
+        return verify
+
+    @staticmethod
+    async def create_new_user(data, token):
         # TODO: make just phone or email
         email = data['email']
         phone = data['phone']
@@ -107,9 +131,9 @@ class User:
                                """)
             await conn.execute(f"""
                                insert INTO authentication (email, phone, user_name, password, second_authentication, 
-                               user_id) values(
+                               user_id, verified, verifying_token) values(
                                '{data['email']}', '{data['phone']}', '{data['user_name']}', '{data['password']}',
-                               False, {id})
+                               False, {id}, False, '{token}')
                                """)
             await conn.execute(f"""
                             insert INTO users_information (user_id, country_id, city_id, sex, date_born, age, bio, name, 
@@ -158,64 +182,3 @@ class User:
                                 WHERE user_id = {user_id}
                                 """)
             return url
-
-    @staticmethod
-    async def get_user_friends_suggestions(user_id: str, limit=20):
-        conn = await asyncpg.connect(CONN)
-        users = await conn.fetch(f"""SELECT u.user_id, u.name, u.surname 
-                                     FROM users_information as u 
-                                     WHERE u.id not in (SELECT unnest(users_id) 
-                                                       FROM friends 
-                                                       WHERE user_id = {user_id})
-                                     AND u.id <> {user_id}
-                                     LIMIT {limit}
-        """)
-        return users
-
-#     @staticmethod
-#     async def get_user_friends_names(user_id: str, limit=20):
-#         conn = await asyncpg.connect(CONN)
-#         users = await conn.fetch(f"""
-#             SELECT u.user_id, u.name, u.surname, a.href
-#             FROM users_information as u
-#             LEFT JOIN images as a
-#                 ON a.image_id = u.image_id[array_upper(u.image_id, 1)]
-#             WHERE u.user_id in (SELECT unnest(f.users_id)
-#                                 FROM friends as f
-#                                 WHERE 1 = any(f.status_id)
-#                                     and f.user_id = {user_id})
-#             LIMIT {limit}
-#         """)
-#         return users
-#
-#     @staticmethod
-#     async def get_user_friends(user_id: str, limit=20):
-#         conn = await asyncpg.connect(CONN)
-#         user_friends = await conn.fetchrow(f"""SELECT friend
-#                                                FROM friends
-#                                                WHERE user_id = {user_id}
-#                                                LIMIT {limit}""")
-#         return user_friends
-#
-#     @staticmethod
-#     async def add_friend(user_id: str, friend_id: str):
-#         conn = await asyncpg.connect(CONN)
-#         friends = User.get_user_friends(user_id)
-#         if friends is not None:
-#             friends = await conn.fetchrow(f"""SELECT friend
-#                                               FROM friends
-#                                               WHERE user_id = {user_id}
-#                                                 AND {friend_id} = ANY(friend)""")
-#             if friends is not None:
-#                 pass
-#             else:
-#                 await conn.execute(f"""
-#                     UPDATE friends
-#                     SET friend = array_append(friend, {friend_id})
-#                     WHERE user_id = {user_id}
-#                    """)
-#         else:
-#             await conn.execute(
-#                 f"""insert INTO friends (user_id, friend) values(
-#            {user_id}, ARRAY[{friend_id}])
-# """)

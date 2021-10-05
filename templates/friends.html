@@ -4,12 +4,31 @@
 
 {% block content %}
     {% if users %}
-        {% for user in users %}
-            <p><a href={{ user.id }}>{{ user.first_name }} {{ user.last_name }}</a></p>
-            <form action="{{ url('add_friend') }}" method="post">
-                <input type="hidden" name="uid" value="{{ user.id }}">
-                <button type="submit">add friend</button>
-            </form>
-        {% endfor %}
+        <div class="columns">
+            <div class="column">
+                {% for user in users %}
+                    <div class="box">
+                        <article class="media">
+                            <div class="media-left">
+                                {% if user.href is not none %}
+                                <figure class="image is-64x64">
+                                    <img src="{{ url('static', filename='avatars/' + user.href) }}">
+                                </figure>
+                                {% endif %}
+                            </div>
+                            <div class="media-content">
+                                <div class="content">
+                                    <p><a href={{ user.user_id }}>{{ user.name }} {{ user.surname }}</a></p>
+                                    <form action="{{ url('add_friend') }}" method="post">
+                                        <input type="hidden" name="uid" value="{{ user.user_id }}">
+                                        <button type="submit">add friend</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
     {% endif %}
 {% endblock %}

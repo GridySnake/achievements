@@ -1,6 +1,6 @@
 import aiohttp_jinja2
 from aiohttp import web
-from models.user import User
+from models.friends import Friends
 
 
 class FriendsView(web.View):
@@ -10,7 +10,7 @@ class FriendsView(web.View):
         if 'user' not in self.session:
             return web.HTTPForbidden()
 
-        users = await User.get_user_friends_suggestions(user_id=self.session['user']['id'])
+        users = await Friends.get_user_friends_suggestions(user_id=self.session['user']['id'])
         return dict(users=users)
 
     async def post(self):
@@ -18,7 +18,7 @@ class FriendsView(web.View):
             return web.HTTPForbidden()
 
         data = await self.post()
-        await User.add_friend(user_id=self.session['user']['id'], friend_id=data['uid'])
+        await Friends.add_friend(user_active_id=self.session['user']['id'], user_passive_id=data['uid'])
         location = self.app.router['friends'].url_for()
         return web.HTTPFound(location=location)
 
@@ -29,5 +29,27 @@ class MyFriendsView(web.View):
     async def get(self):
         if 'user' not in self.session:
             return web.HTTPForbidden()
-        users = await User.get_user_friends_names(user_id=self.session['user']['id'])
-        return dict(users=users)
+        subscribers = await Friends.get_subscribers(user_id=self.session['user']['id'])
+        actual_requests = [i for i in subscribers if i['status_id'] == 2]
+        subscribers_active = [i for i in subscribers if i['status_id'] == -1]
+        subscribers_passive = [i for i in subscribers if i['status_id'] == 0]
+        friends = [i for i in subscribers if i['status_id'] == 1]
+        blocked = [i for i in subscribers if i['status_id'] == -2]
+        return dict(users=friends, subscribers_active=subscribers_active, subscribers_passive=subscribers_passive,
+                    actual_requests=actual_requests, blocked=blocked)
+
+    async def post(self):
+        if 'user' not in self.session:
+            return web.HTTPForbidden()
+
+        data = await self.post()
+        if 'action' in data.keys():
+            await Friends.friends_confirm(user_active_id=self.session['user']['id'], user_passive_id=data['uid'], confirm=eval(data['action']))
+        elif 'unsubscribe' in data.keys() or 'unblock' in data.keys():
+            await Friends.unsubscribe_friend(user_active_id=self.session['user']['id'], user_passive_id=data['uid'])
+        elif 'delete' in data.keys():
+            await Friends.delete_friend(user_active_id=self.session['user']['id'], user_passive_id=data['uid'])
+        elif 'block' in data.keys():
+            await Friends.block_friend(user_active_id=self.session['user']['id'], user_passive_id=data['uid'])
+        location = self.app.router['my_friends'].url_for()
+        return web.HTTPFound(location=location)

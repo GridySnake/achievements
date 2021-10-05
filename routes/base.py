@@ -1,4 +1,4 @@
-from handlers.base import Login, Signup, Logout, PostView
+from handlers.base import Login, Signup, Logout, PostView, Verify, NeedVerify
 from handlers.avatar import Avatar
 from handlers.friends import FriendsView, MyFriendsView
 from handlers.messages import MessageView
@@ -9,12 +9,16 @@ from handlers.user_info import UserInfoView
 from config.common import BaseConfig
 from sqlalchemy import create_engine
 
-db_url = 'postgresql://postgres:12041999alex@localhost:5433/demo'
-engine = create_engine(db_url)
+engine = create_engine(BaseConfig.database_url)
 len_users = len(engine.execute(f"""
-SELECT * 
-FROM users
+SELECT user_id
+FROM users_main
 """).fetchall())
+verify = [str(i[0]) for i in engine.execute(f"""
+SELECT verifying_token
+FROM authentication
+WHERE verifying_token IS NOT null
+""").fetchall()]
 
 
 def setup_routes(app):
@@ -34,9 +38,13 @@ def setup_routes(app):
     app.router.add_post('/add_achievement', AchievementsView.post, name='add_achievement')
     app.router.add_post('/user_info', UserInfoView.post, name='user_info')
     app.router.add_get('/user_info', UserInfoView.get, name='user_info')
+    app.router.add_post('/my_friends', MyFriendsView.post, name='confirm_friend')
     for i in range(len_users):
         app.router.add_get(f'/{i}', PersonalPageView.get, name=f'personal_page_{i}')
         app.router.add_get(f'/chat_{i}', ChatView.get, name=f'chat_{i}')
+    for i in verify:
+        app.router.add_get(f'/verify/{i}', Verify.get, name=f'verify_{i}')
+    app.router.add_get('/verify', NeedVerify.get, name='verify')
 
 
 def setup_static_routes(app):
