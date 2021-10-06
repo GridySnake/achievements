@@ -53,6 +53,16 @@ class Friends:
                     last_update = statement_timestamp()
             where user_id = {user_passive_id}
         """)
+        id = await conn.execute(f""" select max(friend_event_id) from friend_events""")
+        if id is not None:
+            id = int(id['max'])
+        else:
+            id = 0
+        await conn.execute(f"""
+                        insert INTO friend_events (friend_event_id, user_id_active, user_id_passive,
+                                update_date, status_id_active, status_id_passive) values(
+                               {id}, '{user_active_id}', '{user_passive_id}', statement_timestamp(), 0, 2)
+        """)
 
     @staticmethod
     async def friends_confirm(user_active_id: str,
@@ -65,18 +75,37 @@ class Friends:
                 set status_id[array_position(users_id, {user_passive_id})] = 1
                 where user_id = {user_active_id}
             """)
-            result = await conn.execute(f"""
+            await conn.execute(f"""
                 update friends
                 set status_id[array_position(users_id, {user_active_id})] = 1
                 where user_id = {user_passive_id}
             """)
+            id = await conn.execute(f""" select max(friend_event_id) from friend_events""")
+            if id is not None:
+                id = int(id['max'])
+            else:
+                id = 0
+            await conn.execute(f"""
+                                    insert INTO friend_events (friend_event_id, user_id_active, user_id_passive,
+                                            update_date, status_id_active, status_id_passive) values(
+                                           {id}, '{user_active_id}', '{user_passive_id}', statement_timestamp(), 1, 1)
+                    """)
         else:
-            result = await conn.execute(f"""
+            await conn.execute(f"""
                 update friends
                 set status_id[array_position(users_id, {user_active_id})] = -1
                 where user_id = {user_passive_id}
             """)
-        return result
+            id = await conn.execute(f""" select max(friend_event_id) from friend_events""")
+            if id is not None:
+                id = int(id['max'])
+            else:
+                id = 0
+            await conn.execute(f"""
+                                    insert INTO friend_events (friend_event_id, user_id_active, user_id_passive,
+                                            update_date, status_id_active, status_id_passive) values(
+                                           {id}, '{user_active_id}', '{user_passive_id}', statement_timestamp(), -1, 0)
+                    """)
 
     @staticmethod
     async def block_friend(user_active_id: str,
@@ -92,6 +121,16 @@ class Friends:
                 set status_id[array_position(users_id, {user_passive_id})] = -2
                 where user_id = {user_active_id}
         """)
+        id = await conn.execute(f""" select max(friend_event_id) from friend_events""")
+        if id is not None:
+            id = int(id['max'])
+        else:
+            id = 0
+        await conn.execute(f"""
+                           insert INTO friend_events (friend_event_id, user_id_active, user_id_passive,
+                                   update_date,status_id_active, status_id_passive) values(
+                                  {id}, '{user_active_id}', '{user_passive_id}', statement_timestamp(), -2, 3)
+        """)
 
     @staticmethod
     async def delete_friend(user_active_id: str,
@@ -101,13 +140,23 @@ class Friends:
                 update friends
                 set status_id[array_position(users_id, {user_passive_id})] = -1
                 where user_id = {user_active_id}
-                """)
+        """)
 
         await conn.execute(f"""
                 update friends
                 set status_id[array_position(users_id, {user_active_id})] = 0
                 where user_id = {user_passive_id}
         """)
+        id = await conn.execute(f""" select max(friend_event_id) from friend_events""")
+        if id is not None:
+            id = int(id['max'])
+        else:
+            id = 0
+        await conn.execute(f"""
+                           insert INTO friend_events (friend_event_id, user_id_active, user_id_passive,
+                                   update_date, status_id_active, status_id_passive) values(
+                                  {id}, '{user_active_id}', '{user_passive_id}', statement_timestamp(), -1, 0)
+                            """)
 
     @staticmethod
     async def unsubscribe_friend(user_active_id: str,
@@ -128,8 +177,7 @@ class Friends:
                                     FROM friends as f
                                     WHERE f.user_id = '{user_active_id}')+1:]
                     WHERE user_id = '{user_active_id}'
-                """)
-
+        """)
         await conn.execute(f"""
                 update friends
                     set users_id = users_id[:(select array_position(f.users_id, '{user_active_id}')
@@ -146,6 +194,17 @@ class Friends:
                                 WHERE f.user_id = '{user_passive_id}')+1:]
                     WHERE user_id = '{user_passive_id}'
         """)
+        id = await conn.execute(f""" select max(friend_event_id) from friend_events""")
+        if id is not None:
+            id = int(id['max'])
+        else:
+            id = 0
+        await conn.execute(f"""
+                                   insert INTO friend_events (friend_event_id, user_id_active, user_id_passive,
+                                            update_date, status_id_active, status_id_passive) values(
+                                            {id}, '{user_active_id}', '{user_passive_id}', statement_timestamp(), 
+                                            null, null)
+                                    """)
 
     @staticmethod
     async def get_subscribers(user_id: str):
@@ -157,7 +216,7 @@ class Friends:
                         inner join users_information as u on u.user_id = f.users_id
 						left join images as img on img.image_id = u.image_id[array_upper(u.image_id, 1)]
                         where f.user_id = {user_id}
-                        """)
+        """)
         return friends
 
     @staticmethod
