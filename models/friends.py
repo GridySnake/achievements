@@ -19,6 +19,20 @@ class Friends:
         return users
 
     @staticmethod
+    async def get_user_friends_suggestion_search(user_id: str, limit=20):
+        conn = await asyncpg.connect(connection_url)
+        users = await conn.fetch(f"""SELECT u.user_id, u.name, u.surname, img.href
+                                     FROM users_information as u 
+                                     LEFT JOIN images as img ON img.image_id = u.image_id[array_upper(u.image_id, 1)]
+                                     WHERE u.user_id not in (SELECT unnest(users_id) 
+                                                       FROM friends 
+                                                       WHERE user_id = {user_id})
+                                     AND u.user_id <> {user_id} AND 
+                                     LIMIT {limit}
+        """)
+        return users
+
+    @staticmethod
     async def get_user_friends_names(user_id: str, limit=20):
         conn = await asyncpg.connect(connection_url)
         users = await conn.fetch(f"""
@@ -53,9 +67,10 @@ class Friends:
                     last_update = statement_timestamp()
             where user_id = {user_passive_id}
         """)
-        id = await conn.execute(f""" select max(friend_event_id) from friend_events""")
+        id = await conn.fetch(f""" select max(friend_event_id) from friend_events""")
+        id = dict(id[0])['max']
         if id is not None:
-            id = int(id['max'])
+            id = int(id) + 1
         else:
             id = 0
         await conn.execute(f"""
@@ -80,9 +95,10 @@ class Friends:
                 set status_id[array_position(users_id, {user_active_id})] = 1
                 where user_id = {user_passive_id}
             """)
-            id = await conn.execute(f""" select max(friend_event_id) from friend_events""")
+            id = await conn.fetch(f""" select max(friend_event_id) from friend_events""")
+            id = dict(id[0])['max']
             if id is not None:
-                id = int(id['max'])
+                id = int(id) + 1
             else:
                 id = 0
             await conn.execute(f"""
@@ -96,9 +112,11 @@ class Friends:
                 set status_id[array_position(users_id, {user_active_id})] = -1
                 where user_id = {user_passive_id}
             """)
-            id = await conn.execute(f""" select max(friend_event_id) from friend_events""")
+            id = await conn.fetch(f""" select max(friend_event_id) from friend_events""")
+
+            id = dict(id[0])['max']
             if id is not None:
-                id = int(id['max'])
+                id = int(id) + 1
             else:
                 id = 0
             await conn.execute(f"""
@@ -121,9 +139,10 @@ class Friends:
                 set status_id[array_position(users_id, {user_passive_id})] = -2
                 where user_id = {user_active_id}
         """)
-        id = await conn.execute(f""" select max(friend_event_id) from friend_events""")
+        id = await conn.fetch(f""" select max(friend_event_id) from friend_events""")
+        id = dict(id)['max']
         if id is not None:
-            id = int(id['max'])
+            id = int(id) + 1
         else:
             id = 0
         await conn.execute(f"""
@@ -147,9 +166,10 @@ class Friends:
                 set status_id[array_position(users_id, {user_active_id})] = 0
                 where user_id = {user_passive_id}
         """)
-        id = await conn.execute(f""" select max(friend_event_id) from friend_events""")
+        id = await conn.fetch(f"""select max(friend_event_id) from friend_events""")
+        id = dict(id)['max']
         if id is not None:
-            id = int(id['max'])
+            id = int(id) + 1
         else:
             id = 0
         await conn.execute(f"""
@@ -194,9 +214,10 @@ class Friends:
                                 WHERE f.user_id = '{user_passive_id}')+1:]
                     WHERE user_id = '{user_passive_id}'
         """)
-        id = await conn.execute(f""" select max(friend_event_id) from friend_events""")
+        id = await conn.fetch(f""" select max(friend_event_id) from friend_events""")
+        id = dict(id)['max']
         if id is not None:
-            id = int(id['max'])
+            id = int(id) + 1
         else:
             id = 0
         await conn.execute(f"""

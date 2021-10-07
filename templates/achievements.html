@@ -10,10 +10,25 @@
         <button type="submit">Send</button>
     </form>
     <br>
-    <p> Now U have this achievements: </p>
-    {% for achievement in achievements %}
+    <div>
+    {% if achievements_my %}
+    <p> Now U have been created this achievements: </p>
+        <br>
+    {% for achievement in achievements_my %}
         <p>{{ achievement.name }} : {{ achievement.description }}</p>
+    {% endfor %}
+    {% endif %}
+    </div>
+    <br>
+    <div>
+    {% if achievements_sug %}
+    <p> Recommended achievements: </p>
+    <br>
+    {% for achievement in achievements_sug %}
+        <p>{{ achievement.title }} : {{ achievement.description }}. {{ achievement.name }} {{ achievement.surname }}
+        {{ achievement.created_date }} {{ achievement.new }}</p>
         <br>
     {% endfor %}
+    {% endif %}
+    </div>
 {% endblock %}
-curl -X POST http://127.0.0.1:8080/add_achievement

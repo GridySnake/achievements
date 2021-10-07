@@ -1,15 +1,16 @@
 from sqlalchemy import create_engine
 import datetime
 from config.common import BaseConfig
+import pandas as pd
 
 engine = create_engine(BaseConfig.database_url)
 
-t = engine.execute(f"""
-SELECT verifying_token
-FROM authentication
-Where verifying_token IS NOT null
-""").fetchall()
-print(t[0][0])
+# t = engine.execute(f"""
+# SELECT verifying_token
+# FROM authentication
+# Where verifying_token IS NOT null
+# """).fetchall()
+# print(t[0][0])
 
 # engine.execute('''
 # insert INTO users_main (user_id, user_name, email, phone) values(1, 'Abba', 'APatt@tatoine.ga', '12345');

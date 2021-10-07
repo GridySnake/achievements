@@ -11,8 +11,9 @@ class AchievementsView(web.View):
         if 'user' not in self.session:
             return web.HTTPForbidden()
 
-        achievements = await Achievements.get_user_achievements(user_id=self.session['user']['id'])
-        return dict(achievements=achievements)
+        achievements_my = await Achievements.get_created_achievements(user_id=self.session['user']['id'])
+        achievements_sug = await Achievements.get_suggestion_achievements(user_id=self.session['user']['id'])
+        return dict(achievements_my=achievements_my, achievements_sug=achievements_sug)
 
     async def post(self):
         if 'user' not in self.session:
