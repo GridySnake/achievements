@@ -25,6 +25,28 @@
                 </p>
             </div>
             <div class="field">
+                <label class="label">Country</label>
+                <span class="icon is-small is-left">
+                    <i class="fas fa-flag"></i>
+                </span>
+                <select name="select">
+                    {% for i in range(countries|length) %}
+                    <option value="{{ countries[i].country_id }}">{{ countries[i].country_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field">
+                <label class="label">City</label>
+                <span class="icon is-small is-left">
+                    <i class="fas fa-building"></i>
+                </span>
+                 <select name="select">
+                   {% for i in range(cities|length) %}
+                    <option value="{{ cities[i].city_id }}">{{ cities[i].city_name }}</option>
+                    {% endfor %}
+                 </select>
+            </div>
+            <div class="field">
                 <label class="label">Age</label>
                 <p class="control has-icons-left has-icons-right">
                     <input class="input" name="age" type="number" placeholder="Age">

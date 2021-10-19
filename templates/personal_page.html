@@ -56,6 +56,7 @@
             <label for="message">Add New Post</label>
             <input id="message" name="message" type="text" value=""/>
             <input type="submit" value="Send"/>
+            <input type="file" id="file" name="file">
         </form>
     {% endif %}
     <br>
@@ -63,6 +64,11 @@
     <ul>
     {% for post in posts %}
         <li><a href={{ post.user_id }}>{{ post.name }} {{ post.surname }}</a> {{ post.message }} {{ post.date_created }}</li>
+        {% if post.href %}
+            <figure class="image is-128x128">
+                                <img src="{{ url('static', filename='image_posts/' + post.href) }}">
+            </figure>
+        {% endif %}
     {% endfor %}
     </ul>
     <br>

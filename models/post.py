@@ -8,6 +8,7 @@ class Post:
     @staticmethod
     async def create_post(user_id: str,
                           message: str,
+                          image_href: str = None,
                           community_id: str = None,
                           course_id: str = None):
         conn = await asyncpg.connect(connection_url)
@@ -24,19 +25,34 @@ class Post:
             course_id = 'null'
         else:
             course_id = int(course_id)
+        if image_href is None:
+            image_id = 'null'
+        else:
+            image_id = await conn.fetchrow(f"""SELECT MAX(image_id) FROM images""")
+            try:
+                image_id = int(dict(image_id)['max']) + 1
+            except:
+                image_id = 0
+            await conn.execute(f"""
+                               insert INTO images (image_id, href, image_type, create_date) values(
+                               {image_id}, '{image_href}', 'user_post', statement_timestamp())
+            """)
         data = {
             'post_id': post_id,
             'user_id': int(user_id),
             'community_id': community_id,
             'course_id': course_id,
             'message': message,
-            'date_created': datetime.datetime.now()
+            'date_created': datetime.datetime.now(),
+            'image_id': image_id
         }
+
         await conn.execute(f"""
-                        insert INTO posts (post_id, user_id, community_id, course_id, message, date_created) values(
+                        insert INTO posts (post_id, user_id, community_id, course_id, message, image_id, date_created) 
+                        values(
                         {data['post_id']}, {data['user_id']}, {data['community_id']}, {data['course_id']}, 
-                        '{data['message']}', '{data['date_created']}')
-                        """)
+                        '{data['message']}', {data['image_id']}, statement_timestamp())
+        """)
 
     @staticmethod
     async def get_posts_by_user(user_id: str,
@@ -46,7 +62,7 @@ class Post:
         conn = await asyncpg.connect(connection_url)
         if user_id:
             posts = await conn.fetch(f"""
-                SELECT p.user_id, p.message, 
+                SELECT p.user_id, p.message, im.href,
                         u.name, u.surname, im.href, p.date_created
                 FROM posts as p
                 INNER JOIN users_information as u 

@@ -25,9 +25,13 @@
     <p> Recommended achievements: </p>
     <br>
     {% for achievement in achievements_sug %}
-        <p>{{ achievement.title }} : {{ achievement.description }}. {{ achievement.name }} {{ achievement.surname }}
-        {{ achievement.created_date }} {{ achievement.new }}</p>
-        <br>
+        {% if achievement.new == True %}
+        <p>{{ achievement.title }} : {{ achievement.description }}. <a href="{{ achievement.user_id }}">{{ achievement.name }} {{ achievement.surname }}</a>
+        {{ achievement.created_date }} new</p>
+        {% else %}
+        <p>{{ achievement.title }} : {{ achievement.description }}. <a href="{{ achievement.user_id }}">{{ achievement.name }} {{ achievement.surname }}</a>
+        {{ achievement.created_date }}</p>
+        {% endif %}
     {% endfor %}
     {% endif %}
     </div>
