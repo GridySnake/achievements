@@ -140,7 +140,7 @@ class Friends:
                 where user_id = {user_active_id}
         """)
         id = await conn.fetch(f""" select max(friend_event_id) from friend_events""")
-        id = dict(id)['max']
+        id = dict(id[0])['max']
         if id is not None:
             id = int(id) + 1
         else:
@@ -167,7 +167,7 @@ class Friends:
                 where user_id = {user_passive_id}
         """)
         id = await conn.fetch(f"""select max(friend_event_id) from friend_events""")
-        id = dict(id)['max']
+        id = dict(id[0])['max']
         if id is not None:
             id = int(id) + 1
         else:
@@ -215,7 +215,7 @@ class Friends:
                     WHERE user_id = '{user_passive_id}'
         """)
         id = await conn.fetch(f""" select max(friend_event_id) from friend_events""")
-        id = dict(id)['max']
+        id = dict(id[0])['max']
         if id is not None:
             id = int(id) + 1
         else:

@@ -5,10 +5,42 @@
 {% block content %}
     <form action="{{ url('add_achievement') }}" method="post">
         <label>Create New Achievement: </label>
+        <select name="select_group" id="select_group">
+            <option value="0">User's information</option>
+            <option value="1">QR or dead</option>
+            <option value="2">Location</option>
+            <option value="3">Other Apps</option>
+            <option value="4">Test</option>
+            <option value="5">Course</option>
+            <option value="6">Community</option>
+            <option value="7">User confirm</option>
+            <option value="8">No confirm</option>
+            <option value="9">Photo share</option>
+        </select>
+        <select name="select_parameter" id="select_parameter">
+            <option value="name">Name</option>
+            <option value="surname">Surname</option>
+            <option value="age">Age</option>
+            <option value="country">Country</option>
+            <option value="city">City</option>
+            <option value="friends_count">Count of friends</option>
+            <option value="avatar">Have avatar</option>
+        </select>
+        <input id="value" name="value" type="text" value=""/>
         <input id="name" name="name" type="text" value=""/>
         <input id="description" name="description" type="text" value=""/>
         <button type="submit">Send</button>
     </form>
+    <br>
+    <div>
+    {% if achievements_get %}
+    <p> Now U have been reached this achievements: </p>
+        <br>
+    {% for achievement in achievements_get %}
+        <p>{{ achievement.name }} : {{ achievement.description }}</p>
+    {% endfor %}
+    {% endif %}
+    </div>
     <br>
     <div>
     {% if achievements_my %}

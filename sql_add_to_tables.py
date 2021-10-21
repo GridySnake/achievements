@@ -5,22 +5,11 @@ import pandas as pd
 
 engine = create_engine(BaseConfig.database_url)
 
-# t = engine.execute(f"""
-# SELECT verifying_token
-# FROM authentication
-# Where verifying_token IS NOT null
-# """).fetchall()
-# print(t[0][0])
-
-# engine.execute('''
-# insert INTO users_main (user_id, user_name, email, phone) values(1, 'Abba', 'APatt@tatoine.ga', '12345');
-# ''')
-
-# engine.execute('''
-# insert INTO users (id, first_name, last_name, email, password) values(NEXT(), 'Abba', 'Patt', 'APatt@tatoine.ga', '12345');
-# ''')
-# engine.execute("""insert INTO friends (user_id, friend) values(
-#                           1, ARRAY []::integer[])
+# engine.execute("""insert INTO achi_conditions (condition_id, parameter, value, achi_condition_group_id) values(
+#                           0, 'name', 'Aleksandr', 0)
+#                          """)
+# engine.execute("""insert INTO achi_condition_groups (achi_condition_group_id, achi_condition_group_name, achi_condition_group_description) values(
+#                           0, 'user info', 'Any public information about user')
 #                          """)
 # engine.execute("""insert INTO achievements (achievement_id, user_id, name, description) values(
 #                            2, ARRAY [0, 2], 'Never sleep', 'Code and do not sleep')

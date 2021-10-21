@@ -138,10 +138,10 @@ class User:
             await conn.execute(f"""
                             insert INTO users_information (user_id, country_id, city_id, sex, date_born, age, bio, name, 
                             surname, relation_ship_id, language_id, wedding, communication_conditions, status_work, 
-                            position, company_id, school_id, bachelor_id, master_id, image_id) values(
+                            position, company_id, school_id, bachelor_id, master_id, image_id, achievements_id) values(
                             {id}, null, null, null, null, null, null, null, null,
                             ARRAY []::integer[], null, null, ARRAY []::text[], null, null, null, null, null, 
-                            null, ARRAY []::integer[])
+                            null, ARRAY []::integer[], ARRAY []::integer[])
                             """)
             await conn.execute(f"""
                                 insert INTO user_statistics (user_id, friends, likes, comments, recommendations, 
@@ -173,8 +173,8 @@ class User:
             except:
                 image_id = 0
             await conn.execute(f"""
-                                insert INTO images (image_id, href, image_type) values(
-                                {image_id}, '{url}', 'user')
+                                insert INTO images (image_id, href, image_type, create_date) values(
+                                {image_id}, '{url}', 'user', statement_timestamp())
                                 """)
             await conn.execute(f"""
                                 UPDATE users_information
