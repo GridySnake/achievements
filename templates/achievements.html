@@ -47,7 +47,13 @@
     <p> Now U have been created this achievements: </p>
         <br>
     {% for achievement in achievements_my %}
-        <p>{{ achievement.name }} : {{ achievement.description }}</p>
+        <div><p>{{ achievement.name }} : {{ achievement.description }}</p>
+            {% if achievement.achievement_qr %}
+                <figure class="image is-128x128">
+                    <img src="{{ url('static', filename='QR/'+achievement.achievement_qr) }}">
+                </figure>
+            {% endif %}
+        </div>
     {% endfor %}
     {% endif %}
     </div>

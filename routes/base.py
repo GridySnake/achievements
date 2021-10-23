@@ -3,7 +3,7 @@ from handlers.posts import PostView
 from handlers.avatar import Avatar
 from handlers.friends import FriendsView, MyFriendsView
 from handlers.messages import MessageView
-from handlers.achievements import AchievementsView
+from handlers.achievements import AchievementsView, AchievementsVerificationView
 from handlers.personal_page import PersonalPageView
 from handlers.chat import ChatView
 from handlers.user_info import UserInfoView
@@ -11,14 +11,22 @@ from config.common import BaseConfig
 from sqlalchemy import create_engine
 
 engine = create_engine(BaseConfig.database_url)
+
 len_users = len(engine.execute(f"""
-SELECT user_id
-FROM users_main
+select user_id
+from users_main
 """).fetchall())
+
 verify = [str(i[0]) for i in engine.execute(f"""
-SELECT verifying_token
-FROM authentication
-WHERE verifying_token IS NOT null
+select verifying_token
+from authentication
+where verifying_token is not null
+""").fetchall()]
+
+verify_achievement = [str(i[0]) for i in engine.execute(f"""
+select value
+from achi_conditions
+where achi_condition_group_id = 1
 """).fetchall()]
 
 
@@ -39,13 +47,15 @@ def setup_routes(app):
     app.router.add_post('/add_achievement', AchievementsView.post, name='add_achievement')
     app.router.add_post('/user_info', UserInfoView.post, name='user_info')
     app.router.add_get('/user_info', UserInfoView.get, name='user_info')
+    app.router.add_get('/verify', NeedVerify.get, name='verify')
     app.router.add_post('/my_friends', MyFriendsView.post, name='confirm_friend')
     for i in range(len_users):
         app.router.add_get(f'/{i}', PersonalPageView.get, name=f'personal_page_{i}')
         app.router.add_get(f'/chat_{i}', ChatView.get, name=f'chat_{i}')
     for i in verify:
         app.router.add_get(f'/verify/{i}', Verify.get, name=f'verify_{i}')
-    app.router.add_get('/verify', NeedVerify.get, name='verify')
+    for i in verify_achievement:
+        app.router.add_get(f'/verify_achievement/{i}', AchievementsVerificationView.get, name=f'verify_achievement_{i}')
 
 
 def setup_static_routes(app):
