@@ -3,7 +3,16 @@
 {% set title = "Achievements verify" %}
 
 {% block content %}
-<H>
-    Congratulations! U have got new achievement: {{ achievement[0].name }}
-</H>
+{% if decline %}
+    <H>
+        Sorry, but you have not met the condition of receipt achievement : {{ achievement[0].name }}
+    </H>
+    <p>
+        You need to move near on {{ distance }} {{ val }}
+    </p>
+{% else %}
+    <H>
+        Congratulations! U have got new achievement: {{ achievement[0].name }}
+    </H>
+{% endif %}
 {% endblock %}

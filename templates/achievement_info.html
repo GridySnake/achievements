@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% set title = "Achievement information" %}
+
+{% block content %}
+<div>
+    <H3>
+        {{ achievement[0].name }}
+    </H3>
+    <p>
+        {{ achievement[0].description }}
+    </p>
+    <p>
+        Verification_type: {{ achievement[0].achi_condition_group_name }}
+    </p>
+    {% if achievement[0].parameter != "href" %}
+        <p>
+            Condition: {{ achievement[0].parameter }} = {{ achievement[0].value }}
+        </p>
+    {% endif %}
+    <p>
+        Created at {{ achievement[0].created_date.strftime('%Y-%m-%d %H:%M') }} by <a href="/{{ achievement[0].user_id }}">{{ achievement[0].u_name }} {{ achievement[0].u_surname }} </a>
+    </p>
+    {% if achievement[0].parameter == 'location' %}
+    <p>Radius: {{ achievement[0].geo[-1] }} km</p>
+    <p>Coordinates: {{ achievement[0].geo[0] }}</p>
+        <a href="{{ '/verify_achievement/location/%s'%achievement[0].value }}"><button>
+            Verify
+        </button></a>
+    {% endif %}
+</div>
+{% endblock %}

@@ -9,7 +9,7 @@ engine = create_engine(BaseConfig.database_url)
 #                           0, 'name', 'Aleksandr', 0)
 #                          """)
 # engine.execute("""insert INTO achi_condition_groups (achi_condition_group_id, achi_condition_group_name, achi_condition_group_description) values(
-#                           1, 'QR-code', 'To verify need to scan QR-code')
+#                           2, 'Geolocation', 'To verify need to be in this location and use geolocation')
 #                          """)
 # engine.execute("""insert INTO achievements (achievement_id, user_id, name, description) values(
 #                            2, ARRAY [0, 2], 'Never sleep', 'Code and do not sleep')

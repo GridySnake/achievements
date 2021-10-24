@@ -2,16 +2,43 @@ import asyncpg
 from config.common import BaseConfig
 import qrcode
 import hashlib
+from geopy.geocoders import Nominatim
 
 connection_url = BaseConfig.database_url
 
 
 class Achievements:
     @staticmethod
+    async def get_achievement_info(achievement_id: str):
+        conn = await asyncpg.connect(connection_url)
+        achievement = await conn.fetch(f"""
+                                        select a.name, a.description, c.parameter, c.value, g.achi_condition_group_name, a.created_date, a.new, u.name as u_name, u.surname as u_surname, u.user_id, c.geo
+                                        from achi_conditions as c
+                                        right join (select achievement_id, unnest(conditions) as conditions, name, user_id, description, created_date, new from achievements) as a on a.conditions::integer = c.condition_id
+                                        left join achi_condition_groups as g on g.achi_condition_group_id = c.achi_condition_group_id
+                                        left join users_information as u on a.user_id = u.user_id 
+                                        where a.achievement_id = {achievement_id}
+        """)
+        return achievement
+
+    @staticmethod
+    async def get_achievement_type(achievement_id: str):
+        conn = await asyncpg.connect(connection_url)
+        achievement = await conn.fetch(f"""
+                                            select a.name, a.description, c.parameter, c.value, g.achi_condition_group_name, a.created_date, a.new, u.name as u_name, u.surname as u_surname, u.user_id
+                                            from achi_conditions as c
+                                            right join (select achievement_id, unnest(conditions) as conditions, name, user_id, description, created_date, new from achievements) as a on a.conditions::integer = c.condition_id
+                                            left join achi_condition_groups as g on g.achi_condition_group_id = c.achi_condition_group_id
+                                            left join users_information as u on a.user_id = u.user_id 
+                                            where a.achievement_id = {achievement_id}
+            """)
+        return achievement
+
+    @staticmethod
     async def get_achievement_by_condition_value(value: str):
         conn = await asyncpg.connect(connection_url)
         achievements = await conn.fetch(f"""
-            select a.name
+            select a.name, c.value, c.geo
             from achi_conditions as c
             left join (select name, unnest(conditions) as conditions from achievements) as a on a.conditions::integer = c.condition_id
             where c.value = '{value}'
@@ -22,7 +49,7 @@ class Achievements:
     async def get_created_achievements(user_id: str):
         conn = await asyncpg.connect(connection_url)
         achievements = await conn.fetch(f"""
-        select name, description, achievement_qr
+        select achievement_id, name, description, achievement_qr
         from achievements
         where user_id = {user_id}
         """)
@@ -32,7 +59,7 @@ class Achievements:
     async def get_reached_achievements(user_id: str):
         conn = await asyncpg.connect(connection_url)
         achievements = await conn.fetch(f"""
-            select a.name, a.description
+            select achievement_id, a.name, a.description
             from (select user_id, unnest(achievements_id) as achievements_id from users_information) as u
             inner join achievements as a on u.achievements_id = a.achievement_id
             where u.user_id = {user_id}
@@ -84,10 +111,26 @@ class Achievements:
             return 1
 
     @staticmethod
+    async def location_verify(user_id: str, value: str):
+        conn = await asyncpg.connect(connection_url)
+        achi_id = await conn.fetchrow(f"""
+                            select a.achievement_id
+                            from achi_conditions as c
+                            inner join (select achievement_id, unnest(conditions) as conditions from achievements) as a on a.conditions::integer = c.condition_id
+                            where achi_condition_group_id = 2 and value = '{value}'
+            """)
+        await conn.execute(f"""
+                                update users_information
+                                set achievements_id = array_append(achievements_id, {achi_id['achievement_id']})
+                                where user_id = {user_id} and {achi_id['achievement_id']} not in (
+                                        select unnest(achievements_id) from users_information where user_id = {user_id})
+            """)
+
+    @staticmethod
     async def get_suggestion_achievements(user_id: str):
         conn = await asyncpg.connect(connection_url)
         achievements = await conn.fetch(f"""
-            select a.user_id, a.name as title, a.description, a.created_date, a.new, u.name, u.surname
+            select achievement_id, a.user_id, a.name as title, a.description, a.created_date, a.new, u.name, u.surname
             from achievements as a
             inner join users_information as u on u.user_id = a.user_id
             where a.user_id <> {user_id}
@@ -154,5 +197,42 @@ class Achievements:
                                 insert into achievements (achievement_id, user_id, name, description, conditions, created_date, new, achievement_qr) values(
                                 {id_achi}, {user_id}, '{data['name']}', '{data['description']}', ARRAY['{id_condi}'], statement_timestamp(), true, '{id_achi}.png')
                                 """)
+        elif int(data['select_group']) == 2 and data['name'] != '' and data['description'] != '' and data['radius'] != '' and (data['value'] != '' or data['coords'] != ''):
+            if data['value'] != '' and data['coords'] != '':
+                location = data['coords'].replace(' ', '|').replace(',', '|').split('|')
+                location = [float(i.replace('|', '')) for i in location if i != '']
+                await conn.execute(f"""
+                                   insert into achi_conditions (condition_id, parameter, value, achi_condition_group_id, geo) values(
+                                   {id_condi}, 'location', {data['value']}, {data['select_group']}, CIRCLE(POINT({location[0]}, {location[1]}), {data['radius']}))
+                """)
+                await conn.execute(f"""
+                                   insert into achievements (achievement_id, user_id, name, description, conditions, created_date, new) values(
+                                   {id_achi}, {user_id}, '{data['name']}', '{data['description']}', ARRAY['{id_condi}'], statement_timestamp(), true)
+                                   """)
+            elif data['value'] != '' and data['coords'] == '':
+                geolocator = Nominatim(user_agent="55")
+                location = geolocator.geocode(data['value'])
+                await conn.execute(f"""
+                                                   insert into achi_conditions (condition_id, parameter, value, achi_condition_group_id, geo) values(
+                                                   {id_condi}, 'location', '{data['value']}', {data['select_group']}, CIRCLE(POINT({location.latitude}, {location.longitude}), {data['radius']}))
+                                """)
+                await conn.execute(f"""
+                                                   insert into achievements (achievement_id, user_id, name, description, conditions, created_date, new) values(
+                                                   {id_achi}, {user_id}, '{data['name']}', '{data['description']}', ARRAY['{id_condi}'], statement_timestamp(), true)
+                                                   """)
+            elif data['value'] == '' and data['coords'] != '':
+                location = data['coords'].replace(' ', '|').replace(',', '|').split('|')
+                location = [float(i.replace('|', '')) for i in location if i != '']
+                geolocator = Nominatim(user_agent="55")
+                adres = "_".join(geolocator.reverse(f'{location[0]}, {location[1]}').address.replace(' ', '_').split(',')).replace('+', '')
+                await conn.execute(f"""
+                                    insert into achi_conditions (condition_id, parameter, value, achi_condition_group_id, geo) values(
+                                    {id_condi}, 'location', '{adres}', {data['select_group']}, CIRCLE(POINT({location[0]}, {location[1]}), {data['radius']}))
+                                    """)
+                await conn.execute(f"""
+                                   insert into achievements (achievement_id, user_id, name, description, conditions, created_date, new) values(
+                                   {id_achi}, {user_id}, '{data['name']}', '{data['description']}', ARRAY['{id_condi}'], statement_timestamp(), true)
+                                   """)
+
 
 

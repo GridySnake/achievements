@@ -3,7 +3,7 @@ from handlers.posts import PostView
 from handlers.avatar import Avatar
 from handlers.friends import FriendsView, MyFriendsView
 from handlers.messages import MessageView
-from handlers.achievements import AchievementsView, AchievementsVerificationView
+from handlers.achievements import AchievementsView, AchievementsVerificationView, AchievementInfoView
 from handlers.personal_page import PersonalPageView
 from handlers.chat import ChatView
 from handlers.user_info import UserInfoView
@@ -23,10 +23,21 @@ from authentication
 where verifying_token is not null
 """).fetchall()]
 
-verify_achievement = [str(i[0]) for i in engine.execute(f"""
+verify_achievement_qr = [str(i[0]) for i in engine.execute(f"""
 select value
 from achi_conditions
 where achi_condition_group_id = 1
+""").fetchall()]
+
+verify_achievement_location = [str(i[0]) for i in engine.execute(f"""
+select value
+from achi_conditions
+where achi_condition_group_id = 2
+""").fetchall()]
+
+achievements = [str(i[0]) for i in engine.execute(f"""
+select achievement_id 
+from achievements
 """).fetchall()]
 
 
@@ -54,8 +65,12 @@ def setup_routes(app):
         app.router.add_get(f'/chat_{i}', ChatView.get, name=f'chat_{i}')
     for i in verify:
         app.router.add_get(f'/verify/{i}', Verify.get, name=f'verify_{i}')
-    for i in verify_achievement:
-        app.router.add_get(f'/verify_achievement/{i}', AchievementsVerificationView.get, name=f'verify_achievement_{i}')
+    for i in verify_achievement_qr:
+        app.router.add_get(f'/verify_achievement/qr/{i}', AchievementsVerificationView.get, name=f'verify_achievement_qr_{i}')
+    for i in achievements:
+        app.router.add_get(f'/achievement/{i}', AchievementInfoView.get, name=f'achievement_{i}')
+    for i in verify_achievement_location:
+        app.router.add_get(f'/verify_achievement/location/{i}', AchievementsVerificationView.get, name=f'verify_achievement_location_{i}')
 
 
 def setup_static_routes(app):
