@@ -12,7 +12,7 @@ class Achievements:
     async def get_achievement_info(achievement_id: str):
         conn = await asyncpg.connect(connection_url)
         achievement = await conn.fetch(f"""
-                                        select a.name, a.description, c.parameter, c.value, g.achi_condition_group_name, a.created_date, a.new, u.name as u_name, u.surname as u_surname, u.user_id, c.geo
+                                        select a.name, a.description, c.parameter, c.value, g.achi_condition_group_name, a.created_date, a.new, u.name as u_name, u.surname as u_surname, u.user_id, c.geo, c.condition_id
                                         from achi_conditions as c
                                         right join (select achievement_id, unnest(conditions) as conditions, name, user_id, description, created_date, new from achievements) as a on a.conditions::integer = c.condition_id
                                         left join achi_condition_groups as g on g.achi_condition_group_id = c.achi_condition_group_id
@@ -33,6 +33,17 @@ class Achievements:
                                             where a.achievement_id = {achievement_id}
             """)
         return achievement
+
+    @staticmethod
+    async def get_achievement_by_condition_id(condition_id: str):
+        conn = await asyncpg.connect(connection_url)
+        achievements = await conn.fetch(f"""
+                select a.name, c.value, c.geo
+                from achi_conditions as c
+                left join (select name, unnest(conditions) as conditions from achievements) as a on a.conditions::integer = c.condition_id
+                where c.condition_id = {condition_id}
+                """)
+        return achievements
 
     @staticmethod
     async def get_achievement_by_condition_value(value: str):

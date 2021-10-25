@@ -24,7 +24,7 @@
     {% if achievement[0].parameter == 'location' %}
     <p>Radius: {{ achievement[0].geo[-1] }} km</p>
     <p>Coordinates: {{ achievement[0].geo[0] }}</p>
-        <a href="{{ '/verify_achievement/location/%s'%achievement[0].value }}"><button>
+        <a href="{{ '/verify_achievement/location/%s'%achievement[0].condition_id }}"><button>
             Verify
         </button></a>
     {% endif %}

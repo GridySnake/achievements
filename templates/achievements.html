@@ -2,6 +2,7 @@
 
 {% set title = "Achievements" %}
 
+<body>
 {% block content %}
     <form action="{{ url('add_achievement') }}" method="post">
         <label>Create New Achievement: </label>
@@ -29,8 +30,8 @@
         <input id="value" name="value" type="text" value=""/>
         <input id="name" name="name" type="text" value=""/>
         <input id="description" name="description" type="text" value=""/>
-        <input id="coords" name="coords" type="text" value="" placeholder="coordinates"/>
-        <input id="radius" name="radius" type="text" value="" placeholder="radius in km"/>
+        <input id="coords" name="coords" type="text" value="" placeholder="coordinates" hidden/>
+        <input id="radius" name="radius" type="text" value="" placeholder="radius in km" hidden/>
         <button type="submit">Send</button>
     </form>
     <br>
@@ -76,3 +77,4 @@
     {% endif %}
     </div>
 {% endblock %}
+</body>

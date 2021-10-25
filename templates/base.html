@@ -9,6 +9,30 @@
         <link rel="shortcut icon" type="image/x-icon" href="/static/favicon.ico" />
     {% endblock %}
 </head>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js">
+</script>
+<script>
+    $(document).ready(function() {
+        $('#select_group').on('change', function () {
+            if (this.value == '2') {
+                $("#radius").show()
+                $("#coords").show()
+                $("#select_parameter").hide()
+                $("#value").show();
+            } else if (this.value == '0') {
+                $("#select_parameter").show()
+                $("#value").show()
+                $("#radius").hide()
+                $("#coords").hide();
+            } else if (this.value == '1') {
+                $("#value").hide()
+                $("#select_parameter").hide()
+                $("#radius").hide()
+                $("#coords").hide();
+            }
+        });
+    });
+</script>
 <body>
 
 {% block nav %}

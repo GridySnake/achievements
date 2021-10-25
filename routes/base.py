@@ -9,7 +9,7 @@ from handlers.chat import ChatView
 from handlers.user_info import UserInfoView
 from config.common import BaseConfig
 from sqlalchemy import create_engine
-
+#todo: изменить ссылки на страницы, а то из подтврждения ачивок не падаем на нужные страницы
 engine = create_engine(BaseConfig.database_url)
 
 len_users = len(engine.execute(f"""
@@ -24,13 +24,13 @@ where verifying_token is not null
 """).fetchall()]
 
 verify_achievement_qr = [str(i[0]) for i in engine.execute(f"""
-select value
+select condition_id
 from achi_conditions
 where achi_condition_group_id = 1
 """).fetchall()]
 
 verify_achievement_location = [str(i[0]) for i in engine.execute(f"""
-select value
+select condition_id
 from achi_conditions
 where achi_condition_group_id = 2
 """).fetchall()]

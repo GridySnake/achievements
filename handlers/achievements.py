@@ -4,10 +4,6 @@ from aiohttp_session import get_session
 from models.achievements import Achievements
 from aioipapi import IpApiClient
 from geopy.distance import great_circle
-from urllib.parse import unquote
-import json
-from yarl import URL
-import yarl
 
 
 class AchievementsView(web.View):
@@ -41,8 +37,6 @@ class AchievementsVerificationView(web.View):
             return web.HTTPFound(location=self.app.router['login'].url_for())
 
         session = await get_session(self)
-        yarl.cache_clear()
-        print(URL(str(self).split('/verify_achievement/')[-1][:-2]  ).human_repr())
         location = str(self).split('/verify_achievement/')[-1][:-2]
         types = location.split('/')[0]
         if types == 'qr':
@@ -56,14 +50,7 @@ class AchievementsVerificationView(web.View):
             async with IpApiClient() as client:
                 loc = await client.location()
             coord = (loc['lat'], loc['lon'])
-            coord_achi = await Achievements.get_achievement_by_condition_value(value=location.split('/')[-1])
-            if coord_achi == []:
-                print(1)
-                print(location)
-                location = location.split('/')[-1]
-                #location = location.encode('windows-1251').decode('windows-1251')
-                coord_achi = await Achievements.get_achievement_by_condition_value(value=location)
-            print(location)
+            coord_achi = await Achievements.get_achievement_by_condition_id(condition_id=location.split('/')[-1])
             r = coord_achi[0]['geo'][-1]
             distance = great_circle((coord[0], coord[1]), (coord_achi[0]['geo'][0][0], coord_achi[0]['geo'][0][1])).meters
             val = 'm'
