@@ -7,9 +7,11 @@
     <H>
         Sorry, but you have not met the condition of receipt achievement : {{ achievement[0].name }}
     </H>
+{% if achievement[0].achi_condition_group_id == '2' %}
     <p>
         You need to move near on {{ distance }} {{ val }}
     </p>
+{% endif %}
 {% else %}
     <H>
         Congratulations! U have got new achievement: {{ achievement[0].name }}

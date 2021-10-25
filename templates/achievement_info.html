@@ -3,6 +3,7 @@
 {% set title = "Achievement information" %}
 
 {% block content %}
+<body>
 <div>
     <H3>
         {{ achievement[0].name }}
@@ -28,5 +29,16 @@
             Verify
         </button></a>
     {% endif %}
+    {% if achievement[0].parameter == 'message_to_achi' %}
+        <button id="get_message_block">
+            Verify
+        </button>
+    {% endif %}
+    <form action="{{ url('verify_message_to_achi') }}" method="post">
+        <input id="achi" name="achi" type="text" value="{{ achievement[0].condition_id }}" hidden>
+        <input id="message" name="message" type="text" value="" hidden>
+        <button id="message_send" type="submit" hidden>Send</button>
+    </form>
 </div>
+</body>
 {% endblock %}

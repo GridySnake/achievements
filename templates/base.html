@@ -29,7 +29,20 @@
                 $("#select_parameter").hide()
                 $("#radius").hide()
                 $("#coords").hide();
+            }else if (this.value == '8') {
+                $("#value").show()
+                $("#select_parameter").hide()
+                $("#radius").hide()
+                $("#coords").hide();
             }
+        });
+    });
+</script>
+<script>
+    $(document).ready(function() {
+        $('#get_message_block').on('click', function () {
+            $("#message").show()
+            $("#message_send").show();
         });
     });
 </script>

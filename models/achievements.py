@@ -12,7 +12,7 @@ class Achievements:
     async def get_achievement_info(achievement_id: str):
         conn = await asyncpg.connect(connection_url)
         achievement = await conn.fetch(f"""
-                                        select a.name, a.description, c.parameter, c.value, g.achi_condition_group_name, a.created_date, a.new, u.name as u_name, u.surname as u_surname, u.user_id, c.geo, c.condition_id
+                                        select a.achievement_id, a.name, a.description, c.parameter, c.value, g.achi_condition_group_name, a.created_date, a.new, u.name as u_name, u.surname as u_surname, u.user_id, c.geo, c.condition_id
                                         from achi_conditions as c
                                         right join (select achievement_id, unnest(conditions) as conditions, name, user_id, description, created_date, new from achievements) as a on a.conditions::integer = c.condition_id
                                         left join achi_condition_groups as g on g.achi_condition_group_id = c.achi_condition_group_id
@@ -22,25 +22,25 @@ class Achievements:
         return achievement
 
     @staticmethod
-    async def get_achievement_type(achievement_id: str):
+    async def give_achievement_to_user(achievement_id: str, user_id: str):
         conn = await asyncpg.connect(connection_url)
-        achievement = await conn.fetch(f"""
-                                            select a.name, a.description, c.parameter, c.value, g.achi_condition_group_name, a.created_date, a.new, u.name as u_name, u.surname as u_surname, u.user_id
-                                            from achi_conditions as c
-                                            right join (select achievement_id, unnest(conditions) as conditions, name, user_id, description, created_date, new from achievements) as a on a.conditions::integer = c.condition_id
-                                            left join achi_condition_groups as g on g.achi_condition_group_id = c.achi_condition_group_id
-                                            left join users_information as u on a.user_id = u.user_id 
-                                            where a.achievement_id = {achievement_id}
+        try:
+            await conn.execute(f"""
+                                update users_information
+                                set achievements_id = array_append(achievements_id, {achievement_id})
+                                where user_id = {user_id} and {achievement_id} not in (
+                                        select unnest(achievements_id) from users_information where user_id = {user_id})
             """)
-        return achievement
+        except:
+            return 1
 
     @staticmethod
     async def get_achievement_by_condition_id(condition_id: str):
         conn = await asyncpg.connect(connection_url)
         achievements = await conn.fetch(f"""
-                select a.name, c.value, c.geo
+                select a.achievement_id, a.name, c.value, c.geo
                 from achi_conditions as c
-                left join (select name, unnest(conditions) as conditions from achievements) as a on a.conditions::integer = c.condition_id
+                left join (select achievement_id, name, unnest(conditions) as conditions from achievements) as a on a.conditions::integer = c.condition_id
                 where c.condition_id = {condition_id}
                 """)
         return achievements
@@ -49,7 +49,7 @@ class Achievements:
     async def get_achievement_by_condition_value(value: str):
         conn = await asyncpg.connect(connection_url)
         achievements = await conn.fetch(f"""
-            select a.name, c.value, c.geo
+            select a.name, c.value, c.geo, c.achi_condition_group_id
             from achi_conditions as c
             left join (select name, unnest(conditions) as conditions from achievements) as a on a.conditions::integer = c.condition_id
             where c.value = '{value}'
@@ -241,6 +241,15 @@ class Achievements:
                                     {id_condi}, 'location', '{adres}', {data['select_group']}, CIRCLE(POINT({location[0]}, {location[1]}), {data['radius']}))
                                     """)
                 await conn.execute(f"""
+                                   insert into achievements (achievement_id, user_id, name, description, conditions, created_date, new) values(
+                                   {id_achi}, {user_id}, '{data['name']}', '{data['description']}', ARRAY['{id_condi}'], statement_timestamp(), true)
+                                   """)
+        elif int(data['select_group']) == 8 and data['name'] != '' and data['description'] != '' and data['value'] != '':
+            await conn.execute(f"""
+                                    insert into achi_conditions (condition_id, parameter, value, achi_condition_group_id) values(
+                                    {id_condi}, 'message_to_achi', '{data['value']}', {data['select_group']})
+                                    """)
+            await conn.execute(f"""
                                    insert into achievements (achievement_id, user_id, name, description, conditions, created_date, new) values(
                                    {id_achi}, {user_id}, '{data['name']}', '{data['description']}', ARRAY['{id_condi}'], statement_timestamp(), true)
                                    """)

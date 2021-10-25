@@ -41,10 +41,10 @@ class AchievementsVerificationView(web.View):
         types = location.split('/')[0]
         if types == 'qr':
             result = await Achievements.qr_verify(user_id=session['user']['id'], value=location.split('/')[-1])
+            achievement = await Achievements.get_achievement_by_condition_value(value=location.split('/')[-1])
             if result:
-                return web.HTTPForbidden()
+                return dict(decline=True, achievement=achievement)
             else:
-                achievement = await Achievements.get_achievement_by_condition_value(value=location.split('/')[-1])
                 return dict(achievement=achievement)
         elif types == 'location':
             async with IpApiClient() as client:
@@ -77,3 +77,21 @@ class AchievementInfoView(web.View):
         location = str(self).split('/achievement/')[-1][:-2]
         achievement = await Achievements.get_achievement_info(achievement_id=location)
         return dict(achievement=achievement)
+
+    @aiohttp_jinja2.template('achievements_verify.html')
+    async def post(self):
+        if 'user' not in self.session:
+            return web.HTTPFound(location=self.app.router['login'].url_for())
+
+        data = await self.post()
+        session = await get_session(self)
+        achievement = await Achievements.get_achievement_by_condition_id(condition_id=data['achi'])
+        if achievement[0]['value'] == data['message']:
+            result = await Achievements.give_achievement_to_user(achievement[0]['achievement_id'], session['user']['id'])
+            if result:
+                return dict(decline=True, achievement=achievement)
+            else:
+                return dict(achievement=achievement)
+        else:
+            return dict(decline=True, achievement=achievement)
+
