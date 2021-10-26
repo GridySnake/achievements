@@ -3,7 +3,7 @@ from handlers.posts import PostView
 from handlers.avatar import Avatar
 from handlers.friends import FriendsView, MyFriendsView
 from handlers.messages import MessageView
-from handlers.achievements import AchievementsView, AchievementsVerificationView, AchievementInfoView
+from handlers.achievements import AchievementsView, AchievementsVerificationView, AchievementInfoView, AchievementDesireView
 from handlers.personal_page import PersonalPageView
 from handlers.chat import ChatView
 from handlers.user_info import UserInfoView
@@ -61,6 +61,8 @@ def setup_routes(app):
     app.router.add_get('/verify', NeedVerify.get, name='verify')
     app.router.add_post('/my_friends', MyFriendsView.post, name='confirm_friend')
     app.router.add_post('/verify_message_to_achi', AchievementInfoView.post, name='verify_message_to_achi')
+    app.router.add_post('/desire', AchievementDesireView.post, name='desire')
+    app.router.add_post('/approve', AchievementDesireView.post, name='approve')
     for i in range(len_users):
         app.router.add_get(f'/{i}', PersonalPageView.get, name=f'personal_page_{i}')
         app.router.add_get(f'/chat_{i}', ChatView.get, name=f'chat_{i}')

@@ -29,6 +29,12 @@
             Verify
         </button></a>
     {% endif %}
+    {% if achievement[0].parameter == 'user_approve' and not desire %}
+        <form action="{{ url('desire') }}" method="post">
+            <input id="achi_id" name="achi_id" type="text" value="{{ achievement[0].achievement_id }}" hidden>
+            <button type="submit" >Desire</button>
+        </form>
+    {% endif %}
     {% if achievement[0].parameter == 'message_to_achi' %}
         <button id="get_message_block">
             Verify

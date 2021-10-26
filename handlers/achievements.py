@@ -14,6 +14,7 @@ class AchievementsView(web.View):
             return web.HTTPForbidden()
 
         await Achievements.update_user_info_achievements(user_id=self.session['user']['id'])
+        await Achievements.desired_to_reached_achievement(user_id=self.session['user']['id'])
         achievements_created = await Achievements.get_created_achievements(user_id=self.session['user']['id'])
         achievements_get = await Achievements.get_reached_achievements(user_id=self.session['user']['id'])
         achievements_sug = await Achievements.get_suggestion_achievements(user_id=self.session['user']['id'])
@@ -74,9 +75,14 @@ class AchievementInfoView(web.View):
         if 'user' not in self.session:
             return web.HTTPFound(location=self.app.router['login'].url_for())
 
+        session = await get_session(self)
         location = str(self).split('/achievement/')[-1][:-2]
         achievement = await Achievements.get_achievement_info(achievement_id=location)
-        return dict(achievement=achievement)
+        if achievement[0]['parameter'] == 'user_approve':
+            desire = await Achievements.is_desire(user_id=session['user']['id'], achievement_desire_id=location)
+        else:
+            desire = False
+        return dict(achievement=achievement, desire=desire)
 
     @aiohttp_jinja2.template('achievements_verify.html')
     async def post(self):
@@ -95,3 +101,17 @@ class AchievementInfoView(web.View):
         else:
             return dict(decline=True, achievement=achievement)
 
+
+class AchievementDesireView(web.View):
+    async def post(self):
+        if 'user' not in self.session:
+            return web.HTTPFound(location=self.app.router['login'].url_for())
+
+        data = await self.post()
+        session = await get_session(self)
+        if data['user_passive_id'] is not None:
+            await Achievements.approve_achievement(user_active_id=session['user']['id'], user_passive_id=data['user_passive_id'], achievement_id=data['achi_id'])
+            return web.HTTPFound(location=f"/{data['user_passive_id']}")
+        else:
+            await Achievements.desire_achievement(user_id=session['user']['id'], achievement_desire_id=data['achi_id'])
+            return web.HTTPFound(location=f"achievement/{data['achi_id']}")

@@ -184,35 +184,35 @@ class Friends:
         conn = await asyncpg.connect(connection_url)
         await conn.execute(f"""
                 update friends
-                    set users_id = users_id[:(select array_position(f.users_id, '{user_passive_id}')
+                    set users_id = users_id[:(select array_position(f.users_id, {user_passive_id})
                                     FROM friends as f
-                                    WHERE f.user_id = '{user_active_id}')-1] ||
-					                users_id[(select array_position(f.users_id, '{user_passive_id}')
+                                    WHERE f.user_id = {user_active_id})-1] ||
+					                users_id[(select array_position(f.users_id, {user_passive_id})
                                     FROM friends as f
-                                    WHERE f.user_id = '{user_active_id}')+1:],
-                        status_id = status_id[:(select array_position(f.users_id, '{user_passive_id}')
+                                    WHERE f.user_id = {user_active_id})+1:],
+                        status_id = status_id[:(select array_position(f.users_id, {user_passive_id})
                                     FROM friends as f
-                                    WHERE f.user_id = '{user_active_id}')-1] ||
-									status_id[(select array_position(f.users_id, '{user_passive_id}')
+                                    WHERE f.user_id = {user_active_id})-1] ||
+									status_id[(select array_position(f.users_id, {user_passive_id})
                                     FROM friends as f
-                                    WHERE f.user_id = '{user_active_id}')+1:]
-                    WHERE user_id = '{user_active_id}'
+                                    WHERE f.user_id = {user_active_id})+1:]
+                    WHERE user_id = {user_active_id}
         """)
         await conn.execute(f"""
                 update friends
-                    set users_id = users_id[:(select array_position(f.users_id, '{user_active_id}')
+                    set users_id = users_id[:(select array_position(f.users_id, {user_active_id})
                                 FROM friends as f
-                                WHERE f.user_id = '{user_passive_id}')-1] ||
-					            users_id[(select array_position(f.users_id, '{user_active_id}')
+                                WHERE f.user_id = {user_passive_id})-1] ||
+					            users_id[(select array_position(f.users_id, {user_active_id})
                                 FROM friends as f
-                                WHERE f.user_id = '{user_passive_id}')+1:],
-                        status_id = status_id[:(select array_position(f.users_id, '{user_active_id}')
+                                WHERE f.user_id = {user_passive_id})+1:],
+                        status_id = status_id[:(select array_position(f.users_id, {user_active_id})
                                 FROM friends as f
-                                WHERE f.user_id = '{user_passive_id}')-1] ||
-					            status_id[(select array_position(f.users_id, '{user_active_id}')
+                                WHERE f.user_id = {user_passive_id})-1] ||
+					            status_id[(select array_position(f.users_id, {user_active_id})
                                 FROM friends as f
-                                WHERE f.user_id = '{user_passive_id}')+1:]
-                    WHERE user_id = '{user_passive_id}'
+                                WHERE f.user_id = {user_passive_id})+1:]
+                    WHERE user_id = {user_passive_id}
         """)
         id = await conn.fetch(f""" select max(friend_event_id) from friend_events""")
         id = dict(id[0])['max']
