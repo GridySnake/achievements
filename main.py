@@ -4,7 +4,7 @@ import aiohttp_jinja2
 import jinja2
 from aiohttp import web
 import asyncpgsa
-from aiohttp_swagger import *
+from aiohttp_swaggerify import swaggerify
 from aiohttp_session import setup, get_session, session_middleware
 from aiohttp_session.cookie_storage import EncryptedCookieStorage
 from routes.base import setup_routes, setup_static_routes
