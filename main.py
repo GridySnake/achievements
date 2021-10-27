@@ -4,6 +4,7 @@ import aiohttp_jinja2
 import jinja2
 from aiohttp import web
 import asyncpgsa
+from aiohttp_swagger import *
 from aiohttp_session import setup, get_session, session_middleware
 from aiohttp_session.cookie_storage import EncryptedCookieStorage
 from routes.base import setup_routes, setup_static_routes
@@ -60,7 +61,7 @@ def main():
     )
 
     logging.basicConfig(level=logging.DEBUG)
-    web.run_app(app)
+    web.run_app(app, host="127.0.0.1")
 
 
 if __name__ == '__main__':

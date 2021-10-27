@@ -117,6 +117,17 @@ class Achievements:
             await conn.execute(f"""
                                   update users_information
                                   set achievements_id = array_append(achievements_id, {i['achievement_id']})
+                                  where user_id = {user_id} and {i['achievement_id']} not in (select unnest(achievements_id) as achievements_id from users_information where user_id = {user_id})
+            """)
+            await conn.execute(f"""
+                                    update users_information
+                                    set  achievements_desired_id = achievements_desired_id[:(select array_position(achievements_desired_id, {i['achievement_id']})
+                                    from users_information						 
+                                    WHERE user_id = {user_id})-1] ||
+                                    achievements_desired_id[(select array_position(achievements_desired_id, {i['achievement_id']})
+                                    from users_information
+                                    WHERE user_id = {user_id})+1:]
+                                    WHERE user_id = {user_id}
             """)
 
     @staticmethod
