@@ -138,10 +138,10 @@ class User:
             await conn.execute(f"""
                             insert INTO users_information (user_id, country_id, city_id, sex, date_born, age, bio, name, 
                             surname, relation_ship_id, language_id, wedding, communication_conditions, status_work, 
-                            position, company_id, school_id, bachelor_id, master_id, image_id, achievements_id, achievements_desired_id) values(
+                            position, company_id, school_id, bachelor_id, master_id, image_id, achievements_id, achievements_desired_id, services_id, services_username) values(
                             {id}, null, null, null, null, null, null, null, null,
                             ARRAY []::integer[], null, null, ARRAY []::text[], null, null, null, null, null, 
-                            null, ARRAY []::integer[], ARRAY []::integer[], ARRAY []::integer[])
+                            null, ARRAY []::integer[], ARRAY []::integer[], ARRAY []::integer[], ARRAY []::integer[], ARRAY []::varchar[])
                             """)
             await conn.execute(f"""
                                 insert INTO user_statistics (user_id, friends, likes, comments, recommendations, 
@@ -182,3 +182,24 @@ class User:
                                 WHERE user_id = {user_id}
                                 """)
             return url
+
+    @staticmethod
+    async def check_connect(user_id: str, service_id: str):
+        conn = await asyncpg.connect(connection_url)
+        count =await conn.fetchrow(f"""select count(services_id)
+                                    from users_information
+                                    where user_id = {user_id} and {service_id} in (select unnest(services_id) from users_information where user_id={user_id})
+        """)
+        if count['count'] > 0:
+            return True
+        else:
+            return False
+
+    @staticmethod
+    async def get_user_name_by_service(user_id: str, service_id: str):
+        conn = await asyncpg.connect(connection_url)
+        username = await conn.fetchrow(f"""select services_username
+                                        from users_information
+                                        where user_id = {user_id} and {service_id} in (select unnest(services_id) from users_information where user_id={user_id})
+        """)
+        return username

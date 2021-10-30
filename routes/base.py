@@ -35,6 +35,12 @@ from achi_conditions
 where achi_condition_group_id = 2
 """).fetchall()]
 
+verify_achievement_service = [str(i[0]) for i in engine.execute(f"""
+select parameter
+from achi_conditions
+where achi_condition_group_id = 3
+""").fetchall()]
+
 achievements = [str(i[0]) for i in engine.execute(f"""
 select achievement_id 
 from achievements
@@ -74,6 +80,8 @@ def setup_routes(app):
         app.router.add_get(f'/achievement/{i}', AchievementInfoView.get, name=f'achievement_{i}')
     for i in verify_achievement_location:
         app.router.add_get(f'/verify_achievement/location/{i}', AchievementsVerificationView.get, name=f'verify_achievement_location_{i}')
+    for i in verify_achievement_service:
+        app.router.add_get(f'/verify_achievement/service/{i}', AchievementsVerificationView.get, name=f'verify_achievement_service_{i}')
 
 
 def setup_static_routes(app):

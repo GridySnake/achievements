@@ -1,5 +1,8 @@
 import chessdotcom
+import twitch
 
+client_id = 'blif82wvvraojfm84xp82fam1ljnii'
+client_secret = 'abqm6gspq4lhaddede83szum1u0v2b'
 user = 'crazyniga1917'
 
 profile = chessdotcom.get_player_profile(user).json['player']
@@ -16,10 +19,13 @@ profile_fide = profile_stats_modes['fide']
 profile_tactics_highest = profile_stats_modes['tactics']['highest']
 profile_tactics_lowest = profile_stats_modes['tactics']['lowest']
 profile_lessons = profile_stats_modes['lessons']  # todo: add parameters
-puzzle_rush = chessdotcom.get_player_stats(user).json['stats']['puzzle_rush']['best']
+profile_puzzle_rush = chessdotcom.get_player_stats(user).json['stats']['puzzle_rush']['best']
 grand_masters = chessdotcom.get_titled_players('GM').json['players']  # todo: others titles
 leaderboards = chessdotcom.get_leaderboards().json['leaderboards']['daily']  # todo: others features
 
-print(profile_tactics_lowest)
+print(profile)
 
+# helix = twitch.Helix(client_id, client_secret)
+# us = helix.user('crazyme1917').videos().
+# print(us)
 #  todo: logic = verify button

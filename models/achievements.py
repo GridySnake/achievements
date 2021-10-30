@@ -134,7 +134,7 @@ class Achievements:
     async def get_achievement_info(achievement_id: str):
         conn = await asyncpg.connect(connection_url)
         achievement = await conn.fetch(f"""
-                                        select a.achievement_id, a.name, a.description, c.parameter, c.value, g.achi_condition_group_name, a.created_date, a.new, u.name as u_name, u.surname as u_surname, u.user_id, c.geo, c.condition_id
+                                        select a.achievement_id, a.name, a.description, c.parameter, c.value, g.achi_condition_group_id, g.achi_condition_group_name, a.created_date, a.new, u.name as u_name, u.surname as u_surname, u.user_id, c.geo, c.condition_id
                                         from achi_conditions as c
                                         right join (select achievement_id, unnest(conditions) as conditions, name, user_id, description, created_date, new from achievements) as a on a.conditions::integer = c.condition_id
                                         left join achi_condition_groups as g on g.achi_condition_group_id = c.achi_condition_group_id
@@ -384,5 +384,16 @@ class Achievements:
                                    insert into achievements (achievement_id, user_id, name, description, conditions, created_date, new) values(
                                    {id_achi}, {user_id}, '{data['name']}', '{data['description']}', ARRAY['{id_condi}'], statement_timestamp(), true)
                                    """)
+        elif int(data['select_group']) == 3 and data['name'] != '' and data['description'] != '' and data['value'] != '' and data['select_service'] == '0':
+            parameter = str(data['select_service'] + '-' + data['chess_parameter_global'] + '-' + data['chess_parameter_local'])
+            print(parameter)
+            await conn.execute(f"""
+                                    insert into achi_conditions (condition_id, parameter, value, achi_condition_group_id) values(
+                                    {id_condi}, '{parameter}', '{data['value']}', {data['select_group']})
+                                    """)
+            await conn.execute(f"""
+                                    insert into achievements (achievement_id, user_id, name, description, conditions, created_date, new) values(
+                                    {id_achi}, {user_id}, '{data['name']}', '{data['description']}', ARRAY['{id_condi}'], statement_timestamp(), true)
+                                    """)
 
 

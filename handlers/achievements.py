@@ -4,6 +4,8 @@ from aiohttp_session import get_session
 from models.achievements import Achievements
 from aioipapi import IpApiClient
 from geopy.distance import great_circle
+from models.information import Info
+from models.user import User
 
 
 class AchievementsView(web.View):
@@ -18,13 +20,15 @@ class AchievementsView(web.View):
         achievements_created = await Achievements.get_created_achievements(user_id=self.session['user']['id'])
         achievements_get = await Achievements.get_reached_achievements(user_id=self.session['user']['id'])
         achievements_sug = await Achievements.get_suggestion_achievements(user_id=self.session['user']['id'])
-        return dict(achievements_my=achievements_created, achievements_sug=achievements_sug, achievements_get=achievements_get)
+        services = await Info.get_services()
+        return dict(achievements_my=achievements_created, achievements_sug=achievements_sug, achievements_get=achievements_get, services=services)
 
     async def post(self):
         if 'user' not in self.session:
             return web.HTTPForbidden()
 
         data = await self.post()
+        print(data)
         session = await get_session(self)
         await Achievements.create_new_achievement(user_id=session['user']['id'], data=data)
         raise web.HTTPFound(location=self.app.router['achievements'].url_for())
@@ -67,6 +71,23 @@ class AchievementsVerificationView(web.View):
                 return dict(achievement=coord_achi)
             else:
                 return dict(decline=True, achievement=coord_achi, distance=distance, val=val)
+        elif types == 'service':
+            parameters = location[location.find('/')+1:].split('-')
+            is_connected = await User.check_connect(session['user']['id'], parameters[0])
+            if is_connected:
+                username = await User.get_user_name_by_service(session['user']['id'], parameters[0])
+                if parameters[1] == 'profile':
+                    profile = await chessdotcom.get_player_profile(username).json['player'][parameters[2]]
+                    if parameters[2] == 'country':
+                        profile = profile.split('/')[-1]
+                        profile = await Info.get_country_by_iso(profile)[0]
+                    achievement = await Achievements.get_achievement_by_condition_value(location[location.find('/')+1:])
+                    print(profile)
+                    if profile == achievement[0]['value']:
+                        print(1)
+                #elif parameters[1] == '':
+
+
 
 
 class AchievementInfoView(web.View):

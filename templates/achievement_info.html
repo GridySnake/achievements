@@ -39,12 +39,18 @@
         <button id="get_message_block">
             Verify
         </button>
+        <form action="{{ url('verify_message_to_achi') }}" method="post">
+            <input id="achi" name="achi" type="text" value="{{ achievement[0].condition_id }}" hidden>
+            <input id="message" name="message" type="text" value="" hidden>
+            <button id="message_send" type="submit" hidden>Send</button>
+        </form>
     {% endif %}
-    <form action="{{ url('verify_message_to_achi') }}" method="post">
-        <input id="achi" name="achi" type="text" value="{{ achievement[0].condition_id }}" hidden>
-        <input id="message" name="message" type="text" value="" hidden>
-        <button id="message_send" type="submit" hidden>Send</button>
-    </form>
+
+    {% if achievement[0].achi_condition_group_id == 3 %}
+        <a href="{{ '/verify_achievement/service/%s'%achievement[0].parameter }}"><button>
+            Verify
+        </button></a>
+    {% endif %}
 </div>
 </body>
 {% endblock %}
