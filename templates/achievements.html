@@ -27,6 +27,39 @@
             <option value="friends_count">Count of friends</option>
             <option value="avatar">Have avatar</option>
         </select>
+        <select name="select_service" id="select_service" hidden>
+            {% for service in services %}
+            <option value="{{ service.service_id }}">{{ service.service_name }}</option>
+            {% endfor %}
+        </select>
+        <select name="chess_parameter_global" id="chess_parameter_global" hidden>
+            <option value="profile">Profile</option>
+            <option value="profile_stats_chess_rapid">Stats chess rapid</option>
+            <option value="profile_stats_chess_blitz">Stats chess blitz</option>
+            <option value="profile_stats_puzzle_rush">Stats puzzle rush</option>
+            <option value="title">Title</option>
+            <option value="leaderboard_daily">Daily leaderboard</option>
+        </select>
+        <select name="chess_parameter_local_profile" id="chess_parameter_local_profile" hidden>
+            <option value="streamer">Streamer</option>
+            <option value="followers">Followers</option>
+            <option value="country">Country</option>
+            <option value="joined">Registered</option>
+            <option value="status">Status</option>
+        </select>
+        <select name="chess_parameter_local_chess" id="chess_parameter_local_chess" hidden>
+            <option value="last">Last</option>
+            <option value="best">Best</option>
+            <option value="win">Win</option>
+            <option value="lose">Lose</option>
+            <option value="highest">Highest</option>
+            <option value="lowest">Lowest</option>
+        </select>
+        <select name="chess_parameter_local_equal" id="chess_parameter_local_equal" hidden>
+            <option value="more">More</option>
+            <option value="less">Less</option>
+            <option value="equal">Equal</option>
+        </select>
         <input id="value" name="value" type="text" value=""/>
         <input id="name" name="name" type="text" value=""/>
         <input id="description" name="description" type="text" value=""/>

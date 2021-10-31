@@ -4,6 +4,7 @@ from aiohttp_session import get_session
 from models.user import User
 from models.post import Post
 from models.friends import Friends
+from models.achievements import Achievements
 
 
 class PersonalPageView(web.View):
@@ -19,7 +20,11 @@ class PersonalPageView(web.View):
         avatar = await User.get_avatar_by_user_id(user_id=location)
         friends = await Friends.get_user_friends_names(user_id=location)
         posts = await Post.get_posts_by_user(user_id=location)
-        print(posts)
+        achievements_user = await Achievements.get_users_achievements(user_id=location)
+        if not my_page:
+            achievements_approve = await Achievements.get_users_approve_achievements(user_id=location, user_active=session['user']['id'])
+        else:
+            achievements_approve = await Achievements.get_users_approve_achievements(user_id=location)
         block = await Friends.is_block(user_active_id=session['user']['id'], user_passive_id=location)
         if block:
             block = block[0]['status_id']
@@ -27,4 +32,4 @@ class PersonalPageView(web.View):
             block = 0
         if str(session['user']['id']) == location:
             my_page = True
-        return dict(user=user, friends=friends, posts=posts, me=my_page, avatar=avatar, block=block)
+        return dict(user=user, friends=friends, posts=posts, me=my_page, avatar=avatar, block=block, achievements_user=achievements_user, achievements_approve=achievements_approve)

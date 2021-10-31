@@ -29,7 +29,7 @@
                 <span class="icon is-small is-left">
                     <i class="fas fa-flag"></i>
                 </span>
-                <select name="select">
+                <select name="select_country" id="select_country">
                     {% for i in range(countries|length) %}
                     <option value="{{ countries[i].country_id }}">{{ countries[i].country_name }}</option>
                     {% endfor %}
@@ -40,7 +40,7 @@
                 <span class="icon is-small is-left">
                     <i class="fas fa-building"></i>
                 </span>
-                 <select name="select">
+                 <select name="select_city" id="select_city">
                    {% for i in range(cities|length) %}
                     <option value="{{ cities[i].city_id }}">{{ cities[i].city_name }}</option>
                     {% endfor %}

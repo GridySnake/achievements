@@ -184,35 +184,35 @@ class Friends:
         conn = await asyncpg.connect(connection_url)
         await conn.execute(f"""
                 update friends
-                    set users_id = users_id[:(select array_position(f.users_id, '{user_passive_id}')
+                    set users_id = users_id[:(select array_position(f.users_id, {user_passive_id})
                                     FROM friends as f
-                                    WHERE f.user_id = '{user_active_id}')-1] ||
-					                users_id[(select array_position(f.users_id, '{user_passive_id}')
+                                    WHERE f.user_id = {user_active_id})-1] ||
+					                users_id[(select array_position(f.users_id, {user_passive_id})
                                     FROM friends as f
-                                    WHERE f.user_id = '{user_active_id}')+1:],
-                        status_id = status_id[:(select array_position(f.users_id, '{user_passive_id}')
+                                    WHERE f.user_id = {user_active_id})+1:],
+                        status_id = status_id[:(select array_position(f.users_id, {user_passive_id})
                                     FROM friends as f
-                                    WHERE f.user_id = '{user_active_id}')-1] ||
-									status_id[(select array_position(f.users_id, '{user_passive_id}')
+                                    WHERE f.user_id = {user_active_id})-1] ||
+									status_id[(select array_position(f.users_id, {user_passive_id})
                                     FROM friends as f
-                                    WHERE f.user_id = '{user_active_id}')+1:]
-                    WHERE user_id = '{user_active_id}'
+                                    WHERE f.user_id = {user_active_id})+1:]
+                    WHERE user_id = {user_active_id}
         """)
         await conn.execute(f"""
                 update friends
-                    set users_id = users_id[:(select array_position(f.users_id, '{user_active_id}')
+                    set users_id = users_id[:(select array_position(f.users_id, {user_active_id})
                                 FROM friends as f
-                                WHERE f.user_id = '{user_passive_id}')-1] ||
-					            users_id[(select array_position(f.users_id, '{user_active_id}')
+                                WHERE f.user_id = {user_passive_id})-1] ||
+					            users_id[(select array_position(f.users_id, {user_active_id})
                                 FROM friends as f
-                                WHERE f.user_id = '{user_passive_id}')+1:],
-                        status_id = status_id[:(select array_position(f.users_id, '{user_active_id}')
+                                WHERE f.user_id = {user_passive_id})+1:],
+                        status_id = status_id[:(select array_position(f.users_id, {user_active_id})
                                 FROM friends as f
-                                WHERE f.user_id = '{user_passive_id}')-1] ||
-					            status_id[(select array_position(f.users_id, '{user_active_id}')
+                                WHERE f.user_id = {user_passive_id})-1] ||
+					            status_id[(select array_position(f.users_id, {user_active_id})
                                 FROM friends as f
-                                WHERE f.user_id = '{user_passive_id}')+1:]
-                    WHERE user_id = '{user_passive_id}'
+                                WHERE f.user_id = {user_passive_id})+1:]
+                    WHERE user_id = {user_passive_id}
         """)
         id = await conn.fetch(f""" select max(friend_event_id) from friend_events""")
         id = dict(id[0])['max']
@@ -253,17 +253,3 @@ class Friends:
                         where f.user_id = {user_active_id} and u.user_id={user_passive_id}
         """)
         return block
-
-
-
-
-        # """select distinct(u.user_id), u.name, u.surname,
-        #                 f.status_id[array_position(f.users_id, 5)] as status_id_passive, f.status_id[u.user_id],
-		# 				img.href
-        #                 from friends as f
-        #                 inner join users_information as u on u.user_id = f.user_id
-		# 				left join images as img on img.image_id = u.image_id[array_upper(u.image_id, 1)]
-        #                 where u.user_id in (
-        #                             select users_id[unnest(array_positions(f.status_id, 3))]
-        #                             FROM friends as f
-        #                             WHERE f.user_id = 5)"""

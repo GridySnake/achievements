@@ -17,23 +17,70 @@
             if (this.value == '2') {
                 $("#radius").show()
                 $("#coords").show()
+                $("#select_service").hide()
+                $("#chess_parameter_global").hide()
+                $("#chess_parameter_local").hide()
                 $("#select_parameter").hide()
                 $("#value").show();
             } else if (this.value == '0') {
                 $("#select_parameter").show()
                 $("#value").show()
+                $("#select_service").hide()
+                $("#chess_parameter_global").hide()
+                $("#chess_parameter_local").hide()
                 $("#radius").hide()
                 $("#coords").hide();
             } else if (this.value == '1') {
                 $("#value").hide()
                 $("#select_parameter").hide()
+                $("#select_service").hide()
+                $("#chess_parameter_global").hide()
+                $("#chess_parameter_local").hide()
                 $("#radius").hide()
                 $("#coords").hide();
-            }else if (this.value == '8') {
+            } else if (this.value == '8') {
                 $("#value").show()
                 $("#select_parameter").hide()
                 $("#radius").hide()
+                $("#select_service").hide()
+                $("#chess_parameter_global").hide()
+                $("#chess_parameter_local").hide()
                 $("#coords").hide();
+            } else if (this.value == '7') {
+                $("#value").show()
+                $("#select_parameter").hide()
+                $("#radius").hide()
+                $("#select_service").hide()
+                $("#chess_parameter_global").hide()
+                $("#chess_parameter_local").hide()
+                $("#coords").hide();
+            } else if (this.value == '3') {
+                $("#value").show()
+                $("#select_service").show()
+                $("#chess_parameter_global").show()
+                $("#chess_parameter_local").show()
+                $("#select_parameter").hide()
+                $("#radius").hide()
+                $("#coords").hide();
+            }
+        });
+    });
+</script>
+<script>
+    $(document).ready(function() {
+        $('#chess_parameter_global').on('change', function () {
+            if (this.value == 'profile_stats_chess_rapid' || this.value == 'profile_stats_chess_blitz' || this.value == 'profile_stats_puzzle_rush') {
+                $("#chess_parameter_local_equal").show()
+                $("#chess_parameter_local_profile").hide()
+                $("#chess_parameter_local_chess").show();
+            }   else if (this.value == 'profile') {
+                $("#chess_parameter_local_profile").show()
+                $("#chess_parameter_local_chess").hide();
+            }
+                else {
+                $("#chess_parameter_local_equal").hide()
+                $("#chess_parameter_local_profile").hide()
+                $("#chess_parameter_local_chess").hide();
             }
         });
     });
@@ -46,6 +93,33 @@
         });
     });
 </script>
+<script>
+    $('#select_country').ready(function () {
+
+        const selectedValue = $(this).children("option:selected").val();
+        $('#selectAmount :[value^="' + text.substr(0, 3) + '"])').remove();
+    });
+</script>
+<script>
+        $(document).ready(function() {
+            $('#select_group').on('change', function () {
+                var keyword = document.getElementById("select_country").value;
+                var select = document.getElementById("select_city");
+                for (var i = 0; i < select.length; i++) {
+                    var txt = select.options[i].text.split('_')[1];
+                    if (!txt.match(keyword)) {
+                        $(select.options[i]).attr('disabled', 'disabled').hide();
+                    } else {
+                        $(select.options[i]).removeAttr('disabled').show();
+                    }
+
+                }
+            });
+    });
+</script>
+<!-- <script>
+    window.history.replaceState({}, document.title, "/" + "my-new-url.html");
+</script> -->
 <body>
 
 {% block nav %}

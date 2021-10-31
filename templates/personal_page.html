@@ -85,9 +85,49 @@
             <br>
         {% endfor %}
     </ul>
-
+    <div>
+        {% if achievements_user %}
+            {% if me %}
+                <p>
+                    My achievements:
+                </p>
+            {% else %}
+                <p>
+                    {{ user.name }} achievements:
+                </p>
+            {% endif %}
+        {% for achievement in achievements_user %}
+            <br>
+            <a href="{{ '/achievement/%s'%achievement.achievement_id }}"> <p>{{ achievement.name }}</p></a>
+        {% endfor %}
+        {% endif %}
+        <br>
+        {% if achievements_approve %}
+            {% if me %}
+                <p>
+                    My desire achievements:
+                </p>
+            {% else %}
+                <p>
+                    {{ user.name }} desire achievements:
+                </p>
+            {% endif %}
+        {% for achievement in achievements_approve %}
+            <br>
+            <a href="{{ '/achievement/%s'%achievement.achievement_id }}"> <p>{{ achievement.name }}</p></a>
+            {% if achievement.approve != 1  and not me %}
+                <form action="{{ url('approve') }}" method="post">
+                    <input id="achi_id" name="achi_id" type="text" value="{{ achievement.achievement_id }}" hidden>
+                    <input id="user_passive_id" name="user_passive_id" type="text" value="{{ user.user_id }}" hidden>
+                    <button type="submit"> Approve </button>
+                </form>
+            {% endif %}
+        {% endfor %}
+        {% endif %}
+    </div>
     {% else %}
     <p>You was blocked by {{ user.name }} {{ user.surname }}</p>
     {% endif %}
+
 {% endif %}
 {% endblock %}
