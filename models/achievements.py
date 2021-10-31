@@ -179,6 +179,17 @@ class Achievements:
         return achievements
 
     @staticmethod
+    async def get_achievement_by_condition_parameter(parameter: str):
+        conn = await asyncpg.connect(connection_url)
+        achievements = await conn.fetch(f"""
+                select a.name, c.value, c.geo, c.achi_condition_group_id
+                from achi_conditions as c
+                left join (select name, unnest(conditions) as conditions from achievements) as a on a.conditions::integer = c.condition_id
+                where c.parameter = '{parameter}'
+                """)
+        return achievements
+
+    @staticmethod
     async def get_created_achievements(user_id: str):
         conn = await asyncpg.connect(connection_url)
         achievements = await conn.fetch(f"""
@@ -385,7 +396,7 @@ class Achievements:
                                    {id_achi}, {user_id}, '{data['name']}', '{data['description']}', ARRAY['{id_condi}'], statement_timestamp(), true)
                                    """)
         elif int(data['select_group']) == 3 and data['name'] != '' and data['description'] != '' and data['value'] != '' and data['select_service'] == '0':
-            parameter = str(data['select_service'] + '-' + data['chess_parameter_global'] + '-' + data['chess_parameter_local'])
+            parameter = str(data['select_service'] + '-' + data['chess_parameter_global'] + '-' + data['chess_parameter_local'] + '-' + data['chess_parameter_local_last'])
             print(parameter)
             await conn.execute(f"""
                                     insert into achi_conditions (condition_id, parameter, value, achi_condition_group_id) values(

@@ -68,6 +68,20 @@
 </script>
 <script>
     $(document).ready(function() {
+        $('#chess_parameter_global').on('change', function () {
+            if (this.value == 'profile_stats_chess_rapid' || this.value == 'profile_stats_chess_blitz' || this.value == 'profile_stats_puzzle_rush') {
+                $("#chess_parameter_local_last").show();
+            } else {
+                $("#chess_parameter_local_last").hide();
+            }
+        });
+    });
+
+
+
+</script>
+<script>
+    $(document).ready(function() {
         $('#get_message_block').on('click', function () {
             $("#message").show()
             $("#message_send").show();

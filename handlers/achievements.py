@@ -6,6 +6,7 @@ from aioipapi import IpApiClient
 from geopy.distance import great_circle
 from models.information import Info
 from models.user import User
+from chess_com import Chesscom
 
 
 class AchievementsView(web.View):
@@ -76,18 +77,56 @@ class AchievementsVerificationView(web.View):
             is_connected = await User.check_connect(session['user']['id'], parameters[0])
             if is_connected:
                 username = await User.get_user_name_by_service(session['user']['id'], parameters[0])
+                username = username[0][0]
                 if parameters[1] == 'profile':
-                    profile = await chessdotcom.get_player_profile(username).json['player'][parameters[2]]
+                    profile = Chesscom.get_player_profile(username)[parameters[2]]
                     if parameters[2] == 'country':
                         profile = profile.split('/')[-1]
-                        profile = await Info.get_country_by_iso(profile)[0]
-                    achievement = await Achievements.get_achievement_by_condition_value(location[location.find('/')+1:])
-                    print(profile)
+                        profile = await Info.get_country_by_iso(profile)
+                        profile = profile[0][0]
+                    achievement = await Achievements.get_achievement_by_condition_parameter(location[location.find('/')+1:])
                     if profile == achievement[0]['value']:
-                        print(1)
-                #elif parameters[1] == '':
+                        # todo: give achi
+                        return dict(achievement=achievement)
+                    else:
+                        return dict(decline=True, achievement=achievement)
 
+                elif 'profile_stats' in parameters[1]:
+                    chess = Chesscom.get_player_stats(username)[parameters[1].replace('profile_stats_', '')][parameters[2]]['rating']
+                    achievement = await Achievements.get_achievement_by_condition_parameter(location[location.find('/') + 1:])
+                    result = False
+                    if parameters[3] == 'more':
+                        if chess > int(achievement[0]['value']):
+                            result = True
+                    if parameters[3] == 'less':
+                        if chess < int(achievement[0]['value']):
+                            result = True
+                    if parameters[3] == 'equal':
+                        if chess == int(achievement[0]['value']):
+                            result = True
+                    if result:
+                        # todo: give achi
+                        return dict(achievement=achievement)
+                    else:
+                        return dict(decline=True, achievement=achievement)
 
+                elif parameters[1] == 'title':
+                    achievement = await Achievements.get_achievement_by_condition_parameter(location[location.find('/') + 1:])
+                    title = Chesscom.get_titled_players(achievement[0]['value'])['players']
+                    if username in title:
+                        # todo: give achi
+                        return dict(achievement=achievement)
+                    else:
+                        return dict(decline=True, achievement=achievement)
+
+                elif parameters[1] == 'leaderboard_daily':
+                    title = Chesscom.get_leaderboards()['daily']
+                    achievement = await Achievements.get_achievement_by_condition_parameter(location[location.find('/') + 1:])
+                    if username in [i['username'] for i in title]:
+                        # todo: give achi
+                        return dict(achievement=achievement)
+                    else:
+                        return dict(decline=True, achievement=achievement)
 
 
 class AchievementInfoView(web.View):
