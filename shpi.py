@@ -2,10 +2,17 @@ import twitch
 from config.common import BaseConfig
 helix = twitch.Helix(BaseConfig.twitch_client_id, BaseConfig.twitch_client_secret)
 
-from TikTokAPI import TikTokAPI
-api = TikTokAPI()
-user_obj = api.getUserByName("fcbarcelona")
-print(user_obj)
+from TikTokApi import TikTokApi
+api = TikTokApi()
+
+# results = 5
+# trending = api.by_trending(count=results)
+# for tiktok in trending:
+#     print(tiktok)
+# print(len(trending))
+# print(api.by_username('mfsisthat'))
+# print(api.get_user('mfsisthat'))
+#print()
 
 client_id = 'blif82wvvraojfm84xp82fam1ljnii'
 client_secret = 'abqm6gspq4lhaddede83szum1u0v2b'
@@ -20,7 +27,7 @@ helix = twitch.Helix(client_id, client_secret)
 #         print(i.data)
 # for i in helix.user('Flashynthen1ght').chatters:
 #     print(i)
-print([i for i in helix.video(350637800).comments])
+#print([i for i in helix.video(350637800).comments])
 
 # print(helix.video(1183094159).view_count)
 
