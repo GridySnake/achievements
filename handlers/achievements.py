@@ -7,6 +7,7 @@ from geopy.distance import great_circle
 from models.information import Info
 from models.user import User
 from chess_com import Chesscom
+from twitch_tv import Twitch
 
 
 class AchievementsView(web.View):
@@ -86,7 +87,7 @@ class AchievementsVerificationView(web.View):
                         profile = profile[0][0]
                     achievement = await Achievements.get_achievement_by_condition_parameter(location[location.find('/')+1:])
                     if profile == achievement[0]['value']:
-                        # todo: give achi
+                        await Achievements.chess_verify(user_id=session['user']['id'], achievement_id=str(achievement[0]['achievement_id']))
                         return dict(achievement=achievement)
                     else:
                         return dict(decline=True, achievement=achievement)
@@ -105,7 +106,7 @@ class AchievementsVerificationView(web.View):
                         if chess == int(achievement[0]['value']):
                             result = True
                     if result:
-                        # todo: give achi
+                        await Achievements.chess_verify(user_id=session['user']['id'], achievement_id=str(achievement[0]['achievement_id']))
                         return dict(achievement=achievement)
                     else:
                         return dict(decline=True, achievement=achievement)
@@ -114,7 +115,7 @@ class AchievementsVerificationView(web.View):
                     achievement = await Achievements.get_achievement_by_condition_parameter(location[location.find('/') + 1:])
                     title = Chesscom.get_titled_players(achievement[0]['value'])['players']
                     if username in title:
-                        # todo: give achi
+                        await Achievements.chess_verify(user_id=session['user']['id'], achievement_id=str(achievement[0]['achievement_id']))
                         return dict(achievement=achievement)
                     else:
                         return dict(decline=True, achievement=achievement)
@@ -123,7 +124,7 @@ class AchievementsVerificationView(web.View):
                     title = Chesscom.get_leaderboards()['daily']
                     achievement = await Achievements.get_achievement_by_condition_parameter(location[location.find('/') + 1:])
                     if username in [i['username'] for i in title]:
-                        # todo: give achi
+                        await Achievements.chess_verify(user_id=session['user']['id'], achievement_id=str(achievement[0]['achievement_id']))
                         return dict(achievement=achievement)
                     else:
                         return dict(decline=True, achievement=achievement)

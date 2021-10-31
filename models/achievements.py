@@ -182,9 +182,9 @@ class Achievements:
     async def get_achievement_by_condition_parameter(parameter: str):
         conn = await asyncpg.connect(connection_url)
         achievements = await conn.fetch(f"""
-                select a.name, c.value, c.geo, c.achi_condition_group_id
+                select a.achievement_id, a.name, c.value, c.geo, c.achi_condition_group_id
                 from achi_conditions as c
-                left join (select name, unnest(conditions) as conditions from achievements) as a on a.conditions::integer = c.condition_id
+                left join (select achievement_id, name, unnest(conditions) as conditions from achievements) as a on a.conditions::integer = c.condition_id
                 where c.parameter = '{parameter}'
                 """)
         return achievements
@@ -268,6 +268,16 @@ class Achievements:
                                 set achievements_id = array_append(achievements_id, {achi_id['achievement_id']})
                                 where user_id = {user_id} and {achi_id['achievement_id']} not in (
                                         select unnest(achievements_id) from users_information where user_id = {user_id})
+            """)
+
+    @staticmethod
+    async def chess_verify(user_id: str, achievement_id: str):
+        conn = await asyncpg.connect(connection_url)
+        await conn.execute(f"""
+                               update users_information
+                               set achievements_id = array_append(achievements_id, {achievement_id})
+                               where user_id = {user_id} and {achievement_id} not in (
+                                       select unnest(achievements_id) from users_information where user_id = {user_id})
             """)
 
     @staticmethod
@@ -396,8 +406,7 @@ class Achievements:
                                    {id_achi}, {user_id}, '{data['name']}', '{data['description']}', ARRAY['{id_condi}'], statement_timestamp(), true)
                                    """)
         elif int(data['select_group']) == 3 and data['name'] != '' and data['description'] != '' and data['value'] != '' and data['select_service'] == '0':
-            parameter = str(data['select_service'] + '-' + data['chess_parameter_global'] + '-' + data['chess_parameter_local'] + '-' + data['chess_parameter_local_last'])
-            print(parameter)
+            parameter = str(data['select_service'] + '-' + data['chess_parameter_global'] + '-' + data['chess_parameter_local_profile'] + '-' + data['chess_parameter_local_last'] + '-' + data['chess_parameter_local_chess'] + '-' + data['chess_parameter_local_equal'])
             await conn.execute(f"""
                                     insert into achi_conditions (condition_id, parameter, value, achi_condition_group_id) values(
                                     {id_condi}, '{parameter}', '{data['value']}', {data['select_group']})
