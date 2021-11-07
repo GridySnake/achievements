@@ -6,8 +6,13 @@ from aioipapi import IpApiClient
 from geopy.distance import great_circle
 from models.information import Info
 from models.user import User
-from chess_com import Chesscom
-from twitch_tv import Twitch
+from models.api.chess_com import Chesscom
+from models.api.twitch_tv import Twitch
+from models.api.youtube import Youtube
+from models.api.instagram import Instagram
+from models.api.steam_games import Steam
+from models.api.stepik import Stepik
+from models.api.fitnesspal import Fitnesspal
 
 
 class AchievementsView(web.View):

@@ -1,5 +1,4 @@
 import datetime
-
 import myfitnesspal
 import math
 
@@ -24,6 +23,3 @@ class Fitnesspal:
                 'weight_start': int(user_data['starting_weight']['value']),
                 'height': math.ceil(user_data['height']['value'] / 0.39368021),
                 'activity_type': user_data['activity_factor']}
-
-
-

@@ -1,9 +1,34 @@
 import twitch
 from config.common import BaseConfig
 helix = twitch.Helix(BaseConfig.twitch_client_id, BaseConfig.twitch_client_secret)
+import requests
+import urllib.request
 
-from TikTokApi import TikTokApi
-api = TikTokApi()
+import json
+# from win10toast import ToastNotifier
+#
+# import emoji
+
+
+# name = "UCEfbRQVAzI1ZkGwYXs7VJVw"
+#
+# key = 'AIzaSyAmn8JyIJIkHhqC6IaVLrN-TiTvdHXpwQo'
+#
+#
+# data = urllib.request.urlopen(f'https://www.googleapis.com/youtube/v3/channels?part=statistics&id={name}&key={key}').read()
+# subs = json.loads(data)#["items"][0]["statistics"]["subscriberCount"]
+# print(subs)
+
+
+
+# toaster= ToastNotifier()
+#
+# a=emoji.emojize("You have %d" %int(subs) +" subscribers :penguin:")
+#
+# toaster.show_toast("Sample",a)
+
+# from TikTokApi import TikTokApi
+# api = TikTokApi()
 
 # results = 5
 # trending = api.by_trending(count=results)
@@ -11,7 +36,8 @@ api = TikTokApi()
 #     print(tiktok)
 # print(len(trending))
 # print(api.by_username('mfsisthat'))
-# print(api.get_user('mfsisthat'))
+# user = api.by_username('mfsisthat')
+# print(user)
 #print()
 
 client_id = 'blif82wvvraojfm84xp82fam1ljnii'
