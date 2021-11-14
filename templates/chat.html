@@ -60,7 +60,6 @@
         <form action="{{ url('send_message') }}" method="post">
                 <label for="message_text">Send message</label>
                 <input id="message_text" name="message_text" type="text" value=""/>
-                <input type="hidden" name="to_user" value="{{ friend_id }}"> <!-- перенести в бэк -->
                 <button type="submit">Send...</button>
         </form>
         {% else %}

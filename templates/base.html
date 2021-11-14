@@ -11,61 +11,61 @@
 </head>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js">
 </script>
-<script>
-    $(document).ready(function() {
-        $('#select_group').on('change', function () {
-            if (this.value == '2') {
-                $("#radius").show()
-                $("#coords").show()
-                $("#select_service").hide()
-                $("#chess_parameter_global").hide()
-                $("#chess_parameter_local").hide()
-                $("#select_parameter").hide()
-                $("#value").show();
-            } else if (this.value == '0') {
-                $("#select_parameter").show()
-                $("#value").show()
-                $("#select_service").hide()
-                $("#chess_parameter_global").hide()
-                $("#chess_parameter_local").hide()
-                $("#radius").hide()
-                $("#coords").hide();
-            } else if (this.value == '1') {
-                $("#value").hide()
-                $("#select_parameter").hide()
-                $("#select_service").hide()
-                $("#chess_parameter_global").hide()
-                $("#chess_parameter_local").hide()
-                $("#radius").hide()
-                $("#coords").hide();
-            } else if (this.value == '8') {
-                $("#value").show()
-                $("#select_parameter").hide()
-                $("#radius").hide()
-                $("#select_service").hide()
-                $("#chess_parameter_global").hide()
-                $("#chess_parameter_local").hide()
-                $("#coords").hide();
-            } else if (this.value == '7') {
-                $("#value").show()
-                $("#select_parameter").hide()
-                $("#radius").hide()
-                $("#select_service").hide()
-                $("#chess_parameter_global").hide()
-                $("#chess_parameter_local").hide()
-                $("#coords").hide();
-            } else if (this.value == '3') {
-                $("#value").show()
-                $("#select_service").show()
-                $("#chess_parameter_global").show()
-                $("#chess_parameter_local").show()
-                $("#select_parameter").hide()
-                $("#radius").hide()
-                $("#coords").hide();
-            }
-        });
-    });
-</script>
+<!--<script>-->
+<!--    $(document).ready(function() {-->
+<!--        $('#select_group').on('change', function () {-->
+<!--            if (this.value == '2') {-->
+<!--                $("#radius").show()-->
+<!--                $("#coords").show()-->
+<!--                $("#select_service").hide()-->
+<!--                $("#chess_parameter_global").hide()-->
+<!--                $("#chess_parameter_local").hide()-->
+<!--                $("#select_parameter").hide()-->
+<!--                $("#value").show();-->
+<!--            } else if (this.value == '0') {-->
+<!--                $("#select_parameter").show()-->
+<!--                $("#value").show()-->
+<!--                $("#select_service").hide()-->
+<!--                $("#chess_parameter_global").hide()-->
+<!--                $("#chess_parameter_local").hide()-->
+<!--                $("#radius").hide()-->
+<!--                $("#coords").hide();-->
+<!--            } else if (this.value == '1') {-->
+<!--                $("#value").hide()-->
+<!--                $("#select_parameter").hide()-->
+<!--                $("#select_service").hide()-->
+<!--                $("#chess_parameter_global").hide()-->
+<!--                $("#chess_parameter_local").hide()-->
+<!--                $("#radius").hide()-->
+<!--                $("#coords").hide();-->
+<!--            } else if (this.value == '8') {-->
+<!--                $("#value").show()-->
+<!--                $("#select_parameter").hide()-->
+<!--                $("#radius").hide()-->
+<!--                $("#select_service").hide()-->
+<!--                $("#chess_parameter_global").hide()-->
+<!--                $("#chess_parameter_local").hide()-->
+<!--                $("#coords").hide();-->
+<!--            } else if (this.value == '7') {-->
+<!--                $("#value").show()-->
+<!--                $("#select_parameter").hide()-->
+<!--                $("#radius").hide()-->
+<!--                $("#select_service").hide()-->
+<!--                $("#chess_parameter_global").hide()-->
+<!--                $("#chess_parameter_local").hide()-->
+<!--                $("#coords").hide();-->
+<!--            } else if (this.value == '3') {-->
+<!--                $("#value").show()-->
+<!--                $("#select_service").show()-->
+<!--                $("#chess_parameter_global").show()-->
+<!--                $("#chess_parameter_local").show()-->
+<!--                $("#select_parameter").hide()-->
+<!--                $("#radius").hide()-->
+<!--                $("#coords").hide();-->
+<!--            }-->
+<!--        });-->
+<!--    });-->
+<!--</script>-->
 <script>
     $(document).ready(function() {
         $('#chess_parameter_global').on('change', function () {
@@ -94,33 +94,60 @@
     });
 </script>
 <script>
-    $('#select_country').ready(function () {
+    $(document).ready(function() {
+        var drop = JSON.parse('{{ dropdown_json | safe }}');
+        $('#select_group').on('change', function () {
+            var drop_new = drop.filter(element => element.group_id == $(this).find('option:selected').val());
+            var lookup = {};
+            var result = [];
+            for (var item, j = 0; item = drop_new[j++];) {
+              var agg = item.agg;
 
-        const selectedValue = $(this).children("option:selected").val();
-        $('#selectAmount :[value^="' + text.substr(0, 3) + '"])').remove();
+              if (!(agg in lookup)) {
+                lookup[agg] = 1;
+                result.push(agg);
+              }
+            }
+            var create = '';
+            for (var i = 0; i < result.length; i++)
+            {
+                create += '<option value="'+result[i]+'">'+result[i]+'</option>';
+            }
+            $('#select_aggregation').empty().append(create);
+            $('#select_parameter').empty().hide();
+        });
+        $('#select_aggregation').on('change', function () {
+            var drop_new_agg = drop.filter(element => element.group_id == $('#select_group').find('option:selected').val() && element.agg == $(this).find('option:selected').val());
+            var create = '';
+            for (var i = 0; i < drop_new_agg.length; i++)
+            {
+                create += '<option value="'+drop_new_agg[i]['par']+'">'+drop_new_agg[i]['par']+'</option>';
+            }
+            $('#select_parameter').empty().append(create).show();
+        });
     });
 </script>
-<script>
-        $(document).ready(function() {
-            $('#select_group').on('change', function () {
-                var keyword = document.getElementById("select_country").value;
-                var select = document.getElementById("select_city");
-                for (var i = 0; i < select.length; i++) {
-                    var txt = select.options[i].text.split('_')[1];
-                    if (!txt.match(keyword)) {
-                        $(select.options[i]).attr('disabled', 'disabled').hide();
-                    } else {
-                        $(select.options[i]).removeAttr('disabled').show();
-                    }
+<!--<script>-->
+<!--        $(document).ready(function() {-->
+<!--            $('#select_group').on('change', function () {-->
+<!--                var keyword = document.getElementById("select_country").value;-->
+<!--                var select = document.getElementById("select_city");-->
+<!--                for (var i = 0; i < select.length; i++) {-->
+<!--                    var txt = select.options[i].text.split('_')[1];-->
+<!--                    if (!txt.match(keyword)) {-->
+<!--                        $(select.options[i]).attr('disabled', 'disabled').hide();-->
+<!--                    } else {-->
+<!--                        $(select.options[i]).removeAttr('disabled').show();-->
+<!--                    }-->
 
-                }
-            });
-    });
-</script>
+<!--                }-->
+<!--            });-->
+<!--    });-->
+<!--</script>-->
 <!-- <script>
     window.history.replaceState({}, document.title, "/" + "my-new-url.html");
 </script> -->
-<body>
+
 
 {% block nav %}
 <nav class="navbar is-light" role="navigation" aria-label="main navigation">
@@ -159,5 +186,5 @@
     </div>
 </section>
 
-</body>
+
 </html>

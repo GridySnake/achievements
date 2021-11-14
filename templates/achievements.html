@@ -2,71 +2,34 @@
 
 {% set title = "Achievements" %}
 
+
 <body>
 {% block content %}
-    <form action="{{ url('add_achievement') }}" method="post">
-        <label>Create New Achievement: </label>
-        <select name="select_group" id="select_group">
-            <option value="0">User's information</option>
-            <option value="1">QR or dead</option>
-            <option value="2">Location</option>
-            <option value="3">Other Apps</option>
-            <option value="4">Test</option>
-            <option value="5">Course</option>
-            <option value="6">Community</option>
-            <option value="7">User confirm</option>
-            <option value="8">No confirm</option>
-            <option value="9">Photo share</option>
-        </select>
-        <select name="select_parameter" id="select_parameter">
-            <option value="name">Name</option>
-            <option value="surname">Surname</option>
-            <option value="age">Age</option>
-            <option value="country">Country</option>
-            <option value="city">City</option>
-            <option value="friends_count">Count of friends</option>
-            <option value="avatar">Have avatar</option>
-        </select>
-        <select name="select_service" id="select_service" hidden>
-            {% for service in services %}
-            <option value="{{ service.service_id }}">{{ service.service_name }}</option>
-            {% endfor %}
-        </select>
-        <select name="chess_parameter_global" id="chess_parameter_global" hidden>
-            <option value="profile">Profile</option>
-            <option value="profile_stats_chess_rapid">Stats chess rapid</option>
-            <option value="profile_stats_chess_blitz">Stats chess blitz</option>
-            <option value="profile_stats_puzzle_rush">Stats puzzle rush</option>
-            <option value="title">Title</option>
-            <option value="leaderboard_daily">Daily leaderboard</option>
-        </select>
-        <select name="chess_parameter_local_profile" id="chess_parameter_local_profile" hidden>
-            <option value="streamer">Streamer</option>
-            <option value="followers">Followers</option>
-            <option value="country">Country</option>
-            <option value="joined">Registered</option>
-            <option value="status">Status</option>
-        </select>
-        <select name="chess_parameter_local_chess" id="chess_parameter_local_chess" hidden>
-            <option value="last">Last</option>
-            <option value="best">Best</option>
-            <option value="win">Win</option>
-            <option value="lose">Lose</option>
-            <option value="highest">Highest</option>
-            <option value="lowest">Lowest</option>
-        </select>
-        <select name="chess_parameter_local_equal" id="chess_parameter_local_equal" hidden>
-            <option value="more">More</option>
-            <option value="less">Less</option>
-            <option value="equal">Equal</option>
-        </select>
-        <input id="value" name="value" type="text" value=""/>
-        <input id="name" name="name" type="text" value=""/>
-        <input id="description" name="description" type="text" value=""/>
-        <input id="coords" name="coords" type="text" value="" placeholder="coordinates" hidden/>
-        <input id="radius" name="radius" type="text" value="" placeholder="radius in km" hidden/>
-        <button type="submit">Send</button>
-    </form>
+    <div id="create_achievement" class="create_achievement">
+        <form action="{{ url('add_achievement') }}" method="post">
+            <label>Create New Achievement: </label>
+            <select name="select_group" id="select_group">
+                {% for i in group %}
+                    <option value="{{ i.group_id }}">{{ i.group_name }}</option>
+                {% endfor %}
+            </select>
+            <select name="select_service" id="select_service" hidden>
+                <option value="">None</option>
+            </select>
+            <select name="select_aggregation" id="select_aggregation">
+                <option value="">None</option>
+            </select>
+            <select name="select_parameter" id="select_parameter">
+                <option value="">None</option>
+            </select>
+            <input id="value" name="value" type="text" value=""/>
+            <input id="name" name="name" type="text" value=""/>
+            <input id="description" name="description" type="text" value=""/>
+            <input id="coords" name="coords" type="text" value="" placeholder="coordinates" hidden/>
+            <input id="radius" name="radius" type="text" value="" placeholder="radius in km" hidden/>
+            <button type="submit">Send</button>
+        </form>
+    </div>
     <br>
     <div>
     {% if achievements_get %}

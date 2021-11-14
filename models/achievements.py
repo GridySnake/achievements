@@ -9,6 +9,30 @@ connection_url = BaseConfig.database_url
 
 class Achievements:
     @staticmethod
+    async def data_for_group_dropdown_generate_achievements():
+        conn = await asyncpg.connect(connection_url)
+        achievements = await conn.fetch("""
+                                                select distinct agc.condition_group_id as group_id, acg.achi_condition_group_name as group_name
+                                                from achi_generate_conditions as agc
+                                                left join achi_condition_groups as acg on agc.condition_group_id = acg.achi_condition_group_id
+                                                order by agc.condition_group_id
+
+            """)
+        return achievements
+
+    @staticmethod
+    async def data_for_dropdowns_generate_achievements():
+        conn = await asyncpg.connect(connection_url)
+        achievements = await conn.fetch("""
+                                            select agc.condition_group_id as group_id, acg.achi_condition_group_name as group_name, agc.aggregate_parameter as agg, agc.parameter as par, es.service_id, es.service_name
+                                            from achi_generate_conditions as agc
+                                            left join achi_condition_groups as acg on agc.condition_group_id = acg.achi_condition_group_id
+                                            left join external_services as es on agc.service_id = es.service_id
+
+        """)
+        return achievements
+
+    @staticmethod
     async def get_users_achievements(user_id: str):
         conn = await asyncpg.connect(connection_url)
         achievement = await conn.fetch(f"""
@@ -312,6 +336,16 @@ class Achievements:
             id_condi = int(id_condi) + 1
         else:
             id_condi = 0
+        if data['select_service'] == '':
+            await conn.execute(f"""
+                                        insert into achi_conditions (condition_id, parameter, value, achi_condition_group_id) values(
+                                        {id_condi}, '{data['select_aggregation']}', '{data['value']}', {data['select_group']})
+                                        """)
+            await conn.execute(f"""
+                            insert into achievements (achievement_id, user_id, name, description, conditions, created_date, new) values(
+                            {id_achi}, {user_id}, '{data['name']}', '{data['description']}', ARRAY['{id_condi}'], statement_timestamp(), true)
+                            """)
+        pass
         if int(data['select_group']) == 0 and data['value'] != '' and data['name'] != '' and data['description'] != '':
             await conn.execute(f"""
                             insert into achi_conditions (condition_id, parameter, value, achi_condition_group_id) values(
@@ -415,5 +449,5 @@ class Achievements:
                                     insert into achievements (achievement_id, user_id, name, description, conditions, created_date, new) values(
                                     {id_achi}, {user_id}, '{data['name']}', '{data['description']}', ARRAY['{id_condi}'], statement_timestamp(), true)
                                     """)
-
+        # elif int(data['select_group']) == 3 and data['name'] != '' and data['description'] != '' and data['value'] != '' and data['select_service'] == '0':
 

@@ -72,7 +72,7 @@ class Youtube:
         return comments
 
 
-# print(Youtube.get_channel_statistics(Youtube.get_channel_id('Davidich D3')))
-# print(Youtube.get_playlists_of_channel(Youtube.get_channel_id('Davidich D3')))
-# print(Youtube.get_videos_of_playlist(Youtube.get_playlists_of_channel(Youtube.get_channel_id('Davidich D3'))['playlist_id']))
-# print(Youtube.get_comments_of_video(Youtube.get_videos_of_playlist(Youtube.get_playlists_of_channel(Youtube.get_channel_id('Davidich D3'))['playlist_id'])['video_id'][0]))
+#print(Youtube.get_channel_statistics(Youtube.get_channel_id('Davidich D3'))) #view_count, video_count, subscription_count
+# print(Youtube.get_playlists_of_channel(Youtube.get_channel_id('Davidich D3'))) #playlist_name, playlist_id, count_videos
+# print(Youtube.get_videos_of_playlist(Youtube.get_playlists_of_channel(Youtube.get_channel_id('Davidich D3'))['playlist_id'])) #playlist_id, video_id
+# print(Youtube.get_comments_of_video(Youtube.get_videos_of_playlist(Youtube.get_playlists_of_channel(Youtube.get_channel_id('Davidich D3'))['playlist_id'])['video_id'][0])) #comments_info

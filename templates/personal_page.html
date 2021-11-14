@@ -46,7 +46,6 @@
         <form action="{{ url('send_message') }}" method="post">
                 <label for="message_text">Send message</label>
                 <input id="message_text" name="message_text" type="text" value=""/>
-                <input type="hidden" name="to_user" value="{{ user.user_id }}">
                 <button type="submit">Send...</button>
         </form>
     {% endif %}
@@ -66,7 +65,7 @@
         <li><a href={{ post.user_id }}>{{ post.name }} {{ post.surname }}</a> {{ post.message }} {{ post.date_created }}</li>
         {% if post.href %}
             <figure class="image is-128x128">
-                                <img src="{{ url('static', filename='image_posts/' + post.href) }}">
+                <img src="{{ url('static', filename='image_posts/' + post.href) }}">
             </figure>
         {% endif %}
     {% endfor %}
@@ -118,7 +117,6 @@
             {% if achievement.approve != 1  and not me %}
                 <form action="{{ url('approve') }}" method="post">
                     <input id="achi_id" name="achi_id" type="text" value="{{ achievement.achievement_id }}" hidden>
-                    <input id="user_passive_id" name="user_passive_id" type="text" value="{{ user.user_id }}" hidden>
                     <button type="submit"> Approve </button>
                 </form>
             {% endif %}

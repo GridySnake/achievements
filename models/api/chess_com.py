@@ -34,4 +34,4 @@ class Chesscom:
         return request
 
 
-# print(Chesscom.get_player_stats('crazyniga1917')['chess_rapid']['last'])
+# print(Chesscom.get_player_profile('crazyniga1917')) #player_id, followers, joined, status, is_streamer

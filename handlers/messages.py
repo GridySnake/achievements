@@ -19,7 +19,9 @@ class MessageView(web.View):
         type1 = 'user'
         type2 = 'user'
         data = await self.post()
+        #print(str(self.__dict__['_message']).split('Referer')[-1].split(',')[1].split('8080/')[1][:-2])
+        to_user = str(self.__dict__['_message']).split('Referer')[-1].split(',')[1].split('8080/')[1][:-2].split('_')[1]
         await Message.create_message(from_user=self.session['user']['id'],
-                                     to_user=data['to_user'], message=data['message_text'], type1=type1, type2=type2)
+                                     to_user=to_user, message=data['message_text'], type1=type1, type2=type2)
 
         return web.HTTPFound(location=self.app.router[f'chat_{data["to_user"]}'].url_for())

@@ -1,7 +1,30 @@
 {% extends "base.html" %}
 
 {% set title = "Signup" %}
+<!--<script>-->
+<!--        function getSelectValue()-->
+<!--        {-->
+<!--            var selectedValue = document.getElementById("select_country").value;-->
+<!--            console.log(selectedValue);-->
+<!--        }-->
+<!--        getSelectValue();-->
+<!--</script>-->
 
+
+<script>
+    $('#select_country').on('change', function () {
+        var city = JSON.parse('{{ cities | safe }}');
+        city = city.filter(element => element.country_id = $(this).find('option:selected').val());
+        var create = '<select id="test">';
+        for(var i = 0; i < city.length;i++)
+        {
+            create += '<option value="'+city[i]['city_id']+'">'+city[i]['city_name']+'</option>';
+        }
+        create += '</select>';
+        $('#field_city').append(create);
+    });
+</script>
+<body>
 {% block content %}
 <div class="columns">
     <div class="column is-6">
@@ -35,16 +58,16 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="field">
+            <div class="field_city">
                 <label class="label">City</label>
                 <span class="icon is-small is-left">
                     <i class="fas fa-building"></i>
                 </span>
-                 <select name="select_city" id="select_city">
-                   {% for i in range(cities|length) %}
-                    <option value="{{ cities[i].city_id }}">{{ cities[i].city_name }}</option>
-                    {% endfor %}
-                 </select>
+<!--                 <select name="select_city" id="select_city">-->
+<!--                   {% for i in range(cities|length) %}-->
+<!--                    <option value="{{ cities[i].city_id }}">{{ cities[i].city_name }}</option>-->
+<!--                    {% endfor %}-->
+<!--                 </select>-->
             </div>
             <div class="field">
                 <label class="label">Age</label>
@@ -75,3 +98,4 @@
     </div>
 </div>
 {% endblock %}
+</body>

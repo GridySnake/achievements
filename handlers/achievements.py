@@ -1,5 +1,6 @@
 import aiohttp_jinja2
 from aiohttp import web
+import json
 from aiohttp_session import get_session
 from models.achievements import Achievements
 from aioipapi import IpApiClient
@@ -27,15 +28,18 @@ class AchievementsView(web.View):
         achievements_created = await Achievements.get_created_achievements(user_id=self.session['user']['id'])
         achievements_get = await Achievements.get_reached_achievements(user_id=self.session['user']['id'])
         achievements_sug = await Achievements.get_suggestion_achievements(user_id=self.session['user']['id'])
+        dropdown_create = await Achievements.data_for_dropdowns_generate_achievements()
+        values = [dict(record) if record['service_id'] is not None else {key: dict(record).get(key) for key in dict(record).keys() if key not in ['service_id', 'service_name']} for record in dropdown_create]
+        dropdown_create_json = json.dumps(values).replace("</", "<\\/")
+        group = await Achievements.data_for_group_dropdown_generate_achievements()
         services = await Info.get_services()
-        return dict(achievements_my=achievements_created, achievements_sug=achievements_sug, achievements_get=achievements_get, services=services)
+        return dict(achievements_my=achievements_created, achievements_sug=achievements_sug, achievements_get=achievements_get, services=services, dropdown=dropdown_create, dropdown_json=dropdown_create_json, group=group)
 
     async def post(self):
         if 'user' not in self.session:
             return web.HTTPForbidden()
 
         data = await self.post()
-        print(data)
         session = await get_session(self)
         await Achievements.create_new_achievement(user_id=session['user']['id'], data=data)
         raise web.HTTPFound(location=self.app.router['achievements'].url_for())
@@ -175,8 +179,9 @@ class AchievementDesireView(web.View):
 
         data = await self.post()
         session = await get_session(self)
-        if data['user_passive_id'] is not None:
-            await Achievements.approve_achievement(user_active_id=session['user']['id'], user_passive_id=data['user_passive_id'], achievement_id=data['achi_id'])
+        url = str(self).split('/')[-1][:-2]
+        if url != 'desire':
+            await Achievements.approve_achievement(user_active_id=session['user']['id'], user_passive_id=str(self.__dict__['_message']).split('Referer')[-1].split(',')[1].split('8080/')[1][:-2], achievement_id=data['achi_id'])
             return web.HTTPFound(location=f"/{data['user_passive_id']}")
         else:
             await Achievements.desire_achievement(user_id=session['user']['id'], achievement_desire_id=data['achi_id'])

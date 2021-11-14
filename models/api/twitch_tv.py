@@ -47,3 +47,5 @@ class Twitch:
     @staticmethod
     def get_streams_names():
         return [i.data for i in helix.streams()]
+
+#print(Twitch.get_user_info('crazyme1917')) #view_count, created_at

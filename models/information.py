@@ -27,7 +27,7 @@ class Info:
     async def get_cities():
         conn = await asyncpg.connect(connection_url)
         cities = await conn.fetch(f"""
-            select city_id::varchar(5) || '_' || country_id::varchar(3) as city_id, city_name
+            select city_id, city_name, country_id
             from cities
             """)
         return cities

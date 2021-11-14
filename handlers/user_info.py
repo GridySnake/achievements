@@ -3,6 +3,7 @@ from aiohttp import web
 from aiohttp_session import get_session
 from models.user import User
 from models.information import Info
+import json
 
 
 class UserInfoView(web.View):
@@ -11,6 +12,8 @@ class UserInfoView(web.View):
     async def get(self):
         countries = await Info.get_countries()
         cities = await Info.get_cities()
+        values = [dict(record) for record in cities]
+        cities = json.dumps(values).replace("</", "<\\/")
         return dict(countries=countries, cities=cities)
 
     async def post(self):

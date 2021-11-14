@@ -7,7 +7,7 @@ class Stepik:
     def get_user_info(user_id):
         response = requests.get(f'https://stepik.org:443/api/users/{user_id}').json()
         user = {'user_id': response['users'][0]['profile'], 'is_organization': response['users'][0]['is_organization'],
-                'full_name': response['users'][0]['full_name'], 'city': response['users'][0]['city'],
+                'full_name': response['users'][0]['full_name'],
                 'knowledge': response['users'][0]['knowledge'], 'knowledge_rank': response['users'][0]['knowledge_rank'],
                 'reputation': response['users'][0]['reputation'], 'reputation_rank': response['users'][0]['reputation_rank'],
                 'solved_steps_count': response['users'][0]['solved_steps_count'],
@@ -16,3 +16,6 @@ class Stepik:
                 'issued_certificates_count': response['users'][0]['issued_certificates_count'],
                 'followers_count': response['users'][0]['followers_count']}
         return user
+
+
+# print(Stepik.get_user_info(43723297))
