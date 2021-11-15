@@ -49,7 +49,7 @@
         <div><a href="{{ '/achievement/%s'%achievement.achievement_id }}"><p>{{ achievement.name }} </a>: {{ achievement.description }}</p>
             {% if achievement.achievement_qr %}
                 <figure class="image is-128x128">
-                    <img src="{{ url('static', filename='QR/'+achievement.achievement_qr) }}">
+                    <img src="{{ url('static', filename='QR/'+achievement.achievement_qr + '.png') }}">
                 </figure>
             {% endif %}
         </div>

@@ -1,6 +1,10 @@
 import aiohttp_jinja2
 from aiohttp import web
 import json
+import hashlib
+import qrcode
+from geopy.geocoders import Nominatim
+from config.common import BaseConfig
 from aiohttp_session import get_session
 from models.achievements import Achievements
 from aioipapi import IpApiClient
@@ -23,7 +27,7 @@ class AchievementsView(web.View):
         if 'user' not in self.session:
             return web.HTTPForbidden()
 
-        await Achievements.update_user_info_achievements(user_id=self.session['user']['id'])
+        #await Achievements.update_user_info_achievements(user_id=self.session['user']['id'])
         await Achievements.desired_to_reached_achievement(user_id=self.session['user']['id'])
         achievements_created = await Achievements.get_created_achievements(user_id=self.session['user']['id'])
         achievements_get = await Achievements.get_reached_achievements(user_id=self.session['user']['id'])
@@ -40,6 +44,19 @@ class AchievementsView(web.View):
             return web.HTTPForbidden()
 
         data = await self.post()
+        if data['select_group'] == '1':
+            token = hashlib.sha256(data['name'].replace(' ', '_').lower().encode('utf8')).hexdigest()
+            img = qrcode.make(f"http://127.0.0.1:8080/verify_achievement/{token}")
+            img.save(f'{str(BaseConfig.STATIC_DIR) + "/QR/" + str(token)}.png')
+            data = dict(data)
+            data['value'] = token
+        elif data['select_group'] == '2':
+            geolocator = Nominatim(user_agent="55")
+            location = geolocator.geocode(data['value'])
+            data = dict(data)
+            data['lat'] = location.latitude
+            data['lon'] = location.longitude
+            data['radius'] = 10
         session = await get_session(self)
         await Achievements.create_new_achievement(user_id=session['user']['id'], data=data)
         raise web.HTTPFound(location=self.app.router['achievements'].url_for())

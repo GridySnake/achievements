@@ -337,16 +337,39 @@ class Achievements:
         else:
             id_condi = 0
         if data['select_service'] == '':
-            await conn.execute(f"""
-                                        insert into achi_conditions (condition_id, parameter, value, achi_condition_group_id) values(
-                                        {id_condi}, '{data['select_aggregation']}', '{data['value']}', {data['select_group']})
+            if 'achievement_qr' in data:
+                await conn.execute(f"""
+                                       insert into achi_conditions (condition_id, aggregation, parameter, value, achi_condition_group_id) values(
+                                       {id_condi}, '{data['select_aggregation']}', '{data['select_parameter']}', '{data['value']}', {data['select_group']})
+                                       """)
+                await conn.execute(f"""
+                                        insert into achievements (achievement_id, user_id, name, description, conditions, created_date, new, achievement_qr) values(
+                                        {id_achi}, {user_id}, '{data['name']}', '{data['description']}', ARRAY['{id_condi}'], statement_timestamp(), true, '{data['value']}')
                                         """)
-            await conn.execute(f"""
-                            insert into achievements (achievement_id, user_id, name, description, conditions, created_date, new) values(
-                            {id_achi}, {user_id}, '{data['name']}', '{data['description']}', ARRAY['{id_condi}'], statement_timestamp(), true)
-                            """)
+            elif 'lat' in data:
+                await conn.execute(f"""
+                                       insert into achi_conditions (condition_id, aggregation, parameter, value, achi_condition_group_id, geo) values(
+                                       {id_condi}, '{data['select_aggregation']}', '{data['select_parameter']}', '{data['value']}', {data['select_group']}, CIRCLE(POINT({data['lat']}, {data['lon']}), {data['radius']}))
+                                       """)
+                await conn.execute(f"""
+                                       insert into achievements (achievement_id, user_id, name, description, conditions, created_date, new) values(
+                                       {id_achi}, {user_id}, '{data['name']}', '{data['description']}', ARRAY['{id_condi}'], statement_timestamp(), true)
+                                       """)
+            else:
+                await conn.execute(f"""
+                                        insert into achi_conditions (condition_id, aggregation, parameter, value, achi_condition_group_id) values(
+                                        {id_condi}, '{data['select_aggregation']}', '{data['select_parameter']}', '{data['value']}', {data['select_group']})
+                                        """)
+                await conn.execute(f"""
+                                       insert into achievements (achievement_id, user_id, name, description, conditions, created_date, new) values(
+                                       {id_achi}, {user_id}, '{data['name']}', '{data['description']}', ARRAY['{id_condi}'], statement_timestamp(), true)
+                                       """)
+
+        # else:
         pass
-        if int(data['select_group']) == 0 and data['value'] != '' and data['name'] != '' and data['description'] != '':
+        # todo: не начислять ачивки автоматом, если пользователь их не хочет
+        # todo: обработка данных в хендлере (qr, location...)
+        if int(data['select_group']) == 31 and data['value'] != '' and data['name'] != '' and data['description'] != '':
             await conn.execute(f"""
                             insert into achi_conditions (condition_id, parameter, value, achi_condition_group_id) values(
                             {id_condi}, '{data['select_parameter']}', '{data['value']}', {data['select_group']})
@@ -373,7 +396,7 @@ class Achievements:
                                 from users_information
                                 where {data['select_parameter']} = '{data['value']}')
                                 """)
-        elif int(data['select_group']) == 1 and data['name'] != '' and data['description'] != '':
+        elif int(data['select_group']) == 31 and data['name'] != '' and data['description'] != '':
             token = hashlib.sha256(data['name'].replace(' ', '_').lower().encode('utf8')).hexdigest()
             await conn.execute(f"""
                                 insert into achi_conditions (condition_id, parameter, value, achi_condition_group_id) values(
@@ -385,7 +408,7 @@ class Achievements:
                                 insert into achievements (achievement_id, user_id, name, description, conditions, created_date, new, achievement_qr) values(
                                 {id_achi}, {user_id}, '{data['name']}', '{data['description']}', ARRAY['{id_condi}'], statement_timestamp(), true, '{id_achi}.png')
                                 """)
-        elif int(data['select_group']) == 2 and data['name'] != '' and data['description'] != '' and data['radius'] != '' and (data['value'] != '' or data['coords'] != ''):
+        elif int(data['select_group']) == 31 and data['name'] != '' and data['description'] != '' and data['radius'] != '' and (data['value'] != '' or data['coords'] != ''):
             if data['value'] != '' and data['coords'] != '':
                 location = data['coords'].replace(' ', '|').replace(',', '|').split('|')
                 location = [float(i.replace('|', '')) for i in location if i != '']

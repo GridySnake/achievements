@@ -24,7 +24,7 @@ where verifying_token is not null
 """).fetchall()]
 
 verify_achievement_qr = [str(i[0]) for i in engine.execute(f"""
-select condition_id
+select value
 from achi_conditions
 where achi_condition_group_id = 1
 """).fetchall()]
