@@ -12,10 +12,10 @@ class Achievements:
     async def data_for_group_dropdown_generate_achievements():
         conn = await asyncpg.connect(connection_url)
         achievements = await conn.fetch("""
-                                                select distinct agc.condition_group_id as group_id, acg.achi_condition_group_name as group_name
-                                                from achi_generate_conditions as agc
-                                                left join achi_condition_groups as acg on agc.condition_group_id = acg.achi_condition_group_id
-                                                order by agc.condition_group_id
+                                           select distinct agc.condition_group_id as group_id, acg.achi_condition_group_name as group_name
+                                           from achi_generate_conditions as agc
+                                           left join achi_condition_groups as acg on agc.condition_group_id = acg.achi_condition_group_id
+                                           order by agc.condition_group_id
 
             """)
         return achievements
@@ -158,7 +158,7 @@ class Achievements:
     async def get_achievement_info(achievement_id: str):
         conn = await asyncpg.connect(connection_url)
         achievement = await conn.fetch(f"""
-                                        select a.achievement_id, a.name, a.description, c.parameter, c.value, g.achi_condition_group_id, g.achi_condition_group_name, a.created_date, a.new, u.name as u_name, u.surname as u_surname, u.user_id, c.geo, c.condition_id
+                                        select a.achievement_id, a.name, a.description, c.aggregation, c.parameter, c.value, g.achi_condition_group_id, g.achi_condition_group_name, a.created_date, a.new, u.name as u_name, u.surname as u_surname, u.user_id, c.geo, c.condition_id
                                         from achi_conditions as c
                                         right join (select achievement_id, unnest(conditions) as conditions, name, user_id, description, created_date, new from achievements) as a on a.conditions::integer = c.condition_id
                                         left join achi_condition_groups as g on g.achi_condition_group_id = c.achi_condition_group_id
@@ -444,7 +444,7 @@ class Achievements:
                                    insert into achievements (achievement_id, user_id, name, description, conditions, created_date, new) values(
                                    {id_achi}, {user_id}, '{data['name']}', '{data['description']}', ARRAY['{id_condi}'], statement_timestamp(), true)
                                    """)
-        elif int(data['select_group']) == 8 and data['name'] != '' and data['description'] != '' and data['value'] != '':
+        elif int(data['select_group']) == 31 and data['name'] != '' and data['description'] != '' and data['value'] != '':
             await conn.execute(f"""
                                     insert into achi_conditions (condition_id, parameter, value, achi_condition_group_id) values(
                                     {id_condi}, 'message_to_achi', '{data['value']}', {data['select_group']})
@@ -453,7 +453,7 @@ class Achievements:
                                    insert into achievements (achievement_id, user_id, name, description, conditions, created_date, new) values(
                                    {id_achi}, {user_id}, '{data['name']}', '{data['description']}', ARRAY['{id_condi}'], statement_timestamp(), true)
                                    """)
-        elif int(data['select_group']) == 7 and data['name'] != '' and data['description'] != '' and data['value'] != '':
+        elif int(data['select_group']) == 31 and data['name'] != '' and data['description'] != '' and data['value'] != '':
             await conn.execute(f"""
                                     insert into achi_conditions (condition_id, parameter, value, achi_condition_group_id) values(
                                     {id_condi}, 'user_approve', '{data['value']}', {data['select_group']})
@@ -462,7 +462,7 @@ class Achievements:
                                    insert into achievements (achievement_id, user_id, name, description, conditions, created_date, new) values(
                                    {id_achi}, {user_id}, '{data['name']}', '{data['description']}', ARRAY['{id_condi}'], statement_timestamp(), true)
                                    """)
-        elif int(data['select_group']) == 3 and data['name'] != '' and data['description'] != '' and data['value'] != '' and data['select_service'] == '0':
+        elif int(data['select_group']) == 31 and data['name'] != '' and data['description'] != '' and data['value'] != '' and data['select_service'] == '0':
             parameter = str(data['select_service'] + '-' + data['chess_parameter_global'] + '-' + data['chess_parameter_local_profile'] + '-' + data['chess_parameter_local_last'] + '-' + data['chess_parameter_local_chess'] + '-' + data['chess_parameter_local_equal'])
             await conn.execute(f"""
                                     insert into achi_conditions (condition_id, parameter, value, achi_condition_group_id) values(

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% set title = "Communities" %}
+
+{% block content %}
+
+<form action="{{ url('create_community') }}" method="post">
+    <input id="name" name="name" type="text" value=""/>
+    <input id="bio" name="bio" type="text" value=""/>
+    <select name="community_type" id="community_type">
+        <option value="private">Private</option>
+        <option value="public">Public</option>
+    </select>
+    <button type="submit">Send</button>
+</form>
+{% if communities %}
+    {% for community in communities %}
+        <a href="{{ '/community/%s'%community.community_id }}"><p>{{ community.name }}</p></a>
+    {% endfor %}
+{% endif %}
+{% endblock %}

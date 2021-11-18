@@ -27,11 +27,12 @@ class AchievementsView(web.View):
         if 'user' not in self.session:
             return web.HTTPForbidden()
 
-        #await Achievements.update_user_info_achievements(user_id=self.session['user']['id'])
-        await Achievements.desired_to_reached_achievement(user_id=self.session['user']['id'])
-        achievements_created = await Achievements.get_created_achievements(user_id=self.session['user']['id'])
-        achievements_get = await Achievements.get_reached_achievements(user_id=self.session['user']['id'])
-        achievements_sug = await Achievements.get_suggestion_achievements(user_id=self.session['user']['id'])
+        user_id = self.session['user']['id']
+        #await Achievements.update_user_info_achievements(user_id=user_id)
+        await Achievements.desired_to_reached_achievement(user_id=user_id)
+        achievements_created = await Achievements.get_created_achievements(user_id=user_id)
+        achievements_get = await Achievements.get_reached_achievements(user_id=user_id)
+        achievements_sug = await Achievements.get_suggestion_achievements(user_id=user_id)
         dropdown_create = await Achievements.data_for_dropdowns_generate_achievements()
         values = [dict(record) if record['service_id'] is not None else {key: dict(record).get(key) for key in dict(record).keys() if key not in ['service_id', 'service_name']} for record in dropdown_create]
         dropdown_create_json = json.dumps(values).replace("</", "<\\/")
@@ -57,6 +58,9 @@ class AchievementsView(web.View):
             data['lat'] = location.latitude
             data['lon'] = location.longitude
             data['radius'] = 10
+        elif data['select_group'] == '8':
+            data = dict(data)
+            data['select_parameter'] = None
         session = await get_session(self)
         await Achievements.create_new_achievement(user_id=session['user']['id'], data=data)
         raise web.HTTPFound(location=self.app.router['achievements'].url_for())
