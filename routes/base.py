@@ -4,7 +4,7 @@ from handlers.avatar import Avatar
 from handlers.friends import FriendsView, MyFriendsView
 from handlers.messages import MessageView
 from handlers.achievements import AchievementsView, AchievementsVerificationView, AchievementInfoView, AchievementDesireView
-from handlers.communities import CommunitiesView
+from handlers.communities import CommunitiesView, CommunitiesInfoView
 from handlers.personal_page import PersonalPageView
 from handlers.chat import ChatView
 from handlers.user_info import UserInfoView
@@ -47,6 +47,11 @@ select achievement_id
 from achievements
 """).fetchall()]
 
+communities = [str(i).split(',')[0][1:] for i in engine.execute(f"""
+select community_id 
+from communities
+""").fetchall()]
+
 
 def setup_routes(app):
     app.router.add_get('/login', Login.get, name='login')
@@ -85,6 +90,8 @@ def setup_routes(app):
         app.router.add_get(f'/verify_achievement/location/{i}', AchievementsVerificationView.get, name=f'verify_achievement_location_{i}')
     for i in verify_achievement_service:
         app.router.add_get(f'/verify_achievement/service/{i}', AchievementsVerificationView.get, name=f'verify_achievement_service_{i}')
+    for i in communities:
+        app.router.add_get(f'/community/{i}', CommunitiesInfoView.get, name=f'community_{i}')
 
 
 def setup_static_routes(app):

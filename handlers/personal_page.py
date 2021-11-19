@@ -12,7 +12,8 @@ class PersonalPageView(web.View):
     @aiohttp_jinja2.template('personal_page.html')
     async def get(self):
         if 'user' not in self.session:
-            return web.HTTPForbidden()
+            return web.HTTPFound(location=self.app.router['login'].url_for())
+
         location = str(self).split('/')[-1][:-2]
         session = await get_session(self)
         my_page = False

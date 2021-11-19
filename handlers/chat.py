@@ -10,7 +10,8 @@ class ChatView(web.View):
     @aiohttp_jinja2.template('chat.html')
     async def get(self):
         if 'user' not in self.session:
-            return web.HTTPForbidden()
+            return web.HTTPFound(location=self.app.router['login'].url_for())
+
         friend_id = int(str(self).split('/chat_')[-1][:-2])
         session = await get_session(self)
         message = await Message.get_messages(user_id=session['user']['id'], friend=friend_id)

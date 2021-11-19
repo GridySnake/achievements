@@ -25,7 +25,7 @@ class AchievementsView(web.View):
     @aiohttp_jinja2.template('achievements.html')
     async def get(self):
         if 'user' not in self.session:
-            return web.HTTPForbidden()
+            return web.HTTPFound(location=self.app.router['login'].url_for())
 
         user_id = self.session['user']['id']
         #await Achievements.update_user_info_achievements(user_id=user_id)
@@ -42,7 +42,7 @@ class AchievementsView(web.View):
 
     async def post(self):
         if 'user' not in self.session:
-            return web.HTTPForbidden()
+            return web.HTTPFound(location=self.app.router['login'].url_for())
 
         data = await self.post()
         if data['select_group'] == '1':

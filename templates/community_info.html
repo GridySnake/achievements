@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% set title = "Community info" %}
+
+{% block content %}
+<a href="{{ '/community/%s'%community.community_id }}"><p>{{ community.community_name }} ({{ community.community_type }})</p></a>
+<br>
+<p>{{ community.community_bio }}</p>
+<br>
+<p>Community was created at: {{ community.created_date }}</p>
+
+{% endblock %}

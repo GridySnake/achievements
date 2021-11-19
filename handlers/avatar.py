@@ -11,7 +11,7 @@ class Avatar(web.View):
     async def post(self):
         session = await get_session(self)
         if 'user' not in session:
-            return web.HTTPForbidden()
+            return web.HTTPFound(location=self.app.router['login'].url_for())
 
         user = session['user']
         data = await self.post()

@@ -14,8 +14,15 @@
     <button type="submit">Send</button>
 </form>
 {% if communities %}
+    <p>My communities: </p>
     {% for community in communities %}
-        <a href="{{ '/community/%s'%community.community_id }}"><p>{{ community.name }}</p></a>
+        <a href="{{ '/community/%s'%community.community_id }}"><p>{{ community.community_name }}</p></a>
+    {% endfor %}
+{% endif %}
+{% if owner_communities %}
+    <p>My created communities: </p>
+    {% for owner_community in owner_communities %}
+        <a href="{{ '/community/%s'%owner_community.community_id }}"><p>{{ owner_community.community_name }}</p></a>
     {% endfor %}
 {% endif %}
 {% endblock %}

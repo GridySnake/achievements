@@ -8,14 +8,14 @@ class FriendsView(web.View):
     @aiohttp_jinja2.template('friends.html')
     async def get(self):
         if 'user' not in self.session:
-            return web.HTTPForbidden()
+            return web.HTTPFound(location=self.app.router['login'].url_for())
 
         users = await Friends.get_user_friends_suggestions(user_id=self.session['user']['id'])
         return dict(users=users)
 
     async def post(self):
         if 'user' not in self.session:
-            return web.HTTPForbidden()
+            return web.HTTPFound(location=self.app.router['login'].url_for())
 
         data = await self.post()
         await Friends.add_friend(user_active_id=self.session['user']['id'], user_passive_id=data['uid'])
@@ -28,7 +28,8 @@ class MyFriendsView(web.View):
     @aiohttp_jinja2.template('my_friends.html')
     async def get(self):
         if 'user' not in self.session:
-            return web.HTTPForbidden()
+            return web.HTTPFound(location=self.app.router['login'].url_for())
+
         subscribers = await Friends.get_subscribers(user_id=self.session['user']['id'])
         actual_requests = [i for i in subscribers if i['status_id'] == 2]
         subscribers_active = [i for i in subscribers if i['status_id'] == -1]
@@ -40,7 +41,7 @@ class MyFriendsView(web.View):
 
     async def post(self):
         if 'user' not in self.session:
-            return web.HTTPForbidden()
+            return web.HTTPFound(location=self.app.router['login'].url_for())
 
         data = await self.post()
         if 'action' in data.keys():
