@@ -77,6 +77,7 @@ def setup_routes(app):
     app.router.add_post('/approve', AchievementDesireView.post, name='approve')
     app.router.add_get('/community', CommunitiesView.get, name='community')
     app.router.add_post('/create_community', CommunitiesView.post, name='create_community')
+    app.router.add_post('/save_community_avatar', CommunitiesInfoView.post, name='save_community_avatar')
     for i in range(len_users):
         app.router.add_get(f'/{i}', PersonalPageView.get, name=f'personal_page_{i}')
         app.router.add_get(f'/chat_{i}', ChatView.get, name=f'chat_{i}')

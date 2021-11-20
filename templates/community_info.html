@@ -7,6 +7,17 @@
 <br>
 <p>{{ community.community_bio }}</p>
 <br>
+<figure class="image is-128x128">
+    <img src="{{ url('static', filename='community_avatars/'+community.href) }}">
+</figure>
+{% if access %}
+        <form action="{{ url('save_community_avatar') }}" method="post" accept-charset="utf-8" enctype="multipart/form-data">
+            <label for="community_avatar">Community avatar</label>
+            <input id="community_avatar" name="community_avatar" type="file" value=""/>
+            <input type="submit" value="submit"/>
+        </form>
+{% endif %}
+<br>
 <p>Community was created at: {{ community.created_date }}</p>
 
 {% endblock %}

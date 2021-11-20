@@ -47,7 +47,7 @@ class User:
         avatar = await conn.fetch(f"""
                 SELECT images.href
                 FROM images
-                INNER JOIN users_information as us ON images.image_id = ANY(us.image_id)
+                INNER JOIN users_information as us ON images.image_id = ANY(us.image_id) and images.image_type = 'user'
                 WHERE us.user_id = {user_id}
                 """)
         if avatar:
@@ -138,10 +138,12 @@ class User:
             await conn.execute(f"""
                             insert INTO users_information (user_id, country_id, city_id, sex, date_born, age, bio, name, 
                             surname, relation_ship_id, language_id, wedding, communication_conditions, status_work, 
-                            position, company_id, school_id, bachelor_id, master_id, image_id, achievements_id, achievements_desired_id, services_id, services_username) values(
+                            position, company_id, school_id, bachelor_id, master_id, image_id, achievements_id, achievements_desired_id, services_id, services_username,
+                            community_id, community_owner_id) values(
                             {id}, null, null, null, null, null, null, null, null,
                             ARRAY []::integer[], null, null, ARRAY []::text[], null, null, null, null, null, 
-                            null, ARRAY []::integer[], ARRAY []::integer[], ARRAY []::integer[], ARRAY []::integer[], ARRAY []::varchar[])
+                            null, ARRAY []::integer[], ARRAY []::integer[], ARRAY []::integer[], ARRAY []::integer[], ARRAY []::varchar[],
+                            ARRAY []::integer[], ARRAY []::integer[])
                             """)
             await conn.execute(f"""
                                 insert INTO user_statistics (user_id, friends, likes, comments, recommendations, 
@@ -168,9 +170,10 @@ class User:
         conn = await asyncpg.connect(connection_url)
         if url is not None and user_id is not None:
             image_id = await conn.fetchrow(f"""SELECT MAX(image_id) FROM images""")
-            try:
-                image_id = int(dict(image_id)['max']) + 1
-            except:
+            image_id = dict(image_id[0])['max']
+            if image_id is not None:
+                image_id = int(image_id) + 1
+            else:
                 image_id = 0
             await conn.execute(f"""
                                 insert INTO images (image_id, href, image_type, create_date) values(
