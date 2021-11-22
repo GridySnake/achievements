@@ -46,9 +46,10 @@ class Community:
         conn = await asyncpg.connect(connection_url)
         communities = await conn.fetch(f"""
                                            select c.community_id, c.community_name
-                                           from communities as c
+                                           from (
+                                                 select community_id, community_name, unnest(community_owner_id) as community_owner_id from communities) as c
                                            right join (
-                                                       select unnest(community_owner_id) as community_owner_id from users_information where user_id={user_id}
+                                                       select unnest(community_owner_id) as community_owner_id from users_information where user_id = {user_id}
                                                        ) as u on u.community_owner_id = c.community_owner_id
                                            """)
         return communities
@@ -70,7 +71,6 @@ class Community:
     async def save_community_avatar_url(community_id, url):
         conn = await asyncpg.connect(connection_url)
         image_id = await conn.fetchrow(f"""select max(image_id) from images""")
-        print(image_id)
         image_id = dict(image_id)['max']
         if image_id is not None:
             image_id = int(image_id) + 1

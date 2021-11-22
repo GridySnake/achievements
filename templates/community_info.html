@@ -8,7 +8,7 @@
 <p>{{ community.community_bio }}</p>
 <br>
 <figure class="image is-128x128">
-    <img src="{{ url('static', filename='community_avatars/'+community.href) }}">
+    <img src="{{ url('static', filename='community_avatar/'+community.href) }}">
 </figure>
 {% if access %}
         <form action="{{ url('save_community_avatar') }}" method="post" accept-charset="utf-8" enctype="multipart/form-data">
@@ -19,5 +19,10 @@
 {% endif %}
 <br>
 <p>Community was created at: {{ community.created_date }}</p>
+{% if in_community %}
+<button onclick="window.location.href='/leave_community'">Leave</button>
+{% else %}
+<button onclick="window.location.href='/join_community'">Join</button>
+{% endif %}
 
 {% endblock %}

@@ -4,7 +4,9 @@ import aiohttp_jinja2
 import jinja2
 from aiohttp import web
 import asyncpgsa
-from aiohttp_swaggerify import swaggerify
+# from swagger_ui import aiohttp_api_doc
+from aiohttp_swagger import *
+# from aiohttp_swaggerify import swaggerify
 from aiohttp_session import setup, get_session, session_middleware
 from aiohttp_session.cookie_storage import EncryptedCookieStorage
 from routes.base import setup_routes, setup_static_routes
@@ -49,8 +51,30 @@ def main():
 
     setup_routes(app)
     setup_static_routes(app)
-    setup_middlewares(app)
 
+    async def ping(request):
+        """
+        ---
+        description: This end-point allow to test that service is up.
+        tags:
+        - Health check
+        produces:
+        - text/plain
+        responses:
+            "200":
+                description: successful operation. Return "pong" text
+            "405":
+                description: invalid HTTP Method
+        """
+        return web.Response(text="pong")
+
+    app.router.add_route('GET', "/ping", ping)
+
+    setup_swagger(app, swagger_url="/api/v1/doc", ui_version=2)
+    # setup_swagger(app)
+    setup_middlewares(app)
+    # aiohttp_api_doc(app, config_path='./conf/test.yaml', url_prefix='/api/doc', title='API doc')
+    print(app.router.routes())
     app['config'] = BaseConfig
     app['db'] = asyncpgsa.create_pool(
         host=BaseConfig.host,

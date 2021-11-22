@@ -37,14 +37,18 @@ class CommunitiesInfoView(web.View):
         access = False
         if self.session['user']['id'] in [int(i['community_owner_id']) for i in community]:
             access = True
-        print(community)
-        return dict(community=community[0], access=access)
+        is_in_community = False
+        if self.session['user']['id'] in [int(i['user_id']) for i in community]:
+            is_in_community = True
+        return dict(community=community[0], access=access, in_community=is_in_community)
 
     async def post(self):
         if 'user' not in self.session:
             return web.HTTPFound(location=self.app.router['login'].url_for())
-
+        print(1)
         data = await self.post()
+        print(data)
+
         community_avatar = data['community_avatar']
         community_id = str(self.__dict__['_message']).split('Referer')[-1].split(',')[1].split('/community/')[1][:-2]
 

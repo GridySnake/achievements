@@ -10,6 +10,7 @@ from handlers.chat import ChatView
 from handlers.user_info import UserInfoView
 from config.common import BaseConfig
 from sqlalchemy import create_engine
+from aiohttp_swagger import *
 #todo: изменить ссылки на страницы, а то из подтврждения ачивок не падаем на нужные страницы
 engine = create_engine(BaseConfig.database_url)
 
@@ -54,45 +55,48 @@ from communities
 
 
 def setup_routes(app):
-    app.router.add_get('/login', Login.get, name='login')
-    app.router.add_post('/login', Login.post)
-    app.router.add_get('/signup', Signup.get, name='signup')
-    app.router.add_post('/signup', Signup.post)
-    app.router.add_get('/logout', Logout.get, name='logout')
-    app.router.add_post('/save_avatar', Avatar.post, name='save_avatar')
-    app.router.add_post('/add_post', PostView.post, name='add_post')
-    app.router.add_get('/friends', FriendsView.get, name='friends')
-    app.router.add_post('/add_friend', FriendsView.post, name='add_friend')
-    app.router.add_get('/messages', MessageView.get, name='messages')
-    app.router.add_post('/send_message', MessageView.post, name='send_message')
-    app.router.add_get('/my_friends', MyFriendsView.get, name='my_friends')
-    app.router.add_get('/achievements', AchievementsView.get, name='achievements')
-    app.router.add_post('/add_achievement', AchievementsView.post, name='add_achievement')
-    app.router.add_post('/user_info', UserInfoView.post, name='user_info')
-    app.router.add_get('/user_info', UserInfoView.get, name='user_info')
-    app.router.add_get('/verify', NeedVerify.get, name='verify')
-    app.router.add_post('/my_friends', MyFriendsView.post, name='confirm_friend')
-    app.router.add_post('/verify_message_to_achi', AchievementInfoView.post, name='verify_message_to_achi')
-    app.router.add_post('/desire', AchievementDesireView.post, name='desire')
-    app.router.add_post('/approve', AchievementDesireView.post, name='approve')
-    app.router.add_get('/community', CommunitiesView.get, name='community')
-    app.router.add_post('/create_community', CommunitiesView.post, name='create_community')
-    app.router.add_post('/save_community_avatar', CommunitiesInfoView.post, name='save_community_avatar')
+    app.router.add_route('GET', '/login', Login.get, name='login')
+    app.router.add_route('POST', '/login', Login.post)
+    app.router.add_route('GET', '/signup', Signup.get, name='signup')
+    app.router.add_route('POST', '/signup', Signup.post)
+    app.router.add_route('GET', '/logout', Logout.get, name='logout')
+    app.router.add_route('POST', '/save_avatar', Avatar.post, name='save_avatar')
+    app.router.add_route('POST', '/add_post', PostView.post, name='add_post')
+    app.router.add_route('GET', '/friends', FriendsView.get, name='friends')
+    app.router.add_route('POST', '/add_friend', FriendsView.post, name='add_friend')
+    app.router.add_route('GET', '/messages', MessageView.get, name='messages')
+    app.router.add_route('POST', '/send_message', MessageView.post, name='send_message')
+    app.router.add_route('GET', '/my_friends', MyFriendsView.get, name='my_friends')
+    app.router.add_route('GET', '/achievements', AchievementsView.get, name='achievements')
+    app.router.add_route('POST', '/add_achievement', AchievementsView.post, name='add_achievement')
+    app.router.add_route('POST', '/user_info', UserInfoView.post, name='user_info')
+    app.router.add_route('GET', '/user_info', UserInfoView.get, name='user_info')
+    app.router.add_route('GET', '/verify', NeedVerify.get, name='verify')
+    app.router.add_route('POST', '/my_friends', MyFriendsView.post, name='confirm_friend')
+    app.router.add_route('POST', '/verify_message_to_achi', AchievementInfoView.post, name='verify_message_to_achi')
+    app.router.add_route('POST', '/desire', AchievementDesireView.post, name='desire')
+    app.router.add_route('POST', '/approve', AchievementDesireView.post, name='approve')
+    app.router.add_route('GET', '/community', CommunitiesView.get, name='community')
+    app.router.add_route('POST', '/create_community', CommunitiesView.post, name='create_community')
+    app.router.add_route('POST', '/save_community_avatar', CommunitiesInfoView.post, name='save_community_avatar')
+    app.router.add_route('POST', '/leave_community', CommunitiesInfoView.post, name='leave_community')
+    app.router.add_route('POST', '/join_community', CommunitiesInfoView.post, name='join_community')
     for i in range(len_users):
-        app.router.add_get(f'/{i}', PersonalPageView.get, name=f'personal_page_{i}')
-        app.router.add_get(f'/chat_{i}', ChatView.get, name=f'chat_{i}')
+        app.router.add_route('GET', f'/{i}', PersonalPageView.get, name=f'personal_page_{i}')
+        app.router.add_route('GET', f'/chat_{i}', ChatView.get, name=f'chat_{i}')
     for i in verify:
-        app.router.add_get(f'/verify/{i}', Verify.get, name=f'verify_{i}')
+        app.router.add_route('GET', f'/verify/{i}', Verify.get, name=f'verify_{i}')
     for i in verify_achievement_qr:
-        app.router.add_get(f'/verify_achievement/qr/{i}', AchievementsVerificationView.get, name=f'verify_achievement_qr_{i}')
+        app.router.add_route('GET', f'/verify_achievement/qr/{i}', AchievementsVerificationView.get, name=f'verify_achievement_qr_{i}')
     for i in achievements:
-        app.router.add_get(f'/achievement/{i}', AchievementInfoView.get, name=f'achievement_{i}')
+        app.router.add_route('GET', f'/achievement/{i}', AchievementInfoView.get, name=f'achievement_{i}')
     for i in verify_achievement_location:
-        app.router.add_get(f'/verify_achievement/location/{i}', AchievementsVerificationView.get, name=f'verify_achievement_location_{i}')
+        app.router.add_route('GET', f'/verify_achievement/location/{i}', AchievementsVerificationView.get, name=f'verify_achievement_location_{i}')
     for i in verify_achievement_service:
-        app.router.add_get(f'/verify_achievement/service/{i}', AchievementsVerificationView.get, name=f'verify_achievement_service_{i}')
+        app.router.add_route('GET', f'/verify_achievement/service/{i}', AchievementsVerificationView.get, name=f'verify_achievement_service_{i}')
     for i in communities:
-        app.router.add_get(f'/community/{i}', CommunitiesInfoView.get, name=f'community_{i}')
+        app.router.add_route('GET', f'/community/{i}', CommunitiesInfoView.get, name=f'community_{i}')
+    setup_swagger(app)
 
 
 def setup_static_routes(app):
