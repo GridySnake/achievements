@@ -85,3 +85,39 @@ class Community:
                                set image_id = array_append(image_id, {image_id})
                                where community_id = {community_id}
                                """)
+
+    @staticmethod
+    async def leave_join(community_id, method, user_id):
+        conn = await asyncpg.connect(connection_url)
+        if method == 'join':
+            await conn.execute(f"""
+                                   update communities
+                                   set user_id = array_append(user_id, {user_id})
+                                   where community_id = {community_id}
+                                   """)
+            await conn.execute(f"""
+                                   update users_information
+                                   set community_id = array_append(community_id, {community_id})
+                                   where user_id = {user_id}
+                                   """)
+        else:
+            # await conn.execute(f"""
+            #                        update communities
+            #                        set user_id = user_id[:(select array_position(user_id, {user_id})
+            #                                        FROM communities
+            #                                        WHERE community_id = {community_id})-1] ||
+            #                                        user_id[(select array_position(user_id, {user_id})
+            #                                        FROM communities
+            #                                        WHERE community_id = {community_id})+1:]
+            #                        WHERE community_id = {community_id}
+            #                        """)
+            await conn.execute(f"""
+                                   update users_information
+                                   set community_id = community_id[:(select array_position(community_id, {community_id})
+                                                   FROM users_information
+                                                   WHERE user_id = {user_id})-1] ||
+                                                   community_id[(select array_position(community_id, {community_id})
+                                                   FROM users_information
+                                                   WHERE user_id = {user_id})+1:]
+                                   WHERE user_id = {user_id}
+                                   """)

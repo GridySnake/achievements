@@ -20,9 +20,13 @@
 <br>
 <p>Community was created at: {{ community.created_date }}</p>
 {% if in_community %}
-<button onclick="window.location.href='/leave_community'">Leave</button>
+    <form action="{{ url('leave_community') }}" method="post">
+        <button id="leave_community" type="submit">Leave</button>
+    </form>
 {% else %}
-<button onclick="window.location.href='/join_community'">Join</button>
+    <form action="{{ url('join_community') }}" method="post">
+        <button id="join_community" type="submit">Join</button>
+    </form>
 {% endif %}
 
 {% endblock %}

@@ -1,6 +1,7 @@
 from config.common import BaseConfig
 import requests
 from steam.client import SteamClient
+from steam.steamid import SteamID
 
 
 class Steam:
@@ -59,3 +60,14 @@ class Steam:
         game_count = response['total_count']
         games_id_name_pt2weeks_ptforever = {i['appid']: [i['name'], i['playtime_2weeks'], i['playtime_forever']] for i in response['games']}
         return game_count, games_id_name_pt2weeks_ptforever
+
+
+# userr = Steam.login('alex1212121999', '12041999alex')
+# print(userr)
+# print(Steam.get_user_info(SteamID(117877571)))
+# print(Steam.get_user_info(117877571))
+# print(Steam.get_game_stats(userr['steam_id'], 570))
+# print(Steam.get_achievements_of_game(SteamID(117877571), 730))
+# print(Steam.get_game_stats(userr['steam_id'], 812140))
+# print(Steam.get_game_stats(userr['steam_id'], 48700))
+# print(requests.get(f'http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={BaseConfig.steam_api_key}&steamids={117877571}').json())
