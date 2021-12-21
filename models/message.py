@@ -5,31 +5,7 @@ from config.common import BaseConfig
 connection_url = BaseConfig.database_url
 
 
-class Message:
-    @staticmethod
-    async def create_message(from_user: str, to_user: str, message: str, type1: str, type2: str):
-        conn = await asyncpg.connect(connection_url)
-        data = {
-            'from_user': from_user,
-            'to_user': to_user,
-            'message': message,
-            'datetime': datetime.now(),
-            'from_user_type': type1,
-            'to_user_type': type2
-        }
-        id = await conn.fetchrow(f"""SELECT MAX(message_id) FROM messages""")
-        if dict(id)['max'] is not None:
-            id = int(dict(id)['max']) + 1
-        else:
-            id = 0
-        await conn.execute(f"""
-                            insert INTO messages (message_id, from_user, to_user, message, from_user_type, to_user_type, 
-                            datetime, is_read) values(
-                            {id}, {data['from_user']}, {data['to_user']}, '{data['message']}', 
-                            '{data['from_user_type']}', 
-                            '{data['to_user_type']}', statement_timestamp(), False)
-                            """)
-
+class MessageGetInfo:
     @staticmethod
     async def get_messages(user_id: str, friend):
         conn = await asyncpg.connect(connection_url)
@@ -120,3 +96,29 @@ class Message:
                          set is_read = True
                          WHERE from_user = {chat_id} and to_user = {user_id}
                         """)
+
+
+class MessageCreate:
+    @staticmethod
+    async def create_message(from_user: str, to_user: str, message: str, type1: str, type2: str):
+        conn = await asyncpg.connect(connection_url)
+        data = {
+            'from_user': from_user,
+            'to_user': to_user,
+            'message': message,
+            'datetime': datetime.now(),
+            'from_user_type': type1,
+            'to_user_type': type2
+        }
+        id = await conn.fetchrow(f"""SELECT MAX(message_id) FROM messages""")
+        if dict(id)['max'] is not None:
+            id = int(dict(id)['max']) + 1
+        else:
+            id = 0
+        await conn.execute(f"""
+                            insert INTO messages (message_id, from_user, to_user, message, from_user_type, to_user_type, 
+                            datetime, is_read) values(
+                            {id}, {data['from_user']}, {data['to_user']}, '{data['message']}', 
+                            '{data['from_user_type']}', 
+                            '{data['to_user_type']}', statement_timestamp(), False)
+                            """)

@@ -3,7 +3,7 @@ from aiohttp import web
 from aiohttp_session import get_session
 
 from config.common import BaseConfig
-from models.user import User
+from models.user import UserVerifyAvatar
 
 
 class Avatar(web.View):
@@ -21,6 +21,6 @@ class Avatar(web.View):
             content = avatar.file.read()
             f.write(content)
 
-        await User.save_avatar_url(user_id=user['id'], url=f"{avatar.filename}")
+        await UserVerifyAvatar.save_avatar_url(user_id=user['id'], url=f"{avatar.filename}")
         location = str(f"/{session['user']['id']}")
         return web.HTTPFound(location=location)

@@ -3,7 +3,7 @@ from config.common import BaseConfig
 connection_url = BaseConfig.database_url
 
 
-class Friends:
+class FriendsGetInfo:
     @staticmethod
     async def get_user_friends_suggestions(user_id: str, limit=20):
         conn = await asyncpg.connect(connection_url)
@@ -47,6 +47,35 @@ class Friends:
             """)
         return users
 
+    @staticmethod
+    async def get_subscribers(user_id: str):
+        conn = await asyncpg.connect(connection_url)
+        friends = await conn.fetch(f"""
+                            select distinct(u.user_id), u.name, u.surname, f.status_id, img.href
+                            from 
+                            (select user_id, unnest(users_id) as users_id, unnest(status_id) as status_id from friends) as f
+                            inner join users_information as u on u.user_id = f.users_id
+    						left join images as img on img.image_id = u.image_id[array_upper(u.image_id, 1)]
+                            where f.user_id = {user_id}
+            """)
+        return friends
+
+    @staticmethod
+    async def is_block(user_active_id: str,
+                       user_passive_id: str):
+        conn = await asyncpg.connect(connection_url)
+        block = await conn.fetch(f"""
+                        select f.status_id
+                        from 
+                        (select user_id, unnest(users_id) as users_id, unnest(status_id) as status_id from friends) as f
+                        inner join users_information as u on u.user_id = f.users_id
+						left join images as img on img.image_id = u.image_id[array_upper(u.image_id, 1)]
+                        where f.user_id = {user_active_id} and u.user_id={user_passive_id}
+        """)
+        return block
+
+
+class FriendsAction:
     @staticmethod
     async def add_friend(user_active_id: str, user_passive_id: str):
         conn = await asyncpg.connect(connection_url)
@@ -227,29 +256,3 @@ class Friends:
                                             null, null)
                                     """)
 
-    @staticmethod
-    async def get_subscribers(user_id: str):
-        conn = await asyncpg.connect(connection_url)
-        friends = await conn.fetch(f"""
-                        select distinct(u.user_id), u.name, u.surname, f.status_id, img.href
-                        from 
-                        (select user_id, unnest(users_id) as users_id, unnest(status_id) as status_id from friends) as f
-                        inner join users_information as u on u.user_id = f.users_id
-						left join images as img on img.image_id = u.image_id[array_upper(u.image_id, 1)]
-                        where f.user_id = {user_id}
-        """)
-        return friends
-
-    @staticmethod
-    async def is_block(user_active_id: str,
-                       user_passive_id: str):
-        conn = await asyncpg.connect(connection_url)
-        block = await conn.fetch(f"""
-                        select f.status_id
-                        from 
-                        (select user_id, unnest(users_id) as users_id, unnest(status_id) as status_id from friends) as f
-                        inner join users_information as u on u.user_id = f.users_id
-						left join images as img on img.image_id = u.image_id[array_upper(u.image_id, 1)]
-                        where f.user_id = {user_active_id} and u.user_id={user_passive_id}
-        """)
-        return block

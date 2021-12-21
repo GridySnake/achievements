@@ -11,7 +11,7 @@ from aiohttp_session import setup, get_session, session_middleware
 from aiohttp_session.cookie_storage import EncryptedCookieStorage
 from routes.base import setup_routes, setup_static_routes
 from config.common import BaseConfig
-from models.user import User
+from models.user import UserGetInfo
 
 
 async def current_user_ctx_processor(request):
@@ -21,7 +21,7 @@ async def current_user_ctx_processor(request):
     user_id = None
     if 'user' in session:
         user_id = session['user']['id']
-        user = await User.get_user_by_id(user_id=user_id)
+        user = await UserGetInfo.get_user_by_id(user_id=user_id)
         if user:
             is_anonymous = not bool(user)
     return dict(current_user=user, is_anonymous=is_anonymous, user_id=user_id)
@@ -74,7 +74,6 @@ def main():
     # setup_swagger(app)
     setup_middlewares(app)
     # aiohttp_api_doc(app, config_path='./conf/test.yaml', url_prefix='/api/doc', title='API doc')
-    print(app.router.routes())
     app['config'] = BaseConfig
     app['db'] = asyncpgsa.create_pool(
         host=BaseConfig.host,

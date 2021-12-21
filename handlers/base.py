@@ -2,7 +2,7 @@ import hashlib
 import aiohttp_jinja2
 from aiohttp import web
 from aiohttp_session import get_session
-from models.user import User
+from models.user import *
 from config.common import BaseConfig
 from smtplib import SMTP_SSL
 from email.parser import Parser
@@ -21,7 +21,7 @@ class Login(web.View):
             type = 'email'
         else:
             type = 'phone'
-        user = await User.get_user_by_email_phone(email=data['email'], type=type)
+        user = await UserGetInfo.get_user_by_email_phone(email=data['email'], type=type)
         if user == 'verify':
             return web.HTTPFound(location=self.app.router['verify'].url_for())
         elif user.get('error'):
@@ -52,7 +52,7 @@ class Signup(web.View):
         else:
             data['phone'] = 'None'
         token = hashlib.sha256(data['user_name'].encode('utf8')).hexdigest()
-        result = await User.create_new_user(data=data, token=token)
+        result = await UserCreate.create_user(data=data, token=token)
         if not result:
             location = self.app.router['signup'].url_for()
             return web.HTTPFound(location=location)
@@ -76,7 +76,7 @@ class Verify(web.View):
     @aiohttp_jinja2.template('verify.html')
     async def get(self):
         location = str(self).split('/verify/')[-1][:-2]
-        result = await User.verify_user(href=location)
+        result = await UserVerifyAvatar.verify_user(href=location)
         if result:
             web.HTTPForbidden()
         return dict()

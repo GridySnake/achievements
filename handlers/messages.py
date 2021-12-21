@@ -1,6 +1,6 @@
 import aiohttp_jinja2
 from aiohttp import web
-from models.message import Message
+from models.message import *
 
 
 class MessageView(web.View):
@@ -10,8 +10,8 @@ class MessageView(web.View):
         if 'user' not in self.session:
             return web.HTTPFound(location=self.app.router['login'].url_for())
 
-        users = await Message.get_users_chats(user_id=self.session['user']['id'])
-        messages = await Message.get_last_messages(user_id=self.session['user']['id'], user=[i[0] for i in users])
+        users = await MessageGetInfo.get_users_chats(user_id=self.session['user']['id'])
+        messages = await MessageGetInfo.get_last_messages(user_id=self.session['user']['id'], user=[i[0] for i in users])
         return dict(messages=messages, users=users)
 
     async def post(self):
@@ -21,9 +21,8 @@ class MessageView(web.View):
         type1 = 'user'
         type2 = 'user'
         data = await self.post()
-        #print(str(self.__dict__['_message']).split('Referer')[-1].split(',')[1].split('8080/')[1][:-2])
         to_user = str(self.__dict__['_message']).split('Referer')[-1].split(',')[1].split('8080/')[1][:-2].split('_')[1]
-        await Message.create_message(from_user=self.session['user']['id'],
+        await MessageCreate.create_message(from_user=self.session['user']['id'],
                                      to_user=to_user, message=data['message_text'], type1=type1, type2=type2)
 
-        return web.HTTPFound(location=self.app.router[f'chat_{data["to_user"]}'].url_for())
+        return web.HTTPFound(location=self.app.router[f'chat_{to_user}'].url_for())

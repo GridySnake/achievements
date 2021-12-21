@@ -127,6 +127,30 @@
         });
     });
 </script>
+<script>
+    $(document).ready(function() {
+        var drop = JSON.parse('{{ dropdown_community | safe }}');
+        $('#community_type').on('change', function () {
+            var drop_new = drop.filter(element => element.community_type == $(this).find('option:selected').val());
+            var lookup = {};
+            var result = [];
+            for (var item, j = 0; item = drop_new[j++];) {
+              var condition_name = item.condition_name;
+
+              if (!(condition_name in lookup)) {
+                lookup[condition_name] = 1;
+                result.push(condition_name);
+              }
+            }
+            var create = '';
+            for (var i = 0; i < result.length; i++)
+            {
+                create += '<option value="'+result[i]+'">'+result[i]+'</option>';
+            }
+            $('#community_condition').empty().append(create);
+        });
+    });
+</script>
 <!--<script>-->
 <!--        $(document).ready(function() {-->
 <!--            $('#select_group').on('change', function () {-->

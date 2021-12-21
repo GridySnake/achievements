@@ -3,7 +3,7 @@ from config.common import BaseConfig
 connection_url = BaseConfig.database_url
 
 
-class Info:
+class InfoGet:
     @staticmethod
     async def get_countries():
         conn = await asyncpg.connect(connection_url)
