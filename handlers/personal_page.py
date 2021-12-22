@@ -3,7 +3,7 @@ from aiohttp import web
 from aiohttp_session import get_session
 from models.user import UserGetInfo
 from models.post import Post
-from models.friends import FriendsGetInfo
+from models.subscribes import SubscribesGetInfo
 from models.achievements import AchievementsGetInfo
 
 
@@ -19,14 +19,14 @@ class PersonalPageView(web.View):
         my_page = False
         user = await UserGetInfo.get_user_by_id(user_id=location)
         avatar = await UserGetInfo.get_avatar_by_user_id(user_id=location)
-        friends = await FriendsGetInfo.get_user_friends_names(user_id=location)
+        friends = await SubscribesGetInfo.get_user_friends_names(user_id=location)
         posts = await Post.get_posts_by_user(user_id=location)
         achievements_user = await AchievementsGetInfo.get_users_achievements(user_id=location)
         if not my_page:
             achievements_approve = await AchievementsGetInfo.get_users_approve_achievements(user_id=location, user_active=session['user']['id'])
         else:
             achievements_approve = await AchievementsGetInfo.get_users_approve_achievements(user_id=location)
-        block = await FriendsGetInfo.is_block(user_active_id=session['user']['id'], user_passive_id=location)
+        block = await SubscribesGetInfo.is_block(user_active_id=session['user']['id'], user_passive_id=location)
         if block:
             block = block[0]['status_id']
         else:

@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% set title = "My friends" %}
+
+{% block content %}
+    {% if subscribers_active %}
+        <div class="columns">
+            <div class="column">
+                <p>Followers:</p>
+                    {% for subscriber in subscribers_active %}
+                        <div class="box">
+                            <article class="media">
+                                <div class="media-left">
+                                    {% if subscriber.href is not none %}
+                                    <figure class="image is-32x32">
+                                        <img src="{{ url('static', filename='avatars/' + subscriber.href) }}">
+                                    </figure>
+                                    {% endif %}
+                                </div>
+                                <div class="media-content">
+                                    <div class="content">
+                                        <p><a href={{ subscriber.user_id }}>{{ subscriber.name }} {{ subscriber.surname }}</a></p>
+                                    </div>
+                                </div>
+                                <div class="media-right">
+                                    {% if subscriber.status_id == subscriber.status_id1 %}
+                                        <form action="{{ url('my_subscribes') }}" method="post">
+                                            <input type="hidden" name="uid" value="{{ subscriber.user_id }}">
+                                            <input type="hidden" name="unsubscribe" value=True>
+                                            <button type="submit">Unfollow</button>
+                                        </form>
+                                    {% else %}
+                                        <form action="{{ url('my_subscribes') }}" method="post">
+                                            <input type="hidden" name="uid" value="{{ subscriber.user_id }}">
+                                            <input type="hidden" name="action" value=True>
+                                            <button type="submit">Follow</button>
+                                        </form>
+                                    {% endif %}
+                                    <form action="{{ url('my_subscribes') }}" method="post">
+                                        <input type="hidden" name="uid" value="{{ subscriber.user_id }}">
+                                        <input type="hidden" name="block" value=True>
+                                        <button type="submit">Block</button>
+                                    </form>
+                                </div>
+                            </article>
+                        </div>
+                    {% endfor %}
+    {% else %}
+        <p>You don't have followers yet :(</p>
+            </div>
+        </div>
+    {% endif %}
+    {% if subscribers_passive %}
+        <div class="columns">
+            <div class="column">
+                <p>Following:</p>
+                    {% for subscriber in subscribers_passive %}
+                <div class="box">
+                    <article class="media">
+                        <div class="media-left">
+                            {% if subscriber.href is not none %}
+                            <figure class="image is-32x32">
+                                <img src="{{ url('static', filename='avatars/' + subscriber.href) }}">
+                            </figure>
+                            {% endif %}
+                        </div>
+                        <div class="media-content">
+                            <div class="content">
+                                <p><a href={{ subscriber.user_id }}>{{ subscriber.name }} {{ subscriber.surname }}</a></p>
+                            </div>
+                        </div>
+                        <div class="media-right">
+                            <form action="{{ url('my_subscribes') }}" method="post">
+                                <input type="hidden" name="uid" value="{{ subscriber.user_id }}">
+                                <input type="hidden" name="unsubscribe" value=True>
+                                <button type="submit">Unfollow</button>
+                            </form>
+                            <form action="{{ url('my_subscribes') }}" method="post">
+                                <input type="hidden" name="uid" value="{{ subscriber.user_id }}">
+                                <input type="hidden" name="block" value=True>
+                                <button type="submit">Block</button>
+                            </form>
+                        </div>
+                    </article>
+                </div>
+                    {% endfor %}
+    {% else %}
+        <p>You not following anybody yet :(</p>
+            </div>
+        </div>
+    {% endif %}
+    {% if blocked %}
+        <div class="columns">
+            <div class="column">
+                <p>Blocked:</p>
+                    {% for block in blocked %}
+                <div class="box">
+                    <article class="media">
+                        <div class="media-left">
+                            {% if block.href is not none %}
+                            <figure class="image is-32x32">
+                                <img src="{{ url('static', filename='avatars/' + block.href) }}">
+                            </figure>
+                            {% endif %}
+                        </div>
+                        <div class="media-content">
+                            <div class="content">
+                                <p><a href={{ block.user_id }}>{{ block.name }} {{ block.surname }}</a></p>
+                            </div>
+                        </div>
+                        <div class="media-right">
+                            <form action="{{ url('my_subscribes') }}" method="post">
+                                <input type="hidden" name="uid" value="{{ block.user_id }}">
+                                <input type="hidden" name="unblock" value=True>
+                                <button type="submit">Unblock</button>
+                            </form>
+                        </div>
+                    </article>
+                </div>
+                    {% endfor %}
+    {% else %}
+        <p>You don't have blocked users :)</p>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

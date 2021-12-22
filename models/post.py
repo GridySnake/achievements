@@ -55,25 +55,37 @@ class Post:
         """)
 
     @staticmethod
+    async def get_posts_subscribes_me(user_id: str):
+        conn = await asyncpg.connect(connection_url)
+        posts = await conn.fetch(f"""
+                                    select distinct(u.user_id), u.name, u.surname, img1.href as avatar, p.message, p.date_created, img.href
+                                    from
+                                    (select user_id, unnest(users_id) as users_id, unnest(status_id) as status_id from friends) as f
+                                    inner join users_information as u on u.user_id = f.users_id and f.user_id = {user_id} and status_id = 1
+                                    left join posts as p on p.user_id = u.user_id
+                                    left join images as img on img.image_id = p.image_id
+                                    left join images as img1 on img1.image_id = u.image_id[array_upper(u.image_id, 1)]
+            """)
+        return posts
+
+    @staticmethod
     async def get_posts_by_user(user_id: str,
                                 community_id: str = None,
-                                course_id: str = None,
-                                limit=20):
+                                course_id: str = None):
         conn = await asyncpg.connect(connection_url)
-        if user_id:
+        if user_id is not None:
             posts = await conn.fetch(f"""
-                SELECT p.user_id, p.message, im.href,
-                        u.name, u.surname, im.href, p.date_created
-                FROM posts as p
-                INNER JOIN users_information as u 
-                    ON u.user_id = p.user_id
-                LEFT JOIN images as im 
-                    on im.image_id = p.image_id
-                WHERE p.user_id = {user_id}
-                LIMIT {limit}
+                select p.user_id, p.message, img1.href as avatar,
+                        u.name, u.surname, img.href, p.date_created
+                from posts as p
+                inner join users_information as u 
+                    on u.user_id = p.user_id and p.user_id = {user_id}
+                left join images as img
+                    on img.image_id = p.image_id
+                left join images as img1
+                    on img1.image_id = u.image_id[array_upper(u.image_id, 1)]
                 """)
-            return posts
-        if community_id:
+        elif community_id is not None:
             posts = await conn.fetch(f"""
                 select p.community_id, p.message,
                     com.community_name, im.href
@@ -83,10 +95,8 @@ class Post:
                 inner join images as im 
                     on im.image_id = p.image_id
                 WHERE p.user_id = {community_id}
-                LIMIT {limit}
             """)
-            return posts
-        if course_id:
+        elif course_id is not None:
             posts = await conn.fetch(f"""
                 select p.course_id, p.message,
                     cour.course_name, im.href
@@ -97,4 +107,4 @@ class Post:
                     on im.image_id = p.image_id
                 WHERE p.user_id = {course_id}
             """)
-            return posts
+        return posts

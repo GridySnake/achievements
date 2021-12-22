@@ -1,7 +1,7 @@
 from handlers.base import Login, Signup, Logout, Verify, NeedVerify
 from handlers.posts import PostView
 from handlers.avatar import Avatar
-from handlers.friends import FriendsView, MyFriendsView
+from handlers.subscribes import SubscribesView, MySubscribesView
 from handlers.messages import MessageView
 from handlers.achievements import AchievementsView, AchievementsVerificationView, AchievementInfoView, AchievementDesireView
 from handlers.communities import CommunitiesView, CommunitiesInfoView
@@ -62,17 +62,17 @@ def setup_routes(app):
     app.router.add_route('GET', '/logout', Logout.get, name='logout')
     app.router.add_route('POST', '/save_avatar', Avatar.post, name='save_avatar')
     app.router.add_route('POST', '/add_post', PostView.post, name='add_post')
-    app.router.add_route('GET', '/friends', FriendsView.get, name='friends')
-    app.router.add_route('POST', '/add_friend', FriendsView.post, name='add_friend')
+    app.router.add_route('GET', '/subscribes', SubscribesView.get, name='subscribes')
+    app.router.add_route('POST', '/subscribe', SubscribesView.post, name='subscribe')
     app.router.add_route('GET', '/messages', MessageView.get, name='messages')
     app.router.add_route('POST', '/send_message', MessageView.post, name='send_message')
-    app.router.add_route('GET', '/my_friends', MyFriendsView.get, name='my_friends')
+    app.router.add_route('GET', '/my_subscribes', MySubscribesView.get, name='my_subscribes')
     app.router.add_route('GET', '/achievements', AchievementsView.get, name='achievements')
     app.router.add_route('POST', '/add_achievement', AchievementsView.post, name='add_achievement')
     app.router.add_route('POST', '/user_info', UserInfoView.post, name='user_info')
     app.router.add_route('GET', '/user_info', UserInfoView.get, name='user_info')
     app.router.add_route('GET', '/verify', NeedVerify.get, name='verify')
-    app.router.add_route('POST', '/my_friends', MyFriendsView.post, name='confirm_friend')
+    app.router.add_route('POST', '/my_subscribes', MySubscribesView.post, name='matching_follow')
     app.router.add_route('POST', '/verify_message_to_achi', AchievementInfoView.post, name='verify_message_to_achi')
     app.router.add_route('POST', '/desire', AchievementDesireView.post, name='desire')
     app.router.add_route('POST', '/approve', AchievementDesireView.post, name='approve')
@@ -81,6 +81,9 @@ def setup_routes(app):
     app.router.add_route('POST', '/save_community_avatar', CommunitiesInfoView.post, name='save_community_avatar')
     app.router.add_route('POST', '/leave_community', CommunitiesInfoView.post, name='leave_community')
     app.router.add_route('POST', '/join_community', CommunitiesInfoView.post, name='join_community')
+    app.router.add_route('GET', '/posts', PostView.get, name='posts')
+    app.router.add_route('GET', '/my_posts', PostView.get, name='my_posts')
+
     for i in range(len_users):
         app.router.add_route('GET', f'/{i}', PersonalPageView.get, name=f'personal_page_{i}')
         app.router.add_route('GET', f'/chat_{i}', ChatView.get, name=f'chat_{i}')
