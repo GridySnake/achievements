@@ -19,7 +19,7 @@ class SubscribesView(web.View):
 
         data = await self.post()
         await SubscribesAction.subscribe_user(user_active_id=self.session['user']['id'], user_passive_id=data['uid'])
-        location = self.app.router['friends'].url_for()
+        location = self.app.router['subscribes'].url_for()
         return web.HTTPFound(location=location)
 
 
@@ -31,9 +31,9 @@ class MySubscribesView(web.View):
             return web.HTTPFound(location=self.app.router['login'].url_for())
 
         subscribers = await SubscribesGetInfo.get_subscribers(user_id=self.session['user']['id'])
-        subscribers_active = [i for i in subscribers if i['status_id'] == 1]
-        subscribers_passive = [i for i in subscribers if i['status_id'] == 0 or i['status_id'] == 1]
-        blocked = [i for i in subscribers if i['status_id'] == -1]
+        subscribers_active = [i for i in subscribers if i['status_passive'] == 1]
+        subscribers_passive = [i for i in subscribers if i['status_active'] == 0 or i['status_active'] == 1]
+        blocked = [i for i in subscribers if i['status_active'] == -1]
         print(subscribers_active, subscribers_passive)
         return dict(subscribers_active=subscribers_active, subscribers_passive=subscribers_passive, blocked=blocked)
 

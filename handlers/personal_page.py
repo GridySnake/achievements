@@ -19,7 +19,7 @@ class PersonalPageView(web.View):
         my_page = False
         user = await UserGetInfo.get_user_by_id(user_id=location)
         avatar = await UserGetInfo.get_avatar_by_user_id(user_id=location)
-        friends = await SubscribesGetInfo.get_user_friends_names(user_id=location)
+        friends = await SubscribesGetInfo.get_user_subscribes_names(user_id=location)
         posts = await Post.get_posts_by_user(user_id=location)
         achievements_user = await AchievementsGetInfo.get_users_achievements(user_id=location)
         if not my_page:
