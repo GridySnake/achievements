@@ -77,8 +77,7 @@ class SubscribesGetInfo:
         return subscribes
 
     @staticmethod
-    async def is_block(user_active_id: str,
-                       user_passive_id: str):
+    async def is_block(user_active_id: str, user_passive_id: str):
         """
         :param user_active_id: str
         :param user_passive_id: str
@@ -177,8 +176,7 @@ class SubscribesAction:
                     """)
 
     @staticmethod
-    async def block_user(user_active_id: str,
-                           user_passive_id: str):
+    async def block_user(user_active_id: str, user_passive_id: str):
         """
         :param user_active_id: str
         :param user_passive_id: str
@@ -240,7 +238,6 @@ class SubscribesAction:
         :param user_passive_id: str
         :return: None
         """
-        # todo: fixing
         conn = await asyncpg.connect(connection_url)
         checker = await conn.fetchrow(f"""
                                           select
