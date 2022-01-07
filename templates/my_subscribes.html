@@ -23,7 +23,7 @@
                                     </div>
                                 </div>
                                 <div class="media-right">
-                                    {% if subscriber.status_id == subscriber.status_id1 %}
+                                    {% if subscriber.status_active == subscriber.status_passive %}
                                         <form action="{{ url('my_subscribes') }}" method="post">
                                             <input type="hidden" name="uid" value="{{ subscriber.user_id }}">
                                             <input type="hidden" name="unsubscribe" value=True>

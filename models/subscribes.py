@@ -1,3 +1,5 @@
+import sys
+
 import asyncpg
 from config.common import BaseConfig
 connection_url = BaseConfig.database_url
@@ -6,19 +8,6 @@ connection_url = BaseConfig.database_url
 class SubscribesGetInfo:
     @staticmethod
     async def get_user_subscribes_suggestions(user_id: str):
-        conn = await asyncpg.connect(connection_url)
-        users = await conn.fetch(f"""select u.user_id, u.name, u.surname, img.href
-                                     from users_information as u 
-                                     left join images as img on img.image_id = u.image_id[array_upper(u.image_id, 1)]
-                                     where u.user_id not in (select unnest(users_id) 
-                                                       from subscribes 
-                                                       where user_id = {user_id})
-                                     and u.user_id <> {user_id}
-        """)
-        return users
-
-    @staticmethod
-    async def get_user_subscribes_suggestion_search(user_id: str):
         conn = await asyncpg.connect(connection_url)
         users = await conn.fetch(f"""select u.user_id, u.name, u.surname, img.href
                                      from users_information as u 
@@ -78,47 +67,95 @@ class SubscribesAction:
     @staticmethod
     async def subscribe_user(user_active_id: str, user_passive_id: str):
         conn = await asyncpg.connect(connection_url)
-        await conn.execute(f"""
-            update subscribes
-                set users_id = array_append(users_id, {user_passive_id}),
-                    status_id = array_append(status_id, 1),
-                    last_update = statement_timestamp()
-            where user_id = {user_active_id}
-        """)
-        await conn.execute(f"""
-            update subscribes
-                set users_id = array_append(users_id, {user_active_id}),
-                    status_id = array_append(status_id, 0),
-                    last_update = statement_timestamp()
-            where user_id = {user_passive_id}
-        """)
+        checker = await conn.fetchrow(f"""
+                                          select
+                                          status_id[(select array_position(f.users_id, {user_passive_id})
+                                          from subscribes as f
+                                          where f.user_id = {user_active_id})::int]
+                                          from subscribes
+                                          where user_id = {user_active_id}
+                                          """)
+        checker = dict(checker)['status_id']
         id = await conn.fetch(f""" select max(friend_event_id) from friend_events""")
         id = dict(id[0])['max']
         if id is not None:
             id = int(id) + 1
         else:
             id = 0
-        await conn.execute(f"""
-                        insert into friend_events (friend_event_id, user_id_active, user_id_passive,
-                        update_date, status_id_active, status_id_passive) values(
-                        {id}, '{user_active_id}', '{user_passive_id}', statement_timestamp(), 1, 0)
-        """)
+        if checker is None:
+            await conn.execute(f"""
+                update subscribes
+                    set users_id = array_append(users_id, {user_passive_id}),
+                        status_id = array_append(status_id, 1),
+                        last_update = statement_timestamp()
+                where user_id = {user_active_id}
+            """)
+            await conn.execute(f"""
+                        update subscribes
+                            set users_id = array_append(users_id, {user_active_id}),
+                                status_id = array_append(status_id, 0),
+                                last_update = statement_timestamp()
+                        where user_id = {user_passive_id}
+                    """)
+            await conn.execute(f"""
+                                    insert into friend_events (friend_event_id, user_id_active, user_id_passive,
+                                    update_date, status_id_active, status_id_passive) values(
+                                    {id}, '{user_active_id}', '{user_passive_id}', statement_timestamp(), 1, 0)
+                    """)
+        else:
+            await conn.execute(f"""
+                                    update subscribes
+                                        set status_id[(select array_position(f.users_id, {user_passive_id})
+                                                    from subscribes as f
+                                                    where f.user_id = {user_active_id})] = 1
+                                        where user_id = {user_active_id}
+                                    """)
+            await conn.execute(f"""
+                                    insert into friend_events (friend_event_id, user_id_active, user_id_passive,
+                                    update_date, status_id_active, status_id_passive) values(
+                                    {id}, '{user_active_id}', '{user_passive_id}', statement_timestamp(), 1, 1)
+                    """)
 
     @staticmethod
     async def block_user(user_active_id: str,
                            user_passive_id: str):
         conn = await asyncpg.connect(connection_url)
-        # todo: делает доп запись в БД, убрать
-        await conn.execute(f"""
-            update subscribes
-                set status_id[array_position(users_id, {user_active_id})] = 2
-                where user_id = {user_passive_id}
-        """)
-        await conn.execute(f"""
-            update subscribes
-                set status_id[array_position(users_id, {user_passive_id})] = -1
-                where user_id = {user_active_id}
-        """)
+        checker = await conn.fetchrow(f"""
+                                          select
+                                          status_id[(select array_position(f.users_id, {user_passive_id})
+                                          from subscribes as f
+                                          where f.user_id = {user_active_id})::int]
+                                          from subscribes
+                                          where user_id = {user_active_id}
+                                          """)
+        checker = dict(checker)['status_id']
+        if checker is not None:
+            await conn.execute(f"""
+                update subscribes
+                    set status_id[array_position(users_id, {user_active_id})] = 2
+                    where user_id = {user_passive_id}
+            """)
+            await conn.execute(f"""
+                update subscribes
+                    set status_id[array_position(users_id, {user_passive_id})] = -1
+                    where user_id = {user_active_id}
+            """)
+        else:
+            await conn.execute(f"""
+                                    update subscribes
+                                        set users_id = array_append(users_id, {user_passive_id}),
+                                            status_id = array_append(status_id, -1),
+                                            last_update = statement_timestamp()
+                                    where user_id = {user_active_id}
+                                """)
+            await conn.execute(f"""
+                                   update subscribes
+                                       set users_id = array_append(users_id, {user_active_id}),
+                                           status_id = array_append(status_id, 2),
+                                           last_update = statement_timestamp()
+                                   where user_id = {user_passive_id}
+                                    """)
+
         id = await conn.fetch(f""" select max(friend_event_id) from friend_events""")
         id = dict(id[0])['max']
         if id is not None:
