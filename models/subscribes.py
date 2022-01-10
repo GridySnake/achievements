@@ -101,7 +101,7 @@ class SubscribesGetInfo:
 
 class SubscribesAction:
     """
-    Class for getting information for subscribes
+    Class for make actions for subscribes (follow, unfollow, block, unblock)
     ...
     Attributes
     ----------
@@ -135,8 +135,8 @@ class SubscribesAction:
                                           where user_id = {user_active_id}
                                           """)
         checker = dict(checker)['status_id']
-        id = await conn.fetch(f""" select max(friend_event_id) from friend_events""")
-        id = dict(id[0])['max']
+        id = await conn.fetchrow(f""" select max(friend_event_id) from friend_events""")
+        id = dict(id)['max']
         if id is not None:
             id = int(id) + 1
         else:
@@ -219,8 +219,8 @@ class SubscribesAction:
                                    where user_id = {user_passive_id}
                                     """)
 
-        id = await conn.fetch(f""" select max(friend_event_id) from friend_events""")
-        id = dict(id[0])['max']
+        id = await conn.fetchrow(f""" select max(friend_event_id) from friend_events""")
+        id = dict(id)['max']
         if id is not None:
             id = int(id) + 1
         else:
@@ -291,8 +291,8 @@ class SubscribesAction:
                         where user_id = {user_passive_id}
             """)
 
-        id = await conn.fetch(f""" select max(friend_event_id) from friend_events""")
-        id = dict(id[0])['max']
+        id = await conn.fetchrow(f""" select max(friend_event_id) from friend_events""")
+        id = dict(id)['max']
         if id is not None:
             id = int(id) + 1
         else:
@@ -344,8 +344,8 @@ class SubscribesAction:
                                         where f.user_id = {user_passive_id})+1:]
                             where user_id = {user_passive_id}
                 """)
-        id = await conn.fetch(f""" select max(friend_event_id) from friend_events""")
-        id = dict(id[0])['max']
+        id = await conn.fetchrow(f""" select max(friend_event_id) from friend_events""")
+        id = dict(id)['max']
         if id is not None:
             id = int(id) + 1
         else:

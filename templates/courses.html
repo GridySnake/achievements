@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% set title = "Courses" %}
+
+{% block content %}
+    {% if my_courses %}
+        <p>My courses: </p>
+        {% for course in my_courses %}
+             <div class="box">
+                 <article class="media">
+                     <div class="media-content">
+                         <div class="content">
+                             <p><a href="course/{{ course.course_id }}">{{ course.course_name }}</a></p>
+                             <br>
+                             <p>{{ course.description }}</p>
+                             <br>
+                             <p>{{ course.sphere }}</p>
+                             {% if course.online %}
+                                <p>Online</p>
+                             {% endif %}
+                             {% if course.free %}
+                                <p>Free</p>
+                             {% endif %}
+                             {% if course.new %}
+                                <p>New</p>
+                             {% endif %}
+                             <p>{{ course.joined }} participants</p>
+                             <br>
+                             <br>
+                             <p>Owner:</p>
+                             {% if course.course_owner_type == 0 %}
+                                <p><a href={{ course.course_owner_id }}>{{ course.name }} {{ course.surname }}</a></p>
+                             {% elif course.course_owner_type == 1 %}
+                                <p><a href="community/{{ course.course_owner_id }}">{{ course.community_name }}</a></p>
+                             {% endif %}
+                         </div>
+                     </div>
+                 </article>
+             </div>
+            <br>
+        {% endfor %}
+    {% endif %}
+    <br>
+    {% if courses %}
+        <p>Expected courses:</p>
+        {% for course in courses %}
+             <div class="box">
+                 <article class="media">
+                     <div class="media-content">
+                         <div class="content">
+                             <p><a href="course/{{ course.course_id }}">{{ course.course_name }}</a></p>
+                             <br>
+                             <p>{{ course.description }}</p>
+                             <br>
+                             <p>{{ course.sphere }}</p>
+                             {% if course.online %}
+                                <p>Online</p>
+                             {% endif %}
+                             {% if course.free %}
+                                <p>Free</p>
+                             {% endif %}
+                             {% if course.new %}
+                                <p>New</p>
+                             {% endif %}
+                             <p>{{ course.joined }} participants</p>
+                             <br>
+                             <br>
+                             <p>Owner:</p>
+                             {% if course.course_owner_type == 0 %}
+                                <p><a href={{ course.course_owner_id }}>{{ course.name }} {{ course.surname }}</a></p>
+                             {% elif course.course_owner_type == 1 %}
+                                <p><a href="community/{{ course.course_owner_id }}">{{ course.community_name }}</a></p>
+                             {% endif %}
+                         </div>
+                     </div>
+                 </article>
+             </div>
+            <br>
+        {% endfor %}
+    {% else %}
+        <p>No courses are available</p>
+    {% endif %}
+{% endblock %}
