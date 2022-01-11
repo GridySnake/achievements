@@ -325,6 +325,7 @@ class AchievementsDesireApprove:
 class AchievementsCreate:
     @staticmethod
     async def create_achievement(user_id: str, data):
+        # todo: убрать параметр, иногда только по агрегации создается
         conn = await asyncpg.connect(connection_url)
         id_achi = await conn.fetch(f"""
                 select max(achievement_id)
