@@ -1,6 +1,9 @@
 import aiohttp_jinja2
 from aiohttp import web
 from models.course import *
+from models.information import InfoGet
+from models.community import CommunityGetInfo
+import os
 
 
 class CoursesView(web.View):
@@ -10,9 +13,45 @@ class CoursesView(web.View):
         if 'user' not in self.session:
             return web.HTTPFound(location=self.app.router['login'].url_for())
 
+        own_courses = await CoursesGetInfo.get_own_courses(user_id=self.session['user']['id'])
+        communities = await CommunityGetInfo.get_user_owner_communities(user_id=self.session['user']['id'])
+        languages = await InfoGet.get_languages()
         courses = await CoursesGetInfo.get_user_course_suggestions(user_id=self.session['user']['id'])
         my_courses = await CoursesGetInfo.get_user_courses(user_id=self.session['user']['id'])
-        return dict(courses=courses, my_courses=my_courses)
+        return dict(courses=courses, my_courses=my_courses, languages=languages, communities=communities, own_courses=own_courses)
+
+    async def post(self):
+        if 'user' not in self.session:
+            return web.HTTPFound(location=self.app.router['login'].url_for())
+
+        data = await self.post()
+        print(data['avatar'])
+        avatar = data['avatar']
+        data = dict(data)
+        if 'online' in data.keys():
+            data['online'] = True
+        else:
+            data['online'] = False
+        if 'free' in data.keys():
+            data['free'] = True
+        else:
+            data['free'] = False
+        if 'as_community' in data.keys():
+            data['type'] = 1
+            user_id = data['community']
+        else:
+            data['type'] = 0
+            user_id = self.session['user']['id']
+        no_image = False
+        if data['avatar'] == bytearray(b''):
+            no_image = True
+        else:
+            with open(os.path.join(BaseConfig.STATIC_DIR + '/course_avatar/', avatar.filename), 'wb') as f:
+                content = avatar.file.read()
+                f.write(content)
+            data['avatar'] = avatar.filename
+        await CourseCreate.create_course(user_id=user_id, data=data, no_image=no_image)
+        return web.HTTPFound(location='courses')
 
 
 class CourseInfoView(web.View):

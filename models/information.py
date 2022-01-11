@@ -51,3 +51,22 @@ class InfoGet:
                     """)
         return services
 
+    @staticmethod
+    async def get_languages():
+        conn = await asyncpg.connect(connection_url)
+        languages = await conn.fetch(f"""
+                        select language_id, language_native
+                        from languages
+                        """)
+        return languages
+
+    @staticmethod
+    async def get_language_by_id(language_id):
+        conn = await asyncpg.connect(connection_url)
+        language = await conn.fetch(f"""
+                        select language_native
+                        from languages
+                        where language_id = {language_id}
+                        """)
+        return language
+

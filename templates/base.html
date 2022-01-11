@@ -95,6 +95,13 @@
 </script>
 <script>
     $(document).ready(function() {
+        $('#as_community').on('click', function () {
+            $("#community").show();
+        });
+    });
+</script>
+<script>
+    $(document).ready(function() {
         var drop = JSON.parse('{{ dropdown_json | safe }}');
         $('#select_group').on('change', function () {
             var drop_new = drop.filter(element => element.group_id == $(this).find('option:selected').val());

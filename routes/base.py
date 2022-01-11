@@ -91,6 +91,7 @@ def setup_routes(app):
     app.router.add_route('GET', '/my_posts', PostView.get, name='my_posts')
     app.router.add_route('GET', '/courses', CoursesView.get, name='courses')
     app.router.add_route('POST', '/course_action', CourseInfoView.post, name='course_action')
+    app.router.add_route('POST', '/create_course', CoursesView.post, name='create_course')
     for i in range(len_users):
         app.router.add_route('GET', f'/{i}', PersonalPageView.get, name=f'personal_page_{i}')
         app.router.add_route('GET', f'/chat_{i}', ChatView.get, name=f'chat_{i}')

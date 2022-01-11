@@ -3,6 +3,83 @@
 {% set title = "Courses" %}
 
 {% block content %}
+    <div id="create_course" class="create_course">
+        <form action="{{ url('create_course') }}" method="post" enctype="multipart/form-data">
+            <label>Create new course: </label>
+            <p>Course name</p>
+            <input id="course_name" name="course_name" type="text" value=""/>
+            <p>Bio</p>
+            <input id="description" name="description" type="text" value=""/>
+            <p>Language</p>
+            <select name="language" id="language">
+                {% for i in languages %}
+                    <option value="{{ i.language_id }}">{{ i.language_native }}</option>
+                {% endfor %}
+            </select>
+            <input id="avatar" name="avatar" type="file" value=""/>
+            <p>Sphere</p>
+            <input id="sphere" name="sphere" type="text" value=""/>
+            <p>Create as community</p>
+            <input id="as_community" name="as_community" type="radio"/>
+            <select name="community" id="community" hidden>
+                {% for i in communities %}
+                    <option value="{{ i.community_id }}">{{ i.community_name }}</option>
+                {% endfor %}
+            </select>
+            <p>Level</p>
+            <select name="level" id="level">
+                {% for i in range(4) %}
+                    <option value="{{ i }}">{{ i }}</option>
+                {% endfor %}
+            </select>
+            <p>Online</p>
+            <input id="online" name="online" type="radio"/>
+            <p>Free</p>
+            <input id="free" name="free" type="radio"/>
+            <br>
+            <button type="submit">Send</button>
+        </form>
+    </div>
+    {% if own_courses %}
+        <p>Created courses: </p>
+        {% for course in own_courses %}
+             <div class="box">
+                 <article class="media">
+                     <div class="media-content">
+                         <div class="content">
+                             <p><a href="course/{{ course.course_id }}">{{ course.course_name }}</a></p>
+                             <br>
+                             <p>{{ course.description }}</p>
+                             <br>
+                             <p>{{ course.language_native }}</p>
+                             <br>
+                             <p>{{ course.sphere }}</p>
+                             {% if course.online %}
+                                <p>Online</p>
+                             {% endif %}
+                             {% if course.free %}
+                                <p>Free</p>
+                             {% endif %}
+                             {% if course.new %}
+                                <p>New</p>
+                             {% endif %}
+                             <p>{{ course.joined }} participants</p>
+                             <br>
+                             <br>
+                             <p>Owner:</p>
+                             {% if course.course_owner_type == 0 %}
+                                <p><a href={{ course.course_owner_id }}>{{ course.name }} {{ course.surname }}</a></p>
+                             {% elif course.course_owner_type == 1 %}
+                                <p><a href="community/{{ course.course_owner_id }}">{{ course.community_name }}</a></p>
+                             {% endif %}
+                         </div>
+                     </div>
+                 </article>
+             </div>
+            <br>
+        {% endfor %}
+    {% endif %}
+    <br>
     {% if my_courses %}
         <p>My courses: </p>
         {% for course in my_courses %}
@@ -13,6 +90,8 @@
                              <p><a href="course/{{ course.course_id }}">{{ course.course_name }}</a></p>
                              <br>
                              <p>{{ course.description }}</p>
+                             <br>
+                             <p>{{ course.language_native }}</p>
                              <br>
                              <p>{{ course.sphere }}</p>
                              {% if course.online %}
@@ -51,6 +130,8 @@
                              <p><a href="course/{{ course.course_id }}">{{ course.course_name }}</a></p>
                              <br>
                              <p>{{ course.description }}</p>
+                             <p>{{ course.language_native }}</p>
+                             <br>
                              <br>
                              <p>{{ course.sphere }}</p>
                              {% if course.online %}

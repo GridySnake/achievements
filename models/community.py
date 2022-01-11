@@ -6,7 +6,6 @@ connection_url = BaseConfig.database_url
 
 class CommunityGetInfo:
 
-
     @staticmethod
     async def get_user_communities(user_id):
         conn = await asyncpg.connect(connection_url)
