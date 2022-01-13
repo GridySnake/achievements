@@ -195,7 +195,7 @@ class UserVerifyAvatar:
         conn = await asyncpg.connect(connection_url)
         if url is not None and user_id is not None:
             image_id = await conn.fetchrow(f"""SELECT MAX(image_id) FROM images""")
-            image_id = dict(image_id[0])['max']
+            image_id = dict(image_id)['max']
             if image_id is not None:
                 image_id = int(image_id) + 1
             else:

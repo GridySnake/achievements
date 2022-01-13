@@ -16,7 +16,6 @@ class CommunitiesView(web.View):
         community_types = set([i['community_type'] for i in conditions])
         values = [dict(record) for record in conditions]
         dropdown_community = json.dumps(values).replace("</", "<\\/")
-        print(dropdown_community)
         user_id = self.session['user']['id']
         owner_communities = await CommunityGetInfo.get_user_owner_communities(user_id=user_id)
         communities = await CommunityGetInfo.get_user_communities(user_id=user_id)

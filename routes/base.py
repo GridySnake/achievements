@@ -1,10 +1,11 @@
-from handlers.base import Login, Signup, Logout, Verify, NeedVerify
-from handlers.posts import PostView
-from handlers.avatar import Avatar
-from handlers.subscribes import SubscribesView, MySubscribesView
-from handlers.messages import MessageView
-from handlers.achievements import AchievementsView, AchievementsVerificationView, AchievementInfoView, AchievementDesireView
-from handlers.communities import CommunitiesView, CommunitiesInfoView
+from handlers.base import *
+from handlers.posts import *
+from handlers.avatar import *
+from handlers.subscribes import *
+from handlers.messages import *
+from handlers.achievements import *
+from handlers.communities import *
+from handlers.courses import *
 from handlers.personal_page import PersonalPageView
 from handlers.chat import ChatView
 from handlers.user_info import UserInfoView
@@ -54,6 +55,11 @@ select community_id
 from communities
 """).fetchall()]
 
+courses = [str(i).split(',')[0][1:] for i in engine.execute(f"""
+select course_id 
+from courses
+""").fetchall()]
+
 
 def setup_routes(app):
     app.router.add_route('GET', '/login', Login.get, name='login')
@@ -86,6 +92,9 @@ def setup_routes(app):
     app.router.add_route('GET', '/my_posts', PostView.get, name='my_posts')
     app.router.add_route('GET', '/goals', GoalView.get, name='goals')
 
+    app.router.add_route('GET', '/courses', CoursesView.get, name='courses')
+    app.router.add_route('POST', '/course_action', CourseInfoView.post, name='course_action')
+    app.router.add_route('POST', '/create_course', CoursesView.post, name='create_course')
     for i in range(len_users):
         app.router.add_route('GET', f'/{i}', PersonalPageView.get, name=f'personal_page_{i}')
         app.router.add_route('GET', f'/chat_{i}', ChatView.get, name=f'chat_{i}')
@@ -101,6 +110,8 @@ def setup_routes(app):
         app.router.add_route('GET', f'/verify_achievement/service/{i}', AchievementsVerificationView.get, name=f'verify_achievement_service_{i}')
     for i in communities:
         app.router.add_route('GET', f'/community/{i}', CommunitiesInfoView.get, name=f'community_{i}')
+    for i in courses:
+        app.router.add_route('GET', f'/course/{i}', CourseInfoView.get, name=f'course_{i}')
     setup_swagger(app)
 
 

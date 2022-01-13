@@ -34,7 +34,6 @@ class MySubscribesView(web.View):
         subscribers_active = [i for i in subscribers if i['status_passive'] == 1]
         subscribers_passive = [i for i in subscribers if i['status_active'] == 1]
         blocked = [i for i in subscribers if i['status_active'] == -1]
-        print(subscribers_active, subscribers_passive)
         return dict(subscribers_active=subscribers_active, subscribers_passive=subscribers_passive, blocked=blocked)
 
     async def post(self):

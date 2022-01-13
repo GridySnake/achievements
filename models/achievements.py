@@ -307,11 +307,11 @@ class AchievementsDesireApprove:
     @staticmethod
     async def approve_achievement(user_active_id: str, user_passive_id: str, achievement_id: str):
         conn = await asyncpg.connect(connection_url)
-        id = await conn.fetch(f"""
+        id = await conn.fetchrow(f"""
                         select max(approvement_id)
                         from approve_achievements
                         """)
-        id = dict(id[0])['max']
+        id = dict(id)['max']
         if id is not None:
             id = int(id) + 1
         else:
@@ -325,6 +325,7 @@ class AchievementsDesireApprove:
 class AchievementsCreate:
     @staticmethod
     async def create_achievement(user_id: str, data):
+        # todo: убрать параметр, иногда только по агрегации создается
         conn = await asyncpg.connect(connection_url)
         id_achi = await conn.fetch(f"""
                 select max(achievement_id)

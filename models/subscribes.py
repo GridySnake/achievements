@@ -1,13 +1,33 @@
-import sys
-
 import asyncpg
 from config.common import BaseConfig
 connection_url = BaseConfig.database_url
 
 
 class SubscribesGetInfo:
+    """
+    Class for getting information for subscribes
+    ...
+    Attributes
+    ----------
+    None
+
+    Methods
+    -------
+    get_user_subscribes_suggestions(user_id: str)
+        Give users witch have no connection to user
+    get_user_subscribes_names(user_id: str)
+        Give information about subscribers
+    get_subscribers(user_id: str)
+        Give list of active and passive subscribers
+    is_block(user_active_id: str, user_passive_id: str)
+        Give status of follower
+    """
     @staticmethod
     async def get_user_subscribes_suggestions(user_id: str):
+        """
+        :param user_id: str
+        :return: list of asyncpg records: user_id, name, surname, href
+        """
         conn = await asyncpg.connect(connection_url)
         users = await conn.fetch(f"""select u.user_id, u.name, u.surname, img.href
                                      from users_information as u 
@@ -21,6 +41,10 @@ class SubscribesGetInfo:
 
     @staticmethod
     async def get_user_subscribes_names(user_id: str):
+        """
+        :param user_id: str
+        :return: list of asyncpg records: user_id, name, surname, href
+        """
         conn = await asyncpg.connect(connection_url)
         users = await conn.fetch(f"""
                 select u.user_id, u.name, u.surname, a.href
@@ -35,6 +59,10 @@ class SubscribesGetInfo:
 
     @staticmethod
     async def get_subscribers(user_id: str):
+        """
+        :param user_id: str
+        :return: list of asyncpg records: user_id, name, surname, status_active, status_passive, href
+        """
         conn = await asyncpg.connect(connection_url)
         subscribes = await conn.fetch(f"""
                                           select distinct(u.user_id), u.name, u.surname, f.status_id as status_active, f1.status_id as status_passive, img.href
@@ -49,8 +77,12 @@ class SubscribesGetInfo:
         return subscribes
 
     @staticmethod
-    async def is_block(user_active_id: str,
-                       user_passive_id: str):
+    async def is_block(user_active_id: str, user_passive_id: str):
+        """
+        :param user_active_id: str
+        :param user_passive_id: str
+        :return: asyncpg record: status_id
+        """
         conn = await asyncpg.connect(connection_url)
         block = await conn.fetch(f"""
                         select f.status_id
@@ -60,12 +92,39 @@ class SubscribesGetInfo:
 						left join images as img on img.image_id = u.image_id[array_upper(u.image_id, 1)]
                         where f.user_id = {user_active_id} and u.user_id={user_passive_id}
         """)
+        if block == 2:
+            block = True
+        else:
+            block = False
         return block
 
 
 class SubscribesAction:
+    """
+    Class for make actions for subscribes (follow, unfollow, block, unblock)
+    ...
+    Attributes
+    ----------
+    None
+
+    Methods
+    -------
+    subscribe_user(user_active_id: str, user_passive_id: str)
+        Subscribe user
+    block_user(user_active_id: str, user_passive_id: str)
+        Block user
+    unsubscribe_user(user_active_id: str, user_passive_id: str)
+        Unsubscribe user which user has been followed
+    unblock_user(user_active_id: str, user_passive_id: str)
+        Unblock user which user has been blocked
+    """
     @staticmethod
     async def subscribe_user(user_active_id: str, user_passive_id: str):
+        """
+        :param user_active_id: str
+        :param user_passive_id: str
+        :return: None
+        """
         conn = await asyncpg.connect(connection_url)
         checker = await conn.fetchrow(f"""
                                           select
@@ -76,8 +135,8 @@ class SubscribesAction:
                                           where user_id = {user_active_id}
                                           """)
         checker = dict(checker)['status_id']
-        id = await conn.fetch(f""" select max(friend_event_id) from friend_events""")
-        id = dict(id[0])['max']
+        id = await conn.fetchrow(f""" select max(friend_event_id) from friend_events""")
+        id = dict(id)['max']
         if id is not None:
             id = int(id) + 1
         else:
@@ -117,8 +176,12 @@ class SubscribesAction:
                     """)
 
     @staticmethod
-    async def block_user(user_active_id: str,
-                           user_passive_id: str):
+    async def block_user(user_active_id: str, user_passive_id: str):
+        """
+        :param user_active_id: str
+        :param user_passive_id: str
+        :return: None
+        """
         conn = await asyncpg.connect(connection_url)
         checker = await conn.fetchrow(f"""
                                           select
@@ -156,8 +219,8 @@ class SubscribesAction:
                                    where user_id = {user_passive_id}
                                     """)
 
-        id = await conn.fetch(f""" select max(friend_event_id) from friend_events""")
-        id = dict(id[0])['max']
+        id = await conn.fetchrow(f""" select max(friend_event_id) from friend_events""")
+        id = dict(id)['max']
         if id is not None:
             id = int(id) + 1
         else:
@@ -170,7 +233,11 @@ class SubscribesAction:
 
     @staticmethod
     async def unsubscribe_user(user_active_id: str, user_passive_id: str):
-        # todo: fixing
+        """
+        :param user_active_id: str
+        :param user_passive_id: str
+        :return: None
+        """
         conn = await asyncpg.connect(connection_url)
         checker = await conn.fetchrow(f"""
                                           select
@@ -181,7 +248,6 @@ class SubscribesAction:
                                           where user_id = {user_passive_id}
                                               """)
         checker = dict(checker)['status_id']
-        print(checker)
         if checker == 1:
             await conn.execute(f"""
                                 update subscribes
@@ -225,8 +291,8 @@ class SubscribesAction:
                         where user_id = {user_passive_id}
             """)
 
-        id = await conn.fetch(f""" select max(friend_event_id) from friend_events""")
-        id = dict(id[0])['max']
+        id = await conn.fetchrow(f""" select max(friend_event_id) from friend_events""")
+        id = dict(id)['max']
         if id is not None:
             id = int(id) + 1
         else:
@@ -240,6 +306,11 @@ class SubscribesAction:
 
     @staticmethod
     async def unblock_user(user_active_id: str, user_passive_id: str):
+        """
+        :param user_active_id: str
+        :param user_passive_id: str
+        :return: None
+        """
         conn = await asyncpg.connect(connection_url)
         await conn.execute(f"""
                         update subscribes
@@ -273,8 +344,8 @@ class SubscribesAction:
                                         where f.user_id = {user_passive_id})+1:]
                             where user_id = {user_passive_id}
                 """)
-        id = await conn.fetch(f""" select max(friend_event_id) from friend_events""")
-        id = dict(id[0])['max']
+        id = await conn.fetchrow(f""" select max(friend_event_id) from friend_events""")
+        id = dict(id)['max']
         if id is not None:
             id = int(id) + 1
         else:

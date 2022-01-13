@@ -95,6 +95,13 @@
 </script>
 <script>
     $(document).ready(function() {
+        $('#as_community').on('click', function () {
+            $("#community").show();
+        });
+    });
+</script>
+<script>
+    $(document).ready(function() {
         var drop = JSON.parse('{{ dropdown_json | safe }}');
         $('#select_group').on('change', function () {
             var drop_new = drop.filter(element => element.group_id == $(this).find('option:selected').val());
@@ -186,6 +193,8 @@
                 <a class="navbar-item" href="{{ url('messages') }}">My messages</a>
                 <a class="navbar-item" href="{{ url('achievements') }}">Achievements</a>
                 <a class="navbar-item" href="{{ url('posts') }}">Posts</a>
+                <a class="navbar-item" href="{{ url('community') }}">Communities</a>
+                <a class="navbar-item" href="{{ url('courses') }}">Courses</a>
                 <a class="navbar-item" href="{{ url('user_info') }}">User info</a>
                 <a class="navbar-item" href="{{ url('goals') }}"> Goals </a>
             {% endif %}
