@@ -17,6 +17,11 @@ class Post:
             post_id = int(post_id['max']) + 1
         else:
             post_id = 0
+
+        if user_id is None:
+            user_id = 'null'
+        else:
+            user_id = int(user_id)
         if community_id is None:
             community_id = 'null'
         else:
@@ -39,7 +44,7 @@ class Post:
             """)
         data = {
             'post_id': post_id,
-            'user_id': int(user_id),
+            'user_id': user_id,
             'community_id': community_id,
             'course_id': course_id,
             'message': message,

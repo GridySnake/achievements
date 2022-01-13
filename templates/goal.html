@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% set title = "Goals" %}
+
+{% block content %}
+    {% if goals %}
+        <div class="columns">
+            <div class="column">
+                <p>Goals:</p>
+                    {% for goal in goals %}
+                        <div class="box">
+                            <article class="media">
+                                <div class="media-content">
+                                    <div class="content">
+                                        <p><a href="achievement/{{ goal.achievement_id }}">{{ goal.name }}</a></p>
+                                    </div>
+                                </div>
+                            </article>
+                        </div>
+                    {% endfor %}
+    {% else %}
+        <p>You don't have goals yet :(</p>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
