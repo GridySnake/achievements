@@ -1,3 +1,4 @@
+import pandas as pd
 import requests
 
 
@@ -33,5 +34,22 @@ class Chesscom:
         request = requests.get(f'https://api.chess.com/pub/leaderboards').json()
         return request
 
+# print(Chesscom.get_player_stats('crazyniga1917'))
+# d = Chesscom.get_player_stats('crazyniga1917') #player_id, followers, joined, status, is_streamer
+# # a=[]
+# print('get_player_stats')
+# for k,v in d.items():
+#     print(k,v)
 
-# print(Chesscom.get_player_profile('crazyniga1917')) #player_id, followers, joined, status, is_streamer
+# d = Chesscom.get_player_profile('crazyniga1917')
+# print('get_player_profile')
+# print(d)
+# for i in d:
+#     for k,v in d.items():
+#         if k != 'fide':
+#             for l, s in v.items():
+#                 if l == 'last':
+#                     for m,n in s.items():
+#                         if m == 'date':
+#                             a.append(n)
+# print(pd.Timestamp(a[0]))

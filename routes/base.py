@@ -9,6 +9,7 @@ from handlers.courses import *
 from handlers.personal_page import PersonalPageView
 from handlers.chat import ChatView
 from handlers.user_info import UserInfoView
+from handlers.goal import GoalView
 from config.common import BaseConfig
 # from sqlalchemy import create_engine
 from aiohttp_swagger import *
@@ -89,6 +90,8 @@ def setup_routes(app):
     app.router.add_route('POST', '/join_community', CommunitiesInfoView.post, name='join_community')
     app.router.add_route('GET', '/posts', PostView.get, name='posts')
     app.router.add_route('GET', '/my_posts', PostView.get, name='my_posts')
+    app.router.add_route('GET', '/goals', GoalView.get, name='goals')
+
     app.router.add_route('GET', '/courses', CoursesView.get, name='courses')
     app.router.add_route('GET', r'/chat/{i}', ChatView.get, name='chat')
     app.router.add_route('GET', r'/verify/{i}', Verify.get, name='verify_i')
