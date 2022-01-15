@@ -158,6 +158,39 @@
         });
     });
 </script>
+
+<script>
+var counter = 1;
+var dynamicInput = [];
+
+function addInput(){
+    var newdiv = document.createElement('div');
+    newdiv.id = dynamicInput[counter];
+    newdiv.innerHTML = " <br><p>Name        Description     Type   Chapter    Subchapter  Page</p>" +
+        "<br><input type=\"text\" name=\"name"+counter+"\">\n" +
+        "         <input type=\"text\" name=\"description"+counter+"\">\n" +
+        "         <select name=\"type"+counter+"\">\n" +
+        "             <option value=\"photo\">Photo</option>\n" +
+        "             <option value=\"photo\">Video</option>\n" +
+        "             <option value=\"document\">Document</option>\n" +
+        "             <option value=\"PDF\">PDF</option>\n" +
+        "             <option value=\"test\">Test: json</option>\n" +
+        "             <option value=\"none\">None</option>\n" +
+        "         </select>\n" +
+        "         <input name=\"file"+counter+"\" type=\"file\" value=\"\"/>" +
+        "         <input type=\"radio\" name=\"chapter"+counter+"\">\n" +
+        "         <input type=\"radio\" name=\"subchapter"+counter+"\">\n" +
+        "         <input type=\"text\" name=\"page"+counter+"\"> <input type='button' value='-' onClick='removeInput("+dynamicInput[counter]+");'>";
+    document.getElementById('formulario').appendChild(newdiv);
+    counter++;
+}
+
+  function removeInput(id){
+    var elem = document.getElementById(id);
+    counter--;
+    return elem.parentNode.removeChild(elem);
+  }
+</script>
 <!--<script>-->
 <!--        $(document).ready(function() {-->
 <!--            $('#select_group').on('change', function () {-->

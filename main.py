@@ -39,7 +39,7 @@ def setup_middlewares(app):
 
 
 def main():
-    app = web.Application(debug=True)
+    app = web.Application(client_max_size=1000000000000000000, debug=True)
 
     secret_key = base64.urlsafe_b64decode(BaseConfig.secret_key)
     setup(app, EncryptedCookieStorage(secret_key))

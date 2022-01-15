@@ -25,7 +25,6 @@ class CoursesView(web.View):
             return web.HTTPFound(location=self.app.router['login'].url_for())
 
         data = await self.post()
-        print(data['avatar'])
         avatar = data['avatar']
         data = dict(data)
         if 'online' in data.keys():
@@ -85,9 +84,77 @@ class CourseContent(web.View):
         if 'user' not in self.session:
             return web.HTTPFound(location=self.app.router['login'].url_for())
 
-        course_id = str(self).split('/')[1]
+        course_id = str(self).split('/')[2]
         page = str(self).split('/course_content/')[-1][:-2]
-        count = await CourseContent.count_course_content(course_id=course_id)
-        page_content = await CourseContent.course_content_page(course_id=course_id, page=page)
-        navigation = await CourseContent.course_content_navigation(course_id=course_id)
-        return dict(count=count, page_content=page_content, navigation=navigation)
+        count = await CourseContentModel.count_course_content(course_id=course_id)
+        page_content = await CourseContentModel.course_content_page(course_id=course_id, page=page)
+        navigation = await CourseContentModel.course_content_navigation(course_id=course_id)
+        print(navigation)
+        return dict(count=count, page_content=page_content, navigation=navigation, page=int(page), course_id=course_id)
+
+
+class CourseContentCreate(web.View):
+    @aiohttp_jinja2.template('course_create_content.html')
+    async def get(self):
+        if 'user' not in self.session:
+            return web.HTTPFound(location=self.app.router['login'].url_for())
+
+        return dict()
+
+    async def post(self):
+        if 'user' not in self.session:
+            return web.HTTPFound(location=self.app.router['login'].url_for())
+
+        data = await self.post()
+        course_id = str(self.__dict__['_message']).split('Referer')[-1].split(',')[1].split('/')[-1][:-2]
+        content = {'name': [], 'description': [], 'type': [], 'page': []}
+        for i in data.keys():
+            if 'name' in i:
+                content['name'].append(data[i])
+            elif 'description' in i:
+                content['description'].append(data[i])
+            elif 'type' in i:
+                content['type'].append(data[i])
+            elif 'page' in i:
+                content['page'].append(data[i])
+        chapters = [False for i in range(len(content['name']))]
+        if len([i for i in data.keys() if 'chapter' in i and 'sub' not in i]) > 0:
+            for j in [int(i.replace('chapter', '')) for i in data.keys() if 'chapter' in i and 'sub' not in i]:
+                chapters[j] = True
+        content['chapter'] = chapters
+        subchapters = [False for i in range(len(content['name']))]
+        if len([i for i in data.keys() if 'subchapter' in i]) > 0:
+            for j in [int(i.replace('subchapter', '')) for i in data.keys() if 'subchapter' in i]:
+                subchapters[j] = True
+        content['subchapter'] = subchapters
+        paths = ['' for i in range(len(content['name']))]
+        for i in range(len(content['type'])):
+            if content['type'][i] == 'photo':
+                photo = data[f'file{i}']
+                with open(os.path.join(BaseConfig.STATIC_DIR + f'/course_content/course_{course_id}', photo.filename), 'wb') as f:
+                    contents = photo.file.read()
+                    f.write(contents)
+                paths[i] = photo.filename
+            elif content['type'][i] == 'video':
+                video = data[f'file{i}']
+                with open(os.path.join(BaseConfig.STATIC_DIR + f'/course_content/course_{course_id}', video.filename), 'wb') as f:
+                    contents = video.file.read()
+                    f.write(contents)
+                paths[i] = video.filename
+            elif content['type'][i] == 'document':
+                doc = data[f'file{i}']
+                with open(os.path.join(BaseConfig.STATIC_DIR + f'/course_content/course_{course_id}', doc.filename), 'wb') as f:
+                    contents = doc.file.read()
+                    f.write(contents)
+                paths[i] = doc.filename
+            elif content['type'][i] == 'PDF':
+                pdf = data[f'file{i}']
+                with open(os.path.join(BaseConfig.STATIC_DIR + f'/course_content/course_{course_id}', pdf.filename), 'wb') as f:
+                    contents = pdf.file.read()
+                    f.write(contents)
+                    paths[i] = pdf.filename
+            elif content['type'][i] == 'test':
+                print('test')
+        content['path'] = paths
+        await CourseContentModel.course_create_content(course_id=course_id, content=content)
+        return web.HTTPFound(location=f'/course/{course_id}')

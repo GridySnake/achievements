@@ -32,12 +32,12 @@
                 {% endif %}
             </div>
             {% if in_course %}
+                <a href="/course/{{ course.course_id }}/course_content/0" class="button">Go to course</a>
                 <form action="{{ url('course_action') }}" method="post">
                      <input type="hidden" name="leave" value=False>
                      <button type="submit">Leave</button>
                 </form>
             {% else %}
-                <a href="/course_content/{{ 0 }}" class="button">Go to course</a>
                 <form action="{{ url('course_action') }}" method="post">
                      <input type="hidden" name="join" value=True>
                      <button type="submit">Join</button>

@@ -126,6 +126,16 @@ class CoursesGetInfo:
                                         """)
         return result['result']
 
+    @staticmethod
+    async def get_course_owner(course_id: str):
+        conn = await asyncpg.connect(connection_url)
+        owner = await conn.fetchrow(f"""
+                                        select course_owner_id, course_owner_type
+                                        from courses
+                                        where course_id = {course_id}
+                                    """)
+        return owner
+
 
 class CoursesAction:
     """
@@ -264,7 +274,7 @@ class CourseCreate:
                             """)
 
 
-class CourseContent:
+class CourseContentModel:
     @staticmethod
     async def count_course_content(course_id: str):
         conn = await asyncpg.connect(connection_url)
@@ -278,7 +288,7 @@ class CourseContent:
     @staticmethod
     async def course_content_page(course_id: str, page: str):
         conn = await asyncpg.connect(connection_url)
-        content = await conn.fetch(f"""
+        content = await conn.fetchrow(f"""
                                        select content_type, content_name, content_description, content_path
                                        from courses_content
                                        where course_id = {course_id} and content_page = {page}
@@ -292,5 +302,27 @@ class CourseContent:
                                         select content_name, is_title, is_subtitle, content_page
                                         from courses_content
                                         where course_id = {course_id}
+                                        order by content_page
                                     """)
         return content
+
+    @staticmethod
+    async def course_create_content(course_id: str, content: dict):
+        conn = await asyncpg.connect(connection_url)
+        content_id = await conn.fetchrow("""select max(content_id) from courses_content""")
+        content_type_dict = {'document': 0, 'photo': 1, 'video': 2, 'PDF': 3, 'test': 4}
+        if content_id['max'] is None:
+            content_id = -1
+        else:
+            content_id = content_id['max']
+        for i in range(len(content['name'])):
+            content_id += 1
+            await conn.execute(f"""
+                                   insert into courses_content (content_id, content_name, content_description, 
+                                       content_type, content_path, is_title, is_subtitle, course_id, content_page) 
+                                       values({content_id}, '{content['name'][i]}', '{content['description'][i]}', 
+                                       '{content_type_dict[content['type'][i]]}', '{content['path'][i]}', 
+                                       {content['chapter'][i]}, {content['subchapter'][i]}, {course_id}, 
+                                       {content['page'][i]})
+                                """)
+

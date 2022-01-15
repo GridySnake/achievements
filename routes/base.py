@@ -91,6 +91,7 @@ def setup_routes(app):
     app.router.add_route('GET', '/posts', PostView.get, name='posts')
     app.router.add_route('GET', '/my_posts', PostView.get, name='my_posts')
     app.router.add_route('GET', '/goals', GoalView.get, name='goals')
+    app.router.add_route('POST', '/add_content', CourseContentCreate.post, name='add_content')
 
     app.router.add_route('GET', '/courses', CoursesView.get, name='courses')
     app.router.add_route('GET', r'/chat/{i}', ChatView.get, name='chat')
@@ -103,10 +104,11 @@ def setup_routes(app):
     app.router.add_route('POST', '/course_action', CourseInfoView.post, name='course_action')
     app.router.add_route('POST', '/create_course', CoursesView.post, name='create_course')
     app.router.add_route('GET', r'/course/{i}', CourseInfoView.get, name='course')
-    app.router.add_route('GET', r'/course_content/{i}', CourseContent.get, name='course_content')
+    app.router.add_route('GET', r'/course/{i}/course_content/{j}', CourseContent.get, name='course_content')
+    app.router.add_route('GET', r'/create_course_content/{i}', CourseContentCreate.get, name='create_course_content')
 
     # ставим в конец
-    app.router.add_route('GET', r'/{i}', PersonalPageView.get, name='personal_page')
+    app.router.add_route('GET', r'/user/{i}', PersonalPageView.get, name='personal_page')
     setup_swagger(app)
 
 

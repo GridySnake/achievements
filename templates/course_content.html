@@ -4,6 +4,46 @@
 
 {% block content %}
 
-<video src="/static/course_content/course_1/ScreenRecorderProject2.mp4" autoplay controls height="50%" width="50%" ></video>
+<p>{{ page_content.content_name }}</p>
+<br>
+<p>{{ page_content.content_description }}</p>
+<br>
+<br>
+{% if navigation %}
+    <p>Table of content: </p>
+    {% for content in navigation %}
+        {% if is_title %}
+            <p style="font-weight: bold"><a href="/course/{{ course_id }}/course_content/{{ content_page }}">{{ content.content_name }}</a></p>
+        {% elif is_subtitle %}
+            <p style="font-weight: bolder"><a href="/course/{{ course_id }}/course_content/{{ content_page }}">{{ content.content_name }}</a></p>
+        {% else %}
+            <p><a href="/course/{{ course_id }}/course_content/{{ content_page }}">{{ content.content_name }}</a></p>
+        {% endif %}
+    {% endfor %}
+{% endif %}
+{% if page_content.content_type == 0 %}
+    <iframe src="{{ url('static', filename='course_content/course_' + course_id + '/' + page_content.content_path) }}" ></iframe>
+{% elif page_content.content_type == 3 %}
+    <iframe src="{{ url('static', filename='course_content/course_' + course_id + '/' + page_content.content_path) }}" ></iframe>
+{% elif page_content.content_type == 1 %}
+    <img src="{{ url('static', filename='course_content/course_' + course_id + '/' + page_content.content_path) }}">
+{% elif page_content.content_type == 2 %}
+    <video src="{{ url('static', filename='course_content/course_' + course_id + '/' + page_content.content_path) }}" autoplay controls></video>
+{% else %}
+    <p>No content</p>
+{% endif %}
+{% set next = page + 1 %}
+{% set back = page - 1 %}
+<br>
+{% if count < 1 %}
+    <p></p>
+{% elif page == 0 %}
+    <a href="/course/{{ course_id }}/course_content/{{ next }}" class="button">Next</a>
+{% elif next == count %}
+    <a href="/course/{{ course_id }}/course_content/{{ back }}" class="button">Back</a>
+{% else %}
+    <a href="/course/{{ course_id }}/course_content/{{ back }}" class="button">Back</a>
+    <a href="/course/{{ course_id }}/course_content/{{ next }}" class="button">Next</a>
+{% endif %}
 
 {% endblock %}
