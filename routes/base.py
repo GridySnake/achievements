@@ -10,54 +10,54 @@ from handlers.personal_page import PersonalPageView
 from handlers.chat import ChatView
 from handlers.user_info import UserInfoView
 from config.common import BaseConfig
-from sqlalchemy import create_engine
+# from sqlalchemy import create_engine
 from aiohttp_swagger import *
 #todo: изменить ссылки на страницы, а то из подтврждения ачивок не падаем на нужные страницы
-engine = create_engine(BaseConfig.database_url)
+# engine = create_engine(BaseConfig.database_url)
 
-len_users = len(engine.execute(f"""
-select user_id
-from users_main
-""").fetchall())
-
-verify = [str(i[0]) for i in engine.execute(f"""
-select verifying_token
-from authentication
-where verifying_token is not null
-""").fetchall()]
-
-verify_achievement_qr = [str(i[0]) for i in engine.execute(f"""
-select value
-from achi_conditions
-where achi_condition_group_id = 1
-""").fetchall()]
-
-verify_achievement_location = [str(i[0]) for i in engine.execute(f"""
-select condition_id
-from achi_conditions
-where achi_condition_group_id = 2
-""").fetchall()]
-
-verify_achievement_service = [str(i[0]) for i in engine.execute(f"""
-select parameter
-from achi_conditions
-where achi_condition_group_id = 3
-""").fetchall()]
-
-achievements = [str(i[0]) for i in engine.execute(f"""
-select achievement_id 
-from achievements
-""").fetchall()]
-
-communities = [str(i).split(',')[0][1:] for i in engine.execute(f"""
-select community_id 
-from communities
-""").fetchall()]
-
-courses = [str(i).split(',')[0][1:] for i in engine.execute(f"""
-select course_id 
-from courses
-""").fetchall()]
+# len_users = len(engine.execute(f"""
+# select user_id
+# from users_main
+# """).fetchall())
+#
+# verify = [str(i[0]) for i in engine.execute(f"""
+# select verifying_token
+# from authentication
+# where verifying_token is not null
+# """).fetchall()]
+#
+# verify_achievement_qr = [str(i[0]) for i in engine.execute(f"""
+# select value
+# from achi_conditions
+# where achi_condition_group_id = 1
+# """).fetchall()]
+#
+# verify_achievement_location = [str(i[0]) for i in engine.execute(f"""
+# select condition_id
+# from achi_conditions
+# where achi_condition_group_id = 2
+# """).fetchall()]
+#
+# verify_achievement_service = [str(i[0]) for i in engine.execute(f"""
+# select parameter
+# from achi_conditions
+# where achi_condition_group_id = 3
+# """).fetchall()]
+#
+# achievements = [str(i[0]) for i in engine.execute(f"""
+# select achievement_id
+# from achievements
+# """).fetchall()]
+#
+# communities = [str(i).split(',')[0][1:] for i in engine.execute(f"""
+# select community_id
+# from communities
+# """).fetchall()]
+#
+# courses = [str(i).split(',')[0][1:] for i in engine.execute(f"""
+# select course_id
+# from courses
+# """).fetchall()]
 
 
 def setup_routes(app):
@@ -90,25 +90,20 @@ def setup_routes(app):
     app.router.add_route('GET', '/posts', PostView.get, name='posts')
     app.router.add_route('GET', '/my_posts', PostView.get, name='my_posts')
     app.router.add_route('GET', '/courses', CoursesView.get, name='courses')
+    app.router.add_route('GET', r'/chat/{i}', ChatView.get, name='chat')
+    app.router.add_route('GET', r'/verify/{i}', Verify.get, name='verify_i')
+    app.router.add_route('GET', r'/verify_achievement/qr/{i}', AchievementsVerificationView.get, name='verify_achievement_qr')
+    app.router.add_route('GET', r'/achievement/{i}', AchievementInfoView.get, name='achievement')
+    app.router.add_route('GET', r'/verify_achievement/location/{i}', AchievementsVerificationView.get, name='verify_achievement_location')
+    app.router.add_route('GET', r'/verify_achievement/service/{i}', AchievementsVerificationView.get, name='verify_achievement_service')
+    app.router.add_route('GET', r'/community/{i}', CommunitiesInfoView.get, name='community_info')
     app.router.add_route('POST', '/course_action', CourseInfoView.post, name='course_action')
     app.router.add_route('POST', '/create_course', CoursesView.post, name='create_course')
-    for i in range(len_users):
-        app.router.add_route('GET', f'/{i}', PersonalPageView.get, name=f'personal_page_{i}')
-        app.router.add_route('GET', f'/chat_{i}', ChatView.get, name=f'chat_{i}')
-    for i in verify:
-        app.router.add_route('GET', f'/verify/{i}', Verify.get, name=f'verify_{i}')
-    for i in verify_achievement_qr:
-        app.router.add_route('GET', f'/verify_achievement/qr/{i}', AchievementsVerificationView.get, name=f'verify_achievement_qr_{i}')
-    for i in achievements:
-        app.router.add_route('GET', f'/achievement/{i}', AchievementInfoView.get, name=f'achievement_{i}')
-    for i in verify_achievement_location:
-        app.router.add_route('GET', f'/verify_achievement/location/{i}', AchievementsVerificationView.get, name=f'verify_achievement_location_{i}')
-    for i in verify_achievement_service:
-        app.router.add_route('GET', f'/verify_achievement/service/{i}', AchievementsVerificationView.get, name=f'verify_achievement_service_{i}')
-    for i in communities:
-        app.router.add_route('GET', f'/community/{i}', CommunitiesInfoView.get, name=f'community_{i}')
-    for i in courses:
-        app.router.add_route('GET', f'/course/{i}', CourseInfoView.get, name=f'course_{i}')
+    app.router.add_route('GET', r'/course/{i}', CourseInfoView.get, name='course')
+    app.router.add_route('GET', r'/course_content/{i}', CourseContent.get, name='course_content')
+
+    # ставим в конец
+    app.router.add_route('GET', r'/{i}', PersonalPageView.get, name='personal_page')
     setup_swagger(app)
 
 

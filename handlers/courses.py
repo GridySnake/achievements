@@ -60,6 +60,7 @@ class CourseInfoView(web.View):
     async def get(self):
         if 'user' not in self.session:
             return web.HTTPFound(location=self.app.router['login'].url_for())
+
         location = str(self).split('/')[-1][:-2]
         course = await CoursesGetInfo.get_course_info(course_id=location)
         in_course = await CoursesGetInfo.is_user_in_course(course_id=location, user_id=self.session['user']['id'])
@@ -68,6 +69,7 @@ class CourseInfoView(web.View):
     async def post(self):
         if 'user' not in self.session:
             return web.HTTPFound(location=self.app.router['login'].url_for())
+
         course_id = str(self.__dict__['_message']).split('Referer')[-1].split(',')[1].split('course/')[1][:-2]
         data = await self.post()
         if 'join' in data.keys():
@@ -75,3 +77,17 @@ class CourseInfoView(web.View):
         else:
             await CoursesAction.leave_course(course_id=course_id, user_id=self.session['user']['id'])
         return web.HTTPFound(location='courses')
+
+
+class CourseContent(web.View):
+    @aiohttp_jinja2.template('course_content.html')
+    async def get(self):
+        if 'user' not in self.session:
+            return web.HTTPFound(location=self.app.router['login'].url_for())
+
+        course_id = str(self).split('/')[1]
+        page = str(self).split('/course_content/')[-1][:-2]
+        count = await CourseContent.count_course_content(course_id=course_id)
+        page_content = await CourseContent.course_content_page(course_id=course_id, page=page)
+        navigation = await CourseContent.course_content_navigation(course_id=course_id)
+        return dict(count=count, page_content=page_content, navigation=navigation)

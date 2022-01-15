@@ -262,3 +262,35 @@ class CourseCreate:
                                 {data['level']}, {data['online']}, statement_timestamp(), {data['free']}, true,
                                 '{data['sphere']}', {data['language']}, '{data['course_name']}', {image_id})
                             """)
+
+
+class CourseContent:
+    @staticmethod
+    async def count_course_content(course_id: str):
+        conn = await asyncpg.connect(connection_url)
+        content = await conn.fetchrow(f"""
+                                        select count(content_id)
+                                        from courses_content
+                                        where course_id = {course_id}
+                                    """)
+        return content['count']
+
+    @staticmethod
+    async def course_content_page(course_id: str, page: str):
+        conn = await asyncpg.connect(connection_url)
+        content = await conn.fetch(f"""
+                                       select content_type, content_name, content_description, content_path
+                                       from courses_content
+                                       where course_id = {course_id} and content_page = {page}
+                                    """)
+        return content
+
+    @staticmethod
+    async def course_content_navigation(course_id: str):
+        conn = await asyncpg.connect(connection_url)
+        content = await conn.fetch(f"""
+                                        select content_name, is_title, is_subtitle, content_page
+                                        from courses_content
+                                        where course_id = {course_id}
+                                    """)
+        return content

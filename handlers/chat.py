@@ -12,7 +12,7 @@ class ChatView(web.View):
         if 'user' not in self.session:
             return web.HTTPFound(location=self.app.router['login'].url_for())
 
-        friend_id = int(str(self).split('/chat_')[-1][:-2])
+        friend_id = int(str(self).split('/chat/')[-1][:-2])
         session = await get_session(self)
         message = await MessageGetInfo.get_messages(user_id=session['user']['id'], friend=friend_id)
         block = await SubscribesGetInfo.is_block(user_active_id=session['user']['id'], user_passive_id=str(friend_id))

@@ -21,13 +21,13 @@
                         <div class="content">
                             {% if message.user_id == friend_id %}
                                 <p>
-                                    <a href={{ friend_id }}><small>{{ message.surname }}&nbsp</small><small>{{ message.name }}</small></a>
+                                    <a href=/{{ friend_id }}><small>{{ message.surname }}&nbsp</small><small>{{ message.name }}</small></a>
                                     <small>{{ message.message }}</small>
                                     <small>{{ message.datetime }}</small>
                                 </p>
                             {% else %}
                                 <p>
-                                    <a href={{ user_id }}><small>{{ message.surname }}&nbsp</small><small>{{ message.name }}</small></a>
+                                    <a href=/{{ user_id }}><small>{{ message.surname }}&nbsp</small><small>{{ message.name }}</small></a>
                                     <small>{{ message.message }}</small>
                                     <small>{{ message.datetime }}</small>
                                 </p>
