@@ -35,15 +35,15 @@ class CommunityGetInfo:
     @staticmethod
     async def get_community_info(community_id):
         conn = await asyncpg.connect(connection_url)
-        communities = await conn.fetch(f"""
+        community = await conn.fetchrow(f"""
                                            select u.user_id, u.name, u.surname, c.community_id, c.community_name, c.community_type, c.community_bio, c.condition_id, c.created_date, i.href, c.community_owner_id
                                            from users_information as u
-                                           right join (select community_id, community_name, community_type, unnest(user_id) as user_id, community_bio, unnest(condition_id) as condition_id, created_date, unnest(image_id) as image_id, unnest(community_owner_id) as community_owner_id
+                                           right join (select community_id, community_name, community_type, unnest(user_id) as user_id, community_bio, unnest(condition_id) as condition_id, created_date, image_id, unnest(community_owner_id) as community_owner_id
                                                         from communities) as c on c.user_id = u.user_id
-                                           left join images as i on i.image_id = c.image_id and i.image_type = 'community'
+                                           left join images as i on i.image_id = c.image_id[array_upper(c.image_id, 1)] and i.image_type = 'community'
                                            where c.community_id = {community_id}
                                            """)
-        return communities
+        return community
 
     @staticmethod
     async def get_generate_conditions():
@@ -67,7 +67,7 @@ class CommunityAvatarAction:
             image_id = 0
         await conn.execute(f"""
                                insert into images (image_id, href, image_type, create_date) values(
-                               {image_id}, '{url}', 'user', statement_timestamp())
+                               {image_id}, '{url}', 'community', statement_timestamp())
                                """)
         await conn.execute(f"""
                                update communities

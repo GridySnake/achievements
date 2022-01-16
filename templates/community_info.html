@@ -7,9 +7,11 @@
 <br>
 <p>{{ community.community_bio }}</p>
 <br>
-<figure class="image is-128x128">
-    <img src="{{ url('static', filename='community_avatar/'+community.href) }}">
-</figure>
+{% if community.href %}
+    <figure class="image is-128x128">
+        <img src="{{ url('static', filename='community_avatar/'+community.href) }}">
+    </figure>
+{% endif %}
 {% if access %}
         <form action="{{ url('save_community_avatar') }}" method="post" accept-charset="utf-8" enctype="multipart/form-data">
             <label for="community_avatar">Community avatar</label>

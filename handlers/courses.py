@@ -89,7 +89,6 @@ class CourseContent(web.View):
         count = await CourseContentModel.count_course_content(course_id=course_id)
         page_content = await CourseContentModel.course_content_page(course_id=course_id, page=page)
         navigation = await CourseContentModel.course_content_navigation(course_id=course_id)
-        print(navigation)
         return dict(count=count, page_content=page_content, navigation=navigation, page=int(page), course_id=course_id)
 
 

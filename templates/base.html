@@ -191,6 +191,54 @@ function addInput(){
     return elem.parentNode.removeChild(elem);
   }
 </script>
+
+<script>
+    $(document).ready(function() {
+        $('#community1').on('change', function () {
+            $("#community_chats").show()
+            $("#direct_chats").hide();
+        });
+    });
+</script>
+
+<script>
+    $(document).ready(function() {
+        var drop = JSON.parse('{{ chats_json | safe }}');
+        $('#communityt').on('click', function () {
+            var drop_new = drop.filter(element => element.chat_type == 2);
+            var community_name = [];
+            var href = [];
+            var chat_id = [];
+            for (var item, j = 0; item = drop_new[j++];) {
+                community_name.push(item.community_name);
+                href.push(item.href);
+                chat_id.push(item.chat_id);
+            }
+            var create = ''
+            for (var i = 0; i < name.length; i++) {
+                if (href != []) {
+                    create += '<div class="columns">\n' +
+                '        <div class="column">\n' +
+                '            <div class="box">\n' +
+                '                <article class="media">' +
+                        '<div class="media-left">'+
+                       ' <figure class="image is-64x64">'+
+                            '<img src="/static/community_avatar/' + href[i] + '">'+
+                        '</figure>'+
+                    '</div>';
+                }
+                create += '<div class="media-content">\n' +
+                    '                            <div class="content">\n' +
+                    '                                <p><a href=\'/chat/' + chat_id[i] +'\'>' + community_name[i] +'</a></p>\n' +
+                    '</div>' +
+                    '</div>' +  '</article>' + '</div>' + '</div>' + '</div>';
+            }
+            $('#chats').empty().append(create);
+        });
+    });
+</script>
+
+
 <!--<script>-->
 <!--        $(document).ready(function() {-->
 <!--            $('#select_group').on('change', function () {-->

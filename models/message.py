@@ -53,24 +53,41 @@ class MessageGetInfo:
     @staticmethod
     async def get_users_chats(user_id: str):
         conn = await asyncpg.connect(connection_url)
-        messages = await conn.fetch(f"""
-                                        SELECT distinct(u.user_id), u.name, u.surname, img.href
-                                        FROM users_information as u
-                                        LEFT JOIN messages as m ON m.from_user = u.user_id
-										    OR m.to_user = u.user_id
-                                        LEFT JOIN images as img ON img.image_id = u.image_id[array_upper(u.image_id, 1)]
-                                        WHERE (m.message_id IN (
-                                            SELECT m1.message_id
-                                            FROM messages as m1
-                                            WHERE m1.to_user = {user_id}
-                                            ) 
-                                        OR m.message_id IN(
-                                            SELECT m2.message_id
-                                            FROM messages as m2
-                                            WHERE m2.from_user = {user_id}
-                                        )) AND u.user_id <> {user_id}
-                                        """)
-        return messages
+        chats = await conn.fetch(f"""
+                                     select distinct u.user_id, u.name, u.surname, img.href, ch.chat_id, ch.chat_type
+                                     from users_information as u
+                                     left join (select chat_id, unnest(participants) as participants, chat_type 
+                                         from chats) as ch on ch.participants = u.user_id and ch.chat_type = 0
+                                     left join images as img on img.image_id = u.image_id[array_upper(u.image_id, 1)]
+                                     where {user_id} <> ch.participants
+                                """)
+        return chats
+
+    # todo: group chats
+
+    @staticmethod
+    async def get_community_chats(user_id: str):
+        conn = await asyncpg.connect(connection_url)
+        chats = await conn.fetch(f"""
+                                        select distinct c.community_id, c.community_name, img.href, ch.chat_id, ch.chat_type
+                                        from communities as c
+                                        left join chats as ch on ch.owner_id = c.community_id and ch.chat_type = 2
+                                        left join images as img on img.image_id = c.image_id[array_upper(c.image_id, 1)]
+                                        where {user_id} = any(ch.participants)
+                                    """)
+        return chats
+
+    @staticmethod
+    async def get_course_chats(user_id: str):
+        conn = await asyncpg.connect(connection_url)
+        chats = await conn.fetch(f"""
+                                     select distinct c.course_id, c.course_name, img.href, ch.chat_id, ch.chat_type
+                                     from courses as c
+                                     left join chats as ch on ch.owner_id = c.course_id and ch.chat_type = 3
+                                     left join images as img on img.image_id = c.image_id
+                                     where {user_id} = any(ch.participants)
+                                """)
+        return chats
 
     @staticmethod
     async def get_last_messages(user_id: str, user):
@@ -100,7 +117,8 @@ class MessageGetInfo:
 
 class MessageCreate:
     @staticmethod
-    async def create_message(from_user: str, to_user: str, message: str, type1: str, type2: str):
+    async def create_message(from_user: str, to_user: str, message: str, type1: str, type2: str, chat_id: str):
+        # todo: chat_type
         conn = await asyncpg.connect(connection_url)
         data = {
             'from_user': from_user,
@@ -108,17 +126,29 @@ class MessageCreate:
             'message': message,
             'datetime': datetime.now(),
             'from_user_type': type1,
-            'to_user_type': type2
+            'to_user_type': type2,
+            'chat_id': chat_id
         }
-        id = await conn.fetchrow(f"""SELECT MAX(message_id) FROM messages""")
-        if dict(id)['max'] is not None:
-            id = int(dict(id)['max']) + 1
+        message_id = await conn.fetchrow(f"""SELECT MAX(message_id) FROM messages""")
+
+        if dict(message_id)['max'] is not None:
+            message_id = int(dict(message_id)['max']) + 1
         else:
-            id = 0
+            message_id = 0
+        if chat_id == -1:
+            chat_id = await conn.fetchrow(f"""SELECT MAX(chat_id) FROM chats""")
+            if dict(chat_id)['max'] is not None:
+                chat_id = int(dict(chat_id)['max']) + 1
+            else:
+                chat_id = 0
+            await conn.execute(f"""
+                                    insert INTO chats (chat_id, chat_type, participants, owner_id) values(
+                                    {chat_id}, 0, ARRAY[{from_user}, {to_user}], null) 
+                                """)
         await conn.execute(f"""
-                            insert INTO messages (message_id, from_user, to_user, message, from_user_type, to_user_type, 
-                            datetime, is_read) values(
-                            {id}, {data['from_user']}, {data['to_user']}, '{data['message']}', 
-                            '{data['from_user_type']}', 
-                            '{data['to_user_type']}', statement_timestamp(), False)
+                                insert INTO messages (message_id, from_user, to_user, message, from_user_type, to_user_type,
+                                datetime, is_read, chat_id) values(
+                                {message_id}, {data['from_user']}, {data['to_user']}, '{data['message']}', 
+                                '{data['from_user_type']}', 
+                                '{data['to_user_type']}', statement_timestamp(), False, {chat_id})
                             """)
