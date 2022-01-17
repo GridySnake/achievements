@@ -33,50 +33,23 @@
                     <div class="media-content">
                         <div class="content">
                             {% if message.user_id %}
-                                <p>Work</p>
-                                {% if message.user_id != user_id %}
-                                    <p>Work</p>
-                                    <p>
-                                        <a href='/user/{{ message.user_id }}'><small>{{ message.surname }}&nbsp</small><small>{{ message.name }}</small></a>
-                                        <small>{{ message.message }}</small>
-                                        <small>{{ message.datetime }}</small>
-                                    </p>
-                                {% else %}
-                                    <p>Work</p>
-                                    <p>
-                                        <a href='/user/{{ message.user_id }}'><small>{{ message.surname }}&nbsp</small><small>{{ message.name }}</small></a>
-                                        <small>{{ message.message }}</small>
-                                        <small>{{ message.datetime }}</small>
-                                    </p>
-                                {% endif %}
+                                <p>
+                                    <a href='/user/{{ message.user_id }}'><small>{{ message.surname }}&nbsp</small><small>{{ message.name }}</small></a>
+                                    <small>{{ message.message }}</small>
+                                    <small>{{ message.datetime }}</small>
+                                </p>
                             {% elif message.community_id %}
-                                {% if is_owner %}
-                                    <p>
-                                        <a href='/user/{{ message.community_id }}'><small>{{ message.community_name }}&nbsp</small></a>
-                                        <small>{{ message.message }}</small>
-                                        <small>{{ message.datetime }}</small>
-                                    </p>
-                                {% else %}
-                                    <p>
-                                        <a href='/user/{{ message.community_id }}'><small>{{ message.community_name }}&nbsp</small></a>
-                                        <small>{{ message.message }}</small>
-                                        <small>{{ message.datetime }}</small>
-                                    </p>
-                                {% endif %}
+                                <p>
+                                    <a href='/user/{{ message.community_id }}'><small>{{ message.community_name }}&nbsp</small></a>
+                                    <small>{{ message.message }}</small>
+                                    <small>{{ message.datetime }}</small>
+                                </p>
                             {% elif message.course_id %}
-                                {% if is_owner %}
-                                    <p>
-                                        <a href='/user/{{ message.community_id }}'><small>{{ message.course_name }}&nbsp</small></a>
-                                        <small>{{ message.message }}</small>
-                                        <small>{{ message.datetime }}</small>
-                                    </p>
-                                {% else %}
-                                    <p>
-                                        <a href='/user/{{ message.community_id }}'><small>{{ message.course_name }}&nbsp</small></a>
-                                        <small>{{ message.message }}</small>
-                                        <small>{{ message.datetime }}</small>
-                                    </p>
-                                {% endif %}
+                                <p>
+                                    <a href='/user/{{ message.community_id }}'><small>{{ message.course_name }}&nbsp</small></a>
+                                    <small>{{ message.message }}</small>
+                                    <small>{{ message.datetime }}</small>
+                                </p>
                             {% endif %}
                         </div>
                         <nav class="level is-mobile">

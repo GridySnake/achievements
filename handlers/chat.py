@@ -15,7 +15,6 @@ class ChatView(web.View):
         chat_id = str(self).split('/chat/')[-1][:-2]
         session = await get_session(self)
         messages = await MessageGetInfo.get_messages(chat_id=chat_id)
-        print(messages)
         block = False
         is_owner = False
         if 0 in [i['chat_type'] for i in messages]:
