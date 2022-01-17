@@ -102,6 +102,34 @@
 </script>
 <script>
     $(document).ready(function() {
+        $('#community_button').on('click', function () {
+            $("#community_chats").show();
+            $("#course_chats").hide();
+            $("#group_chats").hide();
+            $("#direct_chats").hide();
+        });
+        $('#direct_button').on('click', function () {
+            $("#community_chats").hide();
+            $("#course_chats").hide();
+            $("#group_chats").hide();
+            $("#direct_chats").show();
+        });
+        $('#course_button').on('click', function () {
+            $("#community_chats").hide();
+            $("#course_chats").show();
+            $("#group_chats").hide();
+            $("#direct_chats").hide();
+        });
+        $('#group_button').on('click', function () {
+            $("#community_chats").hide();
+            $("#course_chats").hide();
+            $("#group_chats").show();
+            $("#direct_chats").hide();
+        });
+    });
+</script>
+<script>
+    $(document).ready(function() {
         var drop = JSON.parse('{{ dropdown_json | safe }}');
         $('#select_group').on('change', function () {
             var drop_new = drop.filter(element => element.group_id == $(this).find('option:selected').val());
@@ -192,14 +220,7 @@ function addInput(){
   }
 </script>
 
-<script>
-    $(document).ready(function() {
-        $('#community1').on('change', function () {
-            $("#community_chats").show()
-            $("#direct_chats").hide();
-        });
-    });
-</script>
+
 
 <script>
     $(document).ready(function() {

@@ -125,6 +125,12 @@ class CommunityCreate:
             id = int(id) + 1
         else:
             id = 0
+        chat_id = await conn.fetchrow("""select max(chat_id) from chats""")
+        chat_id = dict(chat_id)['max']
+        if chat_id is not None:
+            chat_id += 1
+        else:
+            chat_id = 0
         await conn.execute(f"""
                                insert into communities (community_id, community_type, community_name, community_bio, user_id, community_owner_id, created_date, image_id, condition_id, condition_value)
                                values({id}, '{data['community_type']}', '{data['name']}', '{data['bio']}', array({user_id}), array({user_id}), statement_timestamp(), ARRAY []::integer[], ARRAY []::integer[], ARRAY []::text[])
@@ -134,4 +140,8 @@ class CommunityCreate:
                                 set community_id = array_append(community_id, {id}),
                                     community_owner_id = array_append(community_owner_id, {id})
                                 where user_id = {user_id}
+                            """)
+        await conn.execute(f"""
+                                insert into chats (chat_id, chat_type, participants, owner_id) values(
+                                {chat_id}, 2, array[{user_id}], {id})\
                             """)

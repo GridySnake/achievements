@@ -1,23 +1,19 @@
 {% extends "base.html" %}
 
-{% set title = "Direct chats" %}
+{% set title = "Chats" %}
 
 {% block content %}
 
 
-<a class="button" id="direct">Direct chats</a>
-<a class="button" id="group">Group chats</a>
-<a class="button" id="community">Community chats</a>
-<a class="button" id="course">Course chats</a>
-<select id="community1" name="community1">
-    <option value="1">1</option>
-    <option value="2">2</option>
-</select>
-
+<a class="button" id="direct_button">Direct chats</a>
+<a class="button" id="group_button">Group chats</a>
+<a class="button" id="community_button">Community chats</a>
+<a class="button" id="course_button">Course chats</a>
 
 
 <div id="direct_chats" name="direct_chats">
 {% for i in range(users|length) %}
+    {% if users[i].message %}
     <div class="columns">
         <div class="column">
             <div class="box">
@@ -34,17 +30,61 @@
                                 <p><a href='/chat/{{ users[i].user_id }}'>{{ users[i].name }} {{ users[i].surname }}</a></p>
                                 <div class="content">
                                     <p>
-                                        <small>{{ messages[i].name }}</small>
-                                        <small>{{ messages[i].surname }}</small>
-                                        <small>{{ messages[i].message }}</small>
-                                        <small>{{ messages[i].datetime }}</small>
+                                        <small>{{ users[i].m_name }}</small>
+                                        <small>{{ users[i].m_surname }}</small>
+                                        <small>{{ users[i].message }}</small>
+                                        <small>{{ users[i].datetime }}</small>
                                     </p>
                                 </div>
-                                {% if messages[i].is_read %}
-                                <p>Read</p>
+                                {% if users[i].is_read %}
+                                    <p>Read</p>
                                 {% else %}
-                                <p>Unread</p>
+                                    <p>Unread</p>
                                 {% endif %}
+                                <nav class="level is-mobile">
+                                    <div class="level-left">
+                                        <a class="level-item" aria-label="reply">
+                                            <span class="icon is-small">
+                                              <i class="fas fa-reply" aria-hidden="true"></i>
+                                            </span>
+                                        </a>
+                                        <a class="level-item" aria-label="retweet">
+                                            <span class="icon is-small">
+                                              <i class="fas fa-retweet" aria-hidden="true"></i>
+                                            </span>
+                                        </a>
+                                        <a class="level-item" aria-label="like">
+                                            <span class="icon is-small">
+                                              <i class="fas fa-heart" aria-hidden="true"></i>
+                                            </span>
+                                        </a>
+                                    </div>
+                                </nav>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    {% endfor %}
+</div>
+<div id="community_chats" name="community_chats" hidden>
+{% for community in communities %}
+    <div class="columns">
+        <div class="column">
+            <div class="box">
+                <article class="media">
+                    {% if community.href %}
+                    <div class="media-left">
+                        <figure class="image is-64x64">
+                            <img src="{{ url('static', filename='community_avatar/' + community.href) }}">
+                        </figure>
+                    </div>
+                    {% endif %}
+                        <div class="media-content">
+                            <div class="content">
+                                <p><a href='/chat/{{ community.chat_id }}'>{{ community.community_name }}</a></p>
                                 <nav class="level is-mobile">
                                     <div class="level-left">
                                         <a class="level-item" aria-label="reply">
@@ -72,22 +112,72 @@
         </div>
     {% endfor %}
 </div>
-<div id="community_chats" name="community_chats">
-{% for community in communities %}
+<div id="course_chats" name="course_chats" hidden>
+{% for course in courses %}
     <div class="columns">
         <div class="column">
             <div class="box">
                 <article class="media">
-                    {% if community.href %}
-                    <div class="media-left">
-                        <figure class="image is-64x64">
-                            <img src="{{ url('static', filename='community_avatar/' + community.href) }}">
-                        </figure>
-                    </div>
+                    {% if course.href %}
+                        <div class="media-left">
+                            <figure class="image is-64x64">
+                                <img src="{{ url('static', filename='community_avatar/' + community.href) }}">
+                            </figure>
+                        </div>
                     {% endif %}
                         <div class="media-content">
                             <div class="content">
-                                <p><a href='/chat/{{ community.chat_id }}'>{{ community.community_name }}</a></p>
+                                <p><a href='/chat/{{ course.chat_id }}'>{{ course.course_name }}</a></p>
+                                <nav class="level is-mobile">
+                                    <div class="level-left">
+                                        <a class="level-item" aria-label="reply">
+                                            <span class="icon is-small">
+                                              <i class="fas fa-reply" aria-hidden="true"></i>
+                                            </span>
+                                        </a>
+                                        <a class="level-item" aria-label="retweet">
+                                            <span class="icon is-small">
+                                              <i class="fas fa-retweet" aria-hidden="true"></i>
+                                            </span>
+                                        </a>
+                                        <a class="level-item" aria-label="like">
+                                            <span class="icon is-small">
+                                              <i class="fas fa-heart" aria-hidden="true"></i>
+                                            </span>
+                                        </a>
+                                    </div>
+                                </nav>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<div id="group_chats" name="group_chats" hidden>
+    <form action="{{ url('create_group_chat') }}" method="post" accept-charset="utf-8" enctype="multipart/form-data">
+        <p>Group chat name</p>
+        <label for="group_chat_name"><input id="group_chat_name" name="group_chat_name" type="text" value="">
+        <input id="group_chat_avatar" name="group_chat_avatar" type="file" value=""/></label>
+        <button type="submit">Create</button>
+    </form>
+    {% for group in groups %}
+        <div class="columns">
+            <div class="column">
+                <div class="box">
+                    <article class="media">
+                        {% if group.href %}
+                            <div class="media-left">
+                                <figure class="image is-64x64">
+                                    <img src="{{ url('static', filename='group_avatar/' + group.href) }}">
+                                </figure>
+                            </div>
+                        {% endif %}
+                        <div class="media-content">
+                            <div class="content">
+                                <p><a href='/chat/{{ group.chat_id }}'>{{ group.group_name }}</a></p>
                                 <nav class="level is-mobile">
                                     <div class="level-left">
                                         <a class="level-item" aria-label="reply">

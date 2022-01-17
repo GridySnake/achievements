@@ -8,29 +8,75 @@
 <div class="columns">
     <div class="column">
         {% for message in messages %}
+            {% if message.message %}
             <div class="box">
                 <article class="media">
                     {% if message.href %}
-                    <div class="media-left">
-                        <figure class="image is-64x64">
-                            <img src="{{ url('static', filename='avatars/' + message.href) }}">
-                        </figure>
-                    </div>
+                        <div class="media-left">
+                            <figure class="image is-64x64">
+                                <img src="{{ url('static', filename='avatars/' + message.href) }}">
+                            </figure>
+                        </div>
+                    {% elif message.href1 %}
+                        <div class="media-left">
+                            <figure class="image is-64x64">
+                                <img src="{{ url('static', filename='community_avatar/' + message.href1) }}">
+                            </figure>
+                        </div>
+                    {% elif message.href2 %}
+                        <div class="media-left">
+                            <figure class="image is-64x64">
+                                <img src="{{ url('static', filename='course_avatar/' + message.href2) }}">
+                            </figure>
+                        </div>
                     {% endif %}
                     <div class="media-content">
                         <div class="content">
-                            {% if message.user_id == friend_id %}
-                                <p>
-                                    <a href=/{{ friend_id }}><small>{{ message.surname }}&nbsp</small><small>{{ message.name }}</small></a>
-                                    <small>{{ message.message }}</small>
-                                    <small>{{ message.datetime }}</small>
-                                </p>
-                            {% else %}
-                                <p>
-                                    <a href=/{{ user_id }}><small>{{ message.surname }}&nbsp</small><small>{{ message.name }}</small></a>
-                                    <small>{{ message.message }}</small>
-                                    <small>{{ message.datetime }}</small>
-                                </p>
+                            {% if message.user_id %}
+                                <p>Work</p>
+                                {% if message.user_id != user_id %}
+                                    <p>Work</p>
+                                    <p>
+                                        <a href='/user/{{ message.user_id }}'><small>{{ message.surname }}&nbsp</small><small>{{ message.name }}</small></a>
+                                        <small>{{ message.message }}</small>
+                                        <small>{{ message.datetime }}</small>
+                                    </p>
+                                {% else %}
+                                    <p>Work</p>
+                                    <p>
+                                        <a href='/user/{{ message.user_id }}'><small>{{ message.surname }}&nbsp</small><small>{{ message.name }}</small></a>
+                                        <small>{{ message.message }}</small>
+                                        <small>{{ message.datetime }}</small>
+                                    </p>
+                                {% endif %}
+                            {% elif message.community_id %}
+                                {% if is_owner %}
+                                    <p>
+                                        <a href='/user/{{ message.community_id }}'><small>{{ message.community_name }}&nbsp</small></a>
+                                        <small>{{ message.message }}</small>
+                                        <small>{{ message.datetime }}</small>
+                                    </p>
+                                {% else %}
+                                    <p>
+                                        <a href='/user/{{ message.community_id }}'><small>{{ message.community_name }}&nbsp</small></a>
+                                        <small>{{ message.message }}</small>
+                                        <small>{{ message.datetime }}</small>
+                                    </p>
+                                {% endif %}
+                            {% elif message.course_id %}
+                                {% if is_owner %}
+                                    <p>
+                                        <a href='/user/{{ message.community_id }}'><small>{{ message.course_name }}&nbsp</small></a>
+                                        <small>{{ message.message }}</small>
+                                        <small>{{ message.datetime }}</small>
+                                    </p>
+                                {% else %}
+                                    <p>
+                                        <a href='/user/{{ message.community_id }}'><small>{{ message.course_name }}&nbsp</small></a>
+                                        <small>{{ message.message }}</small>
+                                        <small>{{ message.datetime }}</small>
+                                    </p>
+                                {% endif %}
                             {% endif %}
                         </div>
                         <nav class="level is-mobile">
@@ -55,15 +101,21 @@
                     </div>
                 </article>
             </div>
+        {% endif %}
         {% endfor %}
-        {% if block != 2 %}
-        <form action="{{ url('send_message') }}" method="post">
-                <label for="message_text">Send message</label>
-                <input id="message_text" name="message_text" type="text" value=""/>
-                <button type="submit">Send...</button>
-        </form>
+        {% if block %}
+            <p>You was blocked :(</p>
         {% else %}
-        <p>You was blocked :(</p>
+            <form action="{{ url('send_message') }}" method="post">
+                    <label for="message_text">Send message</label>
+                    <input id="message_text" name="message_text" type="text" value=""/>
+                    {% if messages[0].chat_type == 2 and is_owner %}
+                        <input type="radio" id="community_message" name="community_message">
+                    {% elif messages[0].chat_type == 3 and is_owner %}
+                        <input type="radio" id="course_message" name="course_message">
+                    {% endif %}
+                    <button type="submit">Send...</button>
+            </form>
         {% endif %}
     </div>
 </div>

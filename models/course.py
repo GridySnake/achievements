@@ -264,6 +264,12 @@ class CourseCreate:
             course_id = 0
         else:
             course_id += 1
+        chat_id = await conn.fetchrow("""select max(chat_id) from chats""")
+        chat_id = dict(chat_id)['max']
+        if chat_id is not None:
+            chat_id += 1
+        else:
+            chat_id = 0
         await conn.execute(f"""
                                 insert into courses (course_id, course_owner_id, users, course_owner_type, 
                                 description, level, online, create_date, free, new, sphere, 
@@ -271,6 +277,10 @@ class CourseCreate:
                                 values ({course_id}, {user_id}, ARRAY []::integer[], {data['type']}, '{data['description']}',
                                 {data['level']}, {data['online']}, statement_timestamp(), {data['free']}, true,
                                 '{data['sphere']}', {data['language']}, '{data['course_name']}', {image_id})
+                            """)
+        await conn.execute(f"""
+                               insert into chats (chat_id, chat_type, participants, owner_id) values(
+                               {chat_id}, 3, array[{user_id}], {course_id})
                             """)
 
 
