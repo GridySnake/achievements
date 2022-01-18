@@ -130,6 +130,20 @@
 </script>
 <script>
     $(document).ready(function() {
+        $('#add_group_chat_member').on('click', function () {
+            $("#add_chat_member").show();
+            $("#hide_add_group_chat_member").show();
+            $("#add_group_chat_member").hide();
+        });
+        $('#hide_add_group_chat_member').on('click', function () {
+            $("#add_chat_member").hide();
+            $("#hide_add_group_chat_member").hide();
+            $("#add_group_chat_member").show();
+        });
+    });
+</script>
+<script>
+    $(document).ready(function() {
         var drop = JSON.parse('{{ dropdown_json | safe }}');
         $('#select_group').on('change', function () {
             var drop_new = drop.filter(element => element.group_id == $(this).find('option:selected').val());

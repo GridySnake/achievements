@@ -32,21 +32,21 @@
                     {% endif %}
                     <div class="media-content">
                         <div class="content">
-                            {% if message.user_id %}
+                            {% if message.community_name %}
+                                <p>
+                                    <a href='/community/{{ message.community_id }}'><small>{{ message.community_name }}&nbsp</small></a>
+                                    <small>{{ message.message }}</small>
+                                    <small>{{ message.datetime }}</small>
+                                </p>
+                            {% elif message.course_name %}
+                                <p>
+                                    <a href='/course/{{ message.course_id }}'><small>{{ message.course_name }}&nbsp</small></a>
+                                    <small>{{ message.message }}</small>
+                                    <small>{{ message.datetime }}</small>
+                                </p>
+                            {% else %}
                                 <p>
                                     <a href='/user/{{ message.user_id }}'><small>{{ message.surname }}&nbsp</small><small>{{ message.name }}</small></a>
-                                    <small>{{ message.message }}</small>
-                                    <small>{{ message.datetime }}</small>
-                                </p>
-                            {% elif message.community_id %}
-                                <p>
-                                    <a href='/user/{{ message.community_id }}'><small>{{ message.community_name }}&nbsp</small></a>
-                                    <small>{{ message.message }}</small>
-                                    <small>{{ message.datetime }}</small>
-                                </p>
-                            {% elif message.course_id %}
-                                <p>
-                                    <a href='/user/{{ message.community_id }}'><small>{{ message.course_name }}&nbsp</small></a>
                                     <small>{{ message.message }}</small>
                                     <small>{{ message.datetime }}</small>
                                 </p>
@@ -88,6 +88,17 @@
                         <input type="radio" id="course_message" name="course_message">
                     {% endif %}
                     <button type="submit">Send...</button>
+            </form>
+        {% endif %}
+        {% if messages[0].chat_type == 1 %}
+            <button id="add_group_chat_member">Add member</button>
+            <button id="hide_add_group_chat_member" hidden>Hide</button>
+            <form action="{{ url('add_member') }}" method="post" id="add_chat_member" hidden>
+                {% for sub in subscribers %}
+                    <a href='/user/{{ sub.user_id }}'><small>{{ sub.surname }}&nbsp</small><small>{{ sub.name }}</small></a>
+                <label for="{{ sub.user_id }}"></label><input type="radio" id="{{ sub.user_id }}" name="{{ sub.user_id }}">
+                {% endfor %}
+                <button type="submit">Add</button>
             </form>
         {% endif %}
     </div>

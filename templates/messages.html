@@ -85,6 +85,26 @@
                         <div class="media-content">
                             <div class="content">
                                 <p><a href='/chat/{{ community.chat_id }}'>{{ community.community_name }}</a></p>
+                                {% if community.message %}
+                                    {% if community.m_name %}
+                                        <div class="content">
+                                            <p>
+                                                <small>{{ community.m_name }}</small>
+                                                <small>{{ community.m_surname }}</small>
+                                                <small>{{ community.message }}</small>
+                                                <small>{{ community.datetime }}</small>
+                                            </p>
+                                        </div>
+                                    {% else %}
+                                        <div class="content">
+                                            <p>
+                                                <small>{{ community.m_community_name }}</small>
+                                                <small>{{ community.message }}</small>
+                                                <small>{{ community.datetime }}</small>
+                                            </p>
+                                        </div>
+                                    {% endif %}
+                                {% endif %}
                                 <nav class="level is-mobile">
                                     <div class="level-left">
                                         <a class="level-item" aria-label="reply">
@@ -121,13 +141,33 @@
                     {% if course.href %}
                         <div class="media-left">
                             <figure class="image is-64x64">
-                                <img src="{{ url('static', filename='community_avatar/' + community.href) }}">
+                                <img src="{{ url('static', filename='course_avatar/' + course.href) }}">
                             </figure>
                         </div>
                     {% endif %}
                         <div class="media-content">
                             <div class="content">
                                 <p><a href='/chat/{{ course.chat_id }}'>{{ course.course_name }}</a></p>
+                                {% if course.message %}
+                                    {% if course.m_name %}
+                                        <div class="content">
+                                            <p>
+                                                <small>{{ course.m_name }}</small>
+                                                <small>{{ course.m_surname }}</small>
+                                                <small>{{ course.message }}</small>
+                                                <small>{{ course.datetime }}</small>
+                                            </p>
+                                        </div>
+                                    {% else %}
+                                        <div class="content">
+                                            <p>
+                                                <small>{{ course.m_course_name }}</small>
+                                                <small>{{ course.message }}</small>
+                                                <small>{{ course.datetime }}</small>
+                                            </p>
+                                        </div>
+                                    {% endif %}
+                                {% endif %}
                                 <nav class="level is-mobile">
                                     <div class="level-left">
                                         <a class="level-item" aria-label="reply">
@@ -178,6 +218,15 @@
                         <div class="media-content">
                             <div class="content">
                                 <p><a href='/chat/{{ group.chat_id }}'>{{ group.group_name }}</a></p>
+                                {% if group.message %}
+                                    <div class="content">
+                                        <p>
+                                            <small>{{ group.m_name }}</small>
+                                            <small>{{ group.message }}</small>
+                                            <small>{{ group.datetime }}</small>
+                                        </p>
+                                    </div>
+                                {% endif %}
                                 <nav class="level is-mobile">
                                     <div class="level-left">
                                         <a class="level-item" aria-label="reply">

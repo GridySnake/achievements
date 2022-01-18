@@ -15,17 +15,21 @@ class ChatView(web.View):
         chat_id = str(self).split('/chat/')[-1][:-2]
         session = await get_session(self)
         messages = await MessageGetInfo.get_messages(chat_id=chat_id)
+
         block = False
         is_owner = False
+        subscribers = None
         if 0 in [i['chat_type'] for i in messages]:
             user_passive_id = [i for i in messages[0]['participants'] if int(session['user']['id']) != i][0]
             block = await SubscribesGetInfo.is_block(user_active_id=session['user']['id'], user_passive_id=user_passive_id)
         elif 1 in [i['chat_type'] for i in messages]:
-            None
+            subscribers = await SubscribesGetInfo.get_user_subscribes_names(user_id=session['user']['id'])
+            participants = messages[0]['participants']
+            subscribers = [i for i in subscribers if i['user_id'] not in participants]
         else:
             owner = await MessageGetInfo.is_owner(chat_id=chat_id)
             if owner == session['user']['id']:
                 is_owner = True
         await MessageGetInfo.is_read(user_id=session['user']['id'], chat_id=chat_id)
-        return dict(messages=messages, chat_id=chat_id, user_id=session['user']['id'], block=block, is_owner=is_owner)
+        return dict(messages=messages, chat_id=chat_id, user_id=session['user']['id'], block=block, is_owner=is_owner, subscribers=subscribers)
 

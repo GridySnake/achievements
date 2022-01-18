@@ -92,6 +92,7 @@ def setup_routes(app):
     app.router.add_route('GET', '/my_posts', PostView.get, name='my_posts')
     app.router.add_route('GET', '/goals', GoalView.get, name='goals')
     app.router.add_route('POST', '/add_content', CourseContentCreate.post, name='add_content')
+    app.router.add_route('POST', '/add_member', MessageView.post, name='add_member')
     app.router.add_route('POST', '/create_group_chat', MessageView.post, name='create_group_chat')
     app.router.add_route('GET', '/courses', CoursesView.get, name='courses')
     app.router.add_route('GET', r'/chat/{i}', ChatView.get, name='chat')

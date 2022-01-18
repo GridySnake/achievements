@@ -41,6 +41,11 @@ class MessageView(web.View):
                 from_user = await MessageGetInfo.get_chat_owner_cc(chat_id=chat_id)
             await MessageCreate.create_message(from_user=from_user, message=data['message_text'],
                                                type1=type1, chat_id=chat_id)
+        elif 'add_member' in str(self):
+            data = await self.post()
+            users = [int(i) for i in data.keys()]
+            chat_id = str(self.__dict__['_message']).split('Referer')[-1].split(',')[1].split('/chat/')[-1][:-2]
+            await MessageCreate.add_member(chat_id=chat_id, users=users)
         else:
             data = await self.post()
             if data['group_chat_avatar'] != bytearray(b''):

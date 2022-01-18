@@ -124,7 +124,7 @@ class MessageGetInfo:
                                         first_value(u.name) over (PARTITION BY m.chat_id order by m.datetime desc) as m_name,
                                         first_value(u.surname) over (PARTITION BY m.chat_id order by m.datetime desc) as m_surname,
                                         first_value(m.is_read) over (PARTITION BY m.chat_id order by m.datetime desc) as is_read,
-                                        first_value(c1.community_name) over (PARTITION BY m.chat_id order by m.datetime desc) as community_name
+                                        first_value(c1.community_name) over (PARTITION BY m.chat_id order by m.datetime desc) as m_community_name
                                     from communities as c
                                     left join chats as ch on ch.owner_id = c.community_id and ch.chat_type = 2
                                     left join images as img on img.image_id = c.image_id[array_upper(c.image_id, 1)]
@@ -145,7 +145,7 @@ class MessageGetInfo:
                                         first_value(u.name) over (PARTITION BY m.chat_id order by m.datetime desc) as m_name,
                                         first_value(u.surname) over (PARTITION BY m.chat_id order by m.datetime desc) as m_surname,
                                         first_value(m.is_read) over (PARTITION BY m.chat_id order by m.datetime desc) as is_read,
-                                        first_value(c1.course_name) over (PARTITION BY m.chat_id order by m.datetime desc) as course_name
+                                        first_value(c1.course_name) over (PARTITION BY m.chat_id order by m.datetime desc) as m_course_name
                                      from courses as c
                                      left join chats as ch on ch.owner_id = c.course_id and ch.chat_type = 3
                                      left join images as img on img.image_id = c.image_id
@@ -252,3 +252,14 @@ class MessageCreate:
                                {group_id}, {image_id}, '{chat_name}', {chat_id})
                             """)
         return chat_id
+
+    @staticmethod
+    async def add_member(chat_id: str, users: list):
+        conn = await asyncpg.connect(connection_url)
+        # todo: заменить цикл
+        for i in users:
+            await conn.execute(f"""
+                                    update chats
+                                        set participants = participants || {i}
+                                        where chat_id = {chat_id}
+                                """)
