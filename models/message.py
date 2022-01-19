@@ -181,19 +181,38 @@ class MessageGetInfo:
                          WHERE from_user <> {user_id} and chat_id = {chat_id}
                         """)
 
+    @staticmethod
+    async def get_chat(user_id: str, user_id1: str):
+        conn = await asyncpg.connect(connection_url)
+        chat_id = await conn.fetchrow(f"""
+                                         select chat_id
+                                         from chats
+                                         WHERE {user_id} = any(participants) and {user_id1} = any(participants) and chat_type = 0
+                                    """)
+        if chat_id is None:
+            chat_id = -1
+        else:
+            chat_id = chat_id['chat_id']
+        return chat_id
+
+    @staticmethod
+    async def get_chat_participants(chat_id: str, user_id:str):
+        conn = await asyncpg.connect(connection_url)
+        participants = await conn.fetch(f"""
+                                               select u.user_id, u.name, u.surname
+                                               from (select chat_id, unnest(participants) as participants from chats) as ch
+                                               left join users_information as u on u.user_id = ch.participants
+                                               WHERE chat_id = {chat_id} and u.user_id != {user_id}
+                                            """)
+        return participants
+
 
 class MessageCreate:
     @staticmethod
-    async def create_message(from_user: str, message: str, type1: str, chat_id: str):
+    async def create_message(from_user: str, message: str, type1: str, chat_id: str, to_user: str = None):
         conn = await asyncpg.connect(connection_url)
-        data = {
-            'from_user': from_user,
-            'message': message,
-            'from_user_type': type1,
-            'chat_id': chat_id
-        }
-        message_id = await conn.fetchrow(f"""SELECT MAX(message_id) FROM messages""")
 
+        message_id = await conn.fetchrow(f"""SELECT MAX(message_id) FROM messages""")
         if dict(message_id)['max'] is not None:
             message_id = int(dict(message_id)['max']) + 1
         else:
@@ -206,13 +225,15 @@ class MessageCreate:
                 chat_id = 0
             await conn.execute(f"""
                                     insert INTO chats (chat_id, chat_type, participants, owner_id) values(
-                                    {chat_id}, 0, ARRAY[{from_user}, {from_user}], null) 
+                                    {chat_id}, 0, ARRAY[{from_user}, {to_user}], null) 
                                 """)
+        print(message_id, from_user, message,
+                                type1, chat_id)
         await conn.execute(f"""
                                 insert INTO messages (message_id, from_user, message, from_user_type,
                                 datetime, is_read, chat_id) values(
-                                {message_id}, {data['from_user']}, '{data['message']}', 
-                                '{data['from_user_type']}', statement_timestamp(), False, {chat_id})
+                                {message_id}, {from_user}, '{message}', 
+                                {type1}, statement_timestamp(), False, {chat_id})
                             """)
 
     @staticmethod
@@ -262,4 +283,15 @@ class MessageCreate:
                                     update chats
                                         set participants = participants || {i}
                                         where chat_id = {chat_id}
+                                """)
+
+    @staticmethod
+    async def remove_member(chat_id: str, users: list):
+        conn = await asyncpg.connect(connection_url)
+        # todo: заменить цикл
+        for i in users:
+            await conn.execute(f"""
+                                   update chats
+                                       set participants = array_remove(participants, {i})
+                                       where chat_id = {chat_id}
                                 """)

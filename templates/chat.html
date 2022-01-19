@@ -100,6 +100,15 @@
                 {% endfor %}
                 <button type="submit">Add</button>
             </form>
+            <button id="remove_group_chat_member">Remove member</button>
+            <button id="hide_remove_group_chat_member" hidden>Hide</button>
+            <form action="{{ url('remove_member') }}" method="post" id="remove_chat_member" hidden>
+                {% for par in participants %}
+                    <a href='/user/{{ par.user_id }}'><small>{{ par.surname }}&nbsp</small><small>{{ par.name }}</small></a>
+                <label for="{{ par.user_id }}"></label><input type="radio" id="{{ par.user_id }}" name="{{ par.user_id }}">
+                {% endfor %}
+                <button type="submit">Remove</button>
+            </form>
         {% endif %}
     </div>
 </div>
