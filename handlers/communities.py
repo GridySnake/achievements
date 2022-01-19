@@ -2,6 +2,7 @@ import aiohttp_jinja2
 from aiohttp import web
 from models.community import *
 import os
+from models.subscribes import SubscribesGetInfo
 from config.common import BaseConfig
 import json
 
@@ -40,19 +41,23 @@ class CommunitiesInfoView(web.View):
         community_id = str(self).split('/community/')[-1][:-2]
         community = await CommunityGetInfo.get_community_info(community_id=community_id)
         access = False
+        subscribers = await SubscribesGetInfo.get_user_subscribes_names(user_id=self.session['user']['id'])
+        participants = await CommunityGetInfo.get_community_participants(community_id=community_id)
+        participants = [i for i in participants if i['user_id'] != self.session['user']['id']]
         if type(community['community_owner_id']) == int:
-            if int(self.session['user']['id']) == community['community_owner_id']:
+            if self.session['user']['id'] == community['community_owner_id']:
                 access = True
         else:
-            if int(self.session['user']['id']) in community['community_owner_id']:
+            if self.session['user']['id'] in community['community_owner_id']:
                 access = True
         is_in_community = False
-        try:
-            if self.session['user']['id'] in [int(i['user_id']) for i in community if community]:
+        if type(community['user_id']) == int:
+            if self.session['user']['id'] ==  community['user_id']:
                 is_in_community = True
-        except:
-            None
-        return dict(community=community, access=access, in_community=is_in_community)
+        else:
+            if self.session['user']['id'] in [i['user_id'] for i in community]:
+                is_in_community = True
+        return dict(community=community, access=access, in_community=is_in_community, subscribers=subscribers, participants=participants)
 
     async def post(self):
         if 'user' not in self.session:
@@ -69,6 +74,14 @@ class CommunitiesInfoView(web.View):
                 f.write(content)
 
             await CommunityAvatarAction.save_community_avatar_url(community_id=community_id, url=f"{community_avatar.filename}")
+        if 'add_community_member' in str(self):
+            users = [int(i) for i in data.keys()]
+            community = str(self.__dict__['_message']).split('Referer')[-1].split(',')[1].split('/community/')[-1][:-2]
+            await CommunityAvatarAction.add_member(community_id=community, users=users)
+        elif 'delete_community_member' in str(self):
+            users = [int(i) for i in data.keys()]
+            community = str(self.__dict__['_message']).split('Referer')[-1].split(',')[1].split('/community/')[-1][:-2]
+            await CommunityAvatarAction.remove_member(community_id=community, users=users)
         else:
             method = str(self).split('/')[1][:-2].split('_')[0]
             user_id = self.session['user']['id']

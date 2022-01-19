@@ -227,8 +227,7 @@ class MessageCreate:
                                     insert INTO chats (chat_id, chat_type, participants, owner_id) values(
                                     {chat_id}, 0, ARRAY[{from_user}, {to_user}], null) 
                                 """)
-        print(message_id, from_user, message,
-                                type1, chat_id)
+
         await conn.execute(f"""
                                 insert INTO messages (message_id, from_user, message, from_user_type,
                                 datetime, is_read, chat_id) values(

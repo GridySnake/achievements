@@ -46,6 +46,18 @@ class CommunityGetInfo:
         return community
 
     @staticmethod
+    async def get_community_participants(community_id):
+        conn = await asyncpg.connect(connection_url)
+        community = await conn.fetch(f"""
+                                            select u.user_id, u.name, u.surname
+                                            from users_information as u
+                                            right join (select community_id, unnest(user_id) as user_id
+                                                         from communities) as c on c.user_id = u.user_id
+                                            where c.community_id = {community_id}
+                                        """)
+        return community
+
+    @staticmethod
     async def get_generate_conditions():
         conn = await asyncpg.connect(connection_url)
         conditions = await conn.fetch(f"""
@@ -110,6 +122,26 @@ class CommunityAvatarAction:
                                                    WHERE user_id = {user_id})+1:]
                                    WHERE user_id = {user_id}
                                    """)
+
+    @staticmethod
+    async def add_member(community_id: str, users: list):
+        conn = await asyncpg.connect(connection_url)
+        for i in users:
+            await conn.execute(f"""
+                                   update communities
+                                        set user_id = array_append(user_id, {i})
+                                        where community_id = {community_id}
+                                """)
+
+    @staticmethod
+    async def remove_member(community_id: str, users: list):
+        conn = await asyncpg.connect(connection_url)
+        for i in users:
+            await conn.execute(f"""
+                                   update communities
+                                        set user_id = array_remove(user_id, {i})
+                                        where community_id = {community_id}
+                                """)
 
 
 class CommunityCreate:

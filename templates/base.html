@@ -158,6 +158,30 @@
 </script>
 <script>
     $(document).ready(function() {
+        $('#add_member_community').on('click', function () {
+            $("#add_community_member").show();
+            $("#hide_add_member_community").show();
+            $("#add_member_community").hide();
+        });
+        $('#hide_add_member_community').on('click', function () {
+            $("#add_community_member").hide();
+            $("#hide_add_member_community").hide();
+            $("#add_member_community").show();
+        });
+        $('#remove_member_community').on('click', function () {
+            $("#remove_community_member").show();
+            $("#hide_remove_member_community").show();
+            $("#remove_member_community").hide();
+        });
+        $('#hide_remove_member_community').on('click', function () {
+            $("#remove_community_member").hide();
+            $("#hide_remove_member_community").hide();
+            $("#remove_member_community").show();
+        });
+    });
+</script>
+<script>
+    $(document).ready(function() {
         var drop = JSON.parse('{{ dropdown_json | safe }}');
         $('#select_group').on('change', function () {
             var drop_new = drop.filter(element => element.group_id == $(this).find('option:selected').val());

@@ -19,6 +19,9 @@ class ChatView(web.View):
         block = False
         is_owner = False
         subscribers = None
+        if session['user']['id'] not in [i for i in messages[0]['participants']]:
+            return web.HTTPFound(location=self.app.router['messages'].url_for())
+        participants = None
         if 0 in [i['chat_type'] for i in messages]:
             user_passive_id = [i for i in messages[0]['participants'] if int(session['user']['id']) != i][0]
             block = await SubscribesGetInfo.is_block(user_active_id=session['user']['id'], user_passive_id=user_passive_id)
@@ -31,6 +34,7 @@ class ChatView(web.View):
             owner = await MessageGetInfo.is_owner(chat_id=chat_id)
             if owner == session['user']['id']:
                 is_owner = True
+
         await MessageGetInfo.is_read(user_id=session['user']['id'], chat_id=chat_id)
         return dict(messages=messages, chat_id=chat_id, user_id=session['user']['id'], block=block, is_owner=is_owner, subscribers=subscribers, participants=participants)
 

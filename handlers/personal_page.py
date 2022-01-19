@@ -14,7 +14,7 @@ class PersonalPageView(web.View):
         if 'user' not in self.session:
             return web.HTTPFound(location=self.app.router['login'].url_for())
 
-        location = str(self).split('/')[-1][:-2]
+        location = str(self).split('/user/')[-1][:-2]
         session = await get_session(self)
         my_page = False
         user = await UserGetInfo.get_user_by_id(user_id=location)
@@ -26,11 +26,8 @@ class PersonalPageView(web.View):
             achievements_approve = await AchievementsGetInfo.get_users_approve_achievements(user_id=location, user_active=session['user']['id'])
         else:
             achievements_approve = await AchievementsGetInfo.get_users_approve_achievements(user_id=location)
-        block = await SubscribesGetInfo.is_block(user_active_id=session['user']['id'], user_passive_id=location)
-        if block:
-            block = block[0]['status_id']
-        else:
-            block = 0
+        if str(session['user']['id']) != location:
+            block = await SubscribesGetInfo.is_block(user_active_id=session['user']['id'], user_passive_id=location)
         if str(session['user']['id']) == location:
             my_page = True
         return dict(user=user, friends=friends, posts=posts, me=my_page, avatar=avatar, block=block, achievements_user=achievements_user, achievements_approve=achievements_approve)
