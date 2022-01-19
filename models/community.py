@@ -129,7 +129,8 @@ class CommunityAvatarAction:
         for i in users:
             await conn.execute(f"""
                                    update communities
-                                        set user_id = array_append(user_id, {i})
+                                        set requests = array_append(requests, {i}),
+                                        request_statuses = array_append(requests, 1)
                                         where community_id = {community_id}
                                 """)
 
