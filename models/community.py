@@ -50,15 +50,15 @@ class CommunityGetInfo:
     @staticmethod
     async def get_community_info(community_id):
         conn = await asyncpg.connect(connection_url)
-        communities = await conn.fetch(f"""
+        community = await conn.fetchrow(f"""
                                            select u.user_id, u.name, u.surname, c.community_id, c.community_name, c.community_type, c.community_bio, c.condition_id, c.created_date, i.href, c.community_owner_id
                                            from users_information as u
-                                           right join (select community_id, community_name, community_type, unnest(user_id) as user_id, community_bio, unnest(condition_id) as condition_id, created_date, unnest(image_id) as image_id, unnest(community_owner_id) as community_owner_id
+                                           right join (select community_id, community_name, community_type, unnest(user_id) as user_id, community_bio, unnest(condition_id) as condition_id, created_date, image_id, unnest(community_owner_id) as community_owner_id
                                                         from communities) as c on c.user_id = u.user_id
-                                           left join images as i on i.image_id = c.image_id and i.image_type = 'community'
+                                           left join images as i on i.image_id = c.image_id[array_upper(c.image_id, 1)] and i.image_type = 'community'
                                            where c.community_id = {community_id}
                                            """)
-        return communities
+        return community
 
     @staticmethod
     async def get_generate_conditions():
@@ -141,6 +141,12 @@ class CommunityCreate:
             id = int(id) + 1
         else:
             id = 0
+        chat_id = await conn.fetchrow("""select max(chat_id) from chats""")
+        chat_id = dict(chat_id)['max']
+        if chat_id is not None:
+            chat_id += 1
+        else:
+            chat_id = 0
         await conn.execute(f"""
                                insert into communities (community_id, community_type, community_name, community_bio, user_id, community_owner_id, created_date, image_id, condition_id, condition_value)
                                values ({id}, '{data['community_type']}', '{data['name']}', '{data['bio']}', array[{user_id}], array[{user_id}], statement_timestamp(), ARRAY []::integer[], ARRAY []::integer[], ARRAY []::text[])
@@ -150,4 +156,8 @@ class CommunityCreate:
                                 set community_id = array_append(community_id, {id}),
                                     community_owner_id = array_append(community_owner_id, {id})
                                 where user_id = {user_id}
+                            """)
+        await conn.execute(f"""
+                                insert into chats (chat_id, chat_type, participants, owner_id) values(
+                                {chat_id}, 2, array[{user_id}], {id})\
                             """)

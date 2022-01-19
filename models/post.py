@@ -65,7 +65,7 @@ class Post:
         posts = await conn.fetch(f"""
                                     select distinct(u.user_id), u.name, u.surname, img1.href as avatar, p.message, p.date_created, img.href
                                     from
-                                    (select user_id, unnest(users_id) as users_id, unnest(status_id) as status_id from friends) as f
+                                    (select user_id, unnest(users_id) as users_id, unnest(status_id) as status_id from subscribes) as f
                                     inner join users_information as u on u.user_id = f.users_id and f.user_id = {user_id} and status_id = 1
                                     left join posts as p on p.user_id = u.user_id
                                     left join images as img on img.image_id = p.image_id

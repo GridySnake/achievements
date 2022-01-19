@@ -45,16 +45,19 @@ class CommunitiesInfoView(web.View):
         community_id = str(self).split('/community/')[-1][:-2]
         community = await CommunityGetInfo.get_community_info(community_id=community_id)
         access = False
-        if self.session['user']['id'] in [int(i['community_owner_id']) for i in community if community]:
-            access = True
+        if type(community['community_owner_id']) == int:
+            if int(self.session['user']['id']) == community['community_owner_id']:
+                access = True
+        else:
+            if int(self.session['user']['id']) in community['community_owner_id']:
+                access = True
         is_in_community = False
         try:
             if self.session['user']['id'] in [int(i['user_id']) for i in community if community]:
                 is_in_community = True
         except:
             None
-        print(community)
-        return dict(community=community[0], access=access, in_community=is_in_community)
+        return dict(community=community, access=access, in_community=is_in_community)
 
     async def post(self):
         if 'user' not in self.session:

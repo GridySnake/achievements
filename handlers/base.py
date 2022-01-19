@@ -29,7 +29,11 @@ class Login(web.View):
         elif user and user['password'] == hashlib.sha256(data['password'].encode('utf8')).hexdigest():
             session = await get_session(self)
             session['user'] = user
-            location = str(f"/{session['user']['id']}")
+            # if 'http://127.0.0.1:8080/' in str(self.__dict__['_message']):
+            #     print(str(self.__dict__['_message']).split('Referer'))
+            #     location = str(self.__dict__['_message']).split('Referer')[-1].split(',')[1][:-2]
+            # else:
+            location = str(f"/user/{session['user']['id']}")
             return web.HTTPFound(location=location)
 
         return web.HTTPNotFound()

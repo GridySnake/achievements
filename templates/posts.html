@@ -15,7 +15,7 @@
                 <figure class="image is-64x64" style="display: inline-block; border-radius: 50%">
                     <img style="border-radius: 70%" src="{{ url('static', filename='avatars/' + post.avatar) }}">
                 </figure>
-                <a href="{{ post.user_id }}"><p style="display: inline-block">{{ post.name }} {{ post.surname }}</p></a>
+                <a href="/{{ post.user_id }}"><p style="display: inline-block">{{ post.name }} {{ post.surname }}</p></a>
                 <br>
                 <br>
                 <br>
@@ -29,7 +29,7 @@
             </div>
         {% elif post.href %}
             <div class="box">
-                <a href="{{ post.user_id }}"><p>{{ post.name }} {{ post.surname }}</p></a>
+                <a href="/{{ post.user_id }}"><p>{{ post.name }} {{ post.surname }}</p></a>
                 <p>{{ post.message }}</p>
                 <figure class="image is-64x64">
                     <img src="{{ url('static', filename='image_posts/' + post.href) }}">
@@ -41,7 +41,7 @@
                 <figure class="image is-64x64" style="display: inline-block">
                     <img style="border-radius: 70%" src="{{ url('static', filename='avatars/' + post.avatar) }}">
                 </figure>
-                <a href="{{ post.user_id }}"><p style="display: inline-block">{{ post.name }} {{ post.surname }}</p></a>
+                <a href="/{{ post.user_id }}"><p style="display: inline-block">{{ post.name }} {{ post.surname }}</p></a>
                 <br>
                 <br>
                 <br>
@@ -50,7 +50,7 @@
             </div>
         {% else %}
             <div class="box">
-                <a href="{{ post.user_id }}"><p>{{ post.name }} {{ post.surname }}</p></a>
+                <a href="/{{ post.user_id }}"><p>{{ post.name }} {{ post.surname }}</p></a>
                 <p>{{ post.message }}</p>
                 <p>{{ post.date_created }}</p>
             </div>

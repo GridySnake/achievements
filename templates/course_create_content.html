@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% set title = "Course content creating" %}
+
+{% block content %}
+<form action="{{ url('add_content') }}" method="post" enctype="multipart/form-data" id="formulario">
+     <div id="dynamicInput[0]">
+         <p>Name        Description     Type   Chapter    Subchapter  Page</p>
+         <br><input type="text" name="name0">
+         <input type="text" name="description0">
+         <select name="type0">
+             <option value="photo">Photo</option>
+             <option value="video">Video</option>
+             <option value="document">Document</option>
+             <option value="PDF">PDF</option>
+             <option value="test">Test: json</option>
+         </select>
+         <input name="file0" type="file" value=""/>
+         <input type="radio" name="chapter0">
+         <input type="radio" name="subchapter0">
+         <input type="text" name="page0">
+         <input type="button" value="+" onClick="addInput();">
+    </div>
+    <button type="submit">Submit</button>
+</form>
+
+{% endblock %}

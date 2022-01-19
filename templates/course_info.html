@@ -26,12 +26,13 @@
                 <br>
                 <p>Owner:</p>
                 {% if course.course_owner_type == 0 %}
-                   <p><a href={{ course.course_owner_id }}>{{ course.name }} {{ course.surname }}</a></p>
+                   <p><a href=/{{ course.course_owner_id }}>{{ course.name }} {{ course.surname }}</a></p>
                 {% elif course.course_owner_type == 1 %}
-                   <p><a href="community/{{ course.course_owner_id }}">{{ course.community_name }}</a></p>
+                   <p><a href="/community/{{ course.course_owner_id }}">{{ course.community_name }}</a></p>
                 {% endif %}
             </div>
             {% if in_course %}
+                <a href="/course/{{ course.course_id }}/course_content/0" class="button">Go to course</a>
                 <form action="{{ url('course_action') }}" method="post">
                      <input type="hidden" name="leave" value=False>
                      <button type="submit">Leave</button>

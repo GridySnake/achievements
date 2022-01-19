@@ -33,7 +33,7 @@
 
     <ul>
     {% for post in posts %}
-        <li><a href=post.user_id>{{ post.last_name }} {{ post.first_name }} {{ post.message }} {{ post.date_created }}</a></li>
+        <li><a href=/{{ post.user_id }}>{{ post.last_name }} {{ post.first_name }} {{ post.message }} {{ post.date_created }}</a></li>
     {% endfor %}
     </ul>
     <br>

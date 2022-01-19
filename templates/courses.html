@@ -47,7 +47,7 @@
                  <article class="media">
                      <div class="media-content">
                          <div class="content">
-                             <p><a href="course/{{ course.course_id }}">{{ course.course_name }}</a></p>
+                             <p><a href="/course/{{ course.course_id }}">{{ course.course_name }}</a></p>
                              <br>
                              <p>{{ course.description }}</p>
                              <br>
@@ -68,9 +68,9 @@
                              <br>
                              <p>Owner:</p>
                              {% if course.course_owner_type == 0 %}
-                                <p><a href={{ course.course_owner_id }}>{{ course.name }} {{ course.surname }}</a></p>
+                                <p><a href=/{{ course.course_owner_id }}>{{ course.name }} {{ course.surname }}</a></p>
                              {% elif course.course_owner_type == 1 %}
-                                <p><a href="community/{{ course.course_owner_id }}">{{ course.community_name }}</a></p>
+                                <p><a href="/community/{{ course.course_owner_id }}">{{ course.community_name }}</a></p>
                              {% endif %}
                          </div>
                      </div>
@@ -87,7 +87,7 @@
                  <article class="media">
                      <div class="media-content">
                          <div class="content">
-                             <p><a href="course/{{ course.course_id }}">{{ course.course_name }}</a></p>
+                             <p><a href="/course/{{ course.course_id }}">{{ course.course_name }}</a></p>
                              <br>
                              <p>{{ course.description }}</p>
                              <br>
@@ -108,9 +108,9 @@
                              <br>
                              <p>Owner:</p>
                              {% if course.course_owner_type == 0 %}
-                                <p><a href={{ course.course_owner_id }}>{{ course.name }} {{ course.surname }}</a></p>
+                                <p><a href=/{{ course.course_owner_id }}>{{ course.name }} {{ course.surname }}</a></p>
                              {% elif course.course_owner_type == 1 %}
-                                <p><a href="community/{{ course.course_owner_id }}">{{ course.community_name }}</a></p>
+                                <p><a href="/community/{{ course.course_owner_id }}">{{ course.community_name }}</a></p>
                              {% endif %}
                          </div>
                      </div>
@@ -127,7 +127,7 @@
                  <article class="media">
                      <div class="media-content">
                          <div class="content">
-                             <p><a href="course/{{ course.course_id }}">{{ course.course_name }}</a></p>
+                             <p><a href="/course/{{ course.course_id }}">{{ course.course_name }}</a></p>
                              <br>
                              <p>{{ course.description }}</p>
                              <p>{{ course.language_native }}</p>
@@ -148,9 +148,9 @@
                              <br>
                              <p>Owner:</p>
                              {% if course.course_owner_type == 0 %}
-                                <p><a href={{ course.course_owner_id }}>{{ course.name }} {{ course.surname }}</a></p>
+                                <p><a href=/{{ course.course_owner_id }}>{{ course.name }} {{ course.surname }}</a></p>
                              {% elif course.course_owner_type == 1 %}
-                                <p><a href="community/{{ course.course_owner_id }}">{{ course.community_name }}</a></p>
+                                <p><a href="/community/{{ course.course_owner_id }}">{{ course.community_name }}</a></p>
                              {% endif %}
                          </div>
                      </div>

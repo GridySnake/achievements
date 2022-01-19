@@ -84,19 +84,16 @@ class SubscribesGetInfo:
         :return: asyncpg record: status_id
         """
         conn = await asyncpg.connect(connection_url)
-        block = await conn.fetch(f"""
-                        select f.status_id
+        block = await conn.fetchrow(f"""
+                        select case when f.status_id = 2 then true
+                                else false
+                                end as block
                         from 
                         (select user_id, unnest(users_id) as users_id, unnest(status_id) as status_id from subscribes) as f
                         inner join users_information as u on u.user_id = f.users_id
-						left join images as img on img.image_id = u.image_id[array_upper(u.image_id, 1)]
                         where f.user_id = {user_active_id} and u.user_id={user_passive_id}
         """)
-        if block == 2:
-            block = True
-        else:
-            block = False
-        return block
+        return block['block']
 
 
 class SubscribesAction:

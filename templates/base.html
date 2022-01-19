@@ -102,6 +102,62 @@
 </script>
 <script>
     $(document).ready(function() {
+        $('#community_button').on('click', function () {
+            $("#community_chats").show();
+            $("#course_chats").hide();
+            $("#group_chats").hide();
+            $("#direct_chats").hide();
+        });
+        $('#direct_button').on('click', function () {
+            $("#community_chats").hide();
+            $("#course_chats").hide();
+            $("#group_chats").hide();
+            $("#direct_chats").show();
+        });
+        $('#course_button').on('click', function () {
+            $("#community_chats").hide();
+            $("#course_chats").show();
+            $("#group_chats").hide();
+            $("#direct_chats").hide();
+        });
+        $('#group_button').on('click', function () {
+            $("#community_chats").hide();
+            $("#course_chats").hide();
+            $("#group_chats").show();
+            $("#direct_chats").hide();
+        });
+    });
+</script>
+<script>
+    $(document).ready(function() {
+        $('#add_group_chat_member').on('click', function () {
+            $("#add_chat_member").show();
+            $("#hide_add_group_chat_member").show();
+            $("#add_group_chat_member").hide();
+        });
+        $('#hide_add_group_chat_member').on('click', function () {
+            $("#add_chat_member").hide();
+            $("#hide_add_group_chat_member").hide();
+            $("#add_group_chat_member").show();
+        });
+    });
+</script>
+<script>
+    $(document).ready(function() {
+        $('#remove_group_chat_member').on('click', function () {
+            $("#remove_chat_member").show();
+            $("#hide_remove_group_chat_member").show();
+            $("#remove_group_chat_member").hide();
+        });
+        $('#hide_remove_group_chat_member').on('click', function () {
+            $("#remove_chat_member").hide();
+            $("#hide_remove_group_chat_member").hide();
+            $("#remove_group_chat_member").show();
+        });
+    });
+</script>
+<script>
+    $(document).ready(function() {
         var drop = JSON.parse('{{ dropdown_json | safe }}');
         $('#select_group').on('change', function () {
             var drop_new = drop.filter(element => element.group_id == $(this).find('option:selected').val());
@@ -158,6 +214,80 @@
         });
     });
 </script>
+
+<script>
+var counter = 1;
+var dynamicInput = [];
+
+function addInput(){
+    var newdiv = document.createElement('div');
+    newdiv.id = dynamicInput[counter];
+    newdiv.innerHTML = " <br><p>Name        Description     Type   Chapter    Subchapter  Page</p>" +
+        "<br><input type=\"text\" name=\"name"+counter+"\">\n" +
+        "         <input type=\"text\" name=\"description"+counter+"\">\n" +
+        "         <select name=\"type"+counter+"\">\n" +
+        "             <option value=\"photo\">Photo</option>\n" +
+        "             <option value=\"photo\">Video</option>\n" +
+        "             <option value=\"document\">Document</option>\n" +
+        "             <option value=\"PDF\">PDF</option>\n" +
+        "             <option value=\"test\">Test: json</option>\n" +
+        "             <option value=\"none\">None</option>\n" +
+        "         </select>\n" +
+        "         <input name=\"file"+counter+"\" type=\"file\" value=\"\"/>" +
+        "         <input type=\"radio\" name=\"chapter"+counter+"\">\n" +
+        "         <input type=\"radio\" name=\"subchapter"+counter+"\">\n" +
+        "         <input type=\"text\" name=\"page"+counter+"\"> <input type='button' value='-' onClick='removeInput("+dynamicInput[counter]+");'>";
+    document.getElementById('formulario').appendChild(newdiv);
+    counter++;
+}
+
+  function removeInput(id){
+    var elem = document.getElementById(id);
+    counter--;
+    return elem.parentNode.removeChild(elem);
+  }
+</script>
+
+
+
+<script>
+    $(document).ready(function() {
+        var drop = JSON.parse('{{ chats_json | safe }}');
+        $('#communityt').on('click', function () {
+            var drop_new = drop.filter(element => element.chat_type == 2);
+            var community_name = [];
+            var href = [];
+            var chat_id = [];
+            for (var item, j = 0; item = drop_new[j++];) {
+                community_name.push(item.community_name);
+                href.push(item.href);
+                chat_id.push(item.chat_id);
+            }
+            var create = ''
+            for (var i = 0; i < name.length; i++) {
+                if (href != []) {
+                    create += '<div class="columns">\n' +
+                '        <div class="column">\n' +
+                '            <div class="box">\n' +
+                '                <article class="media">' +
+                        '<div class="media-left">'+
+                       ' <figure class="image is-64x64">'+
+                            '<img src="/static/community_avatar/' + href[i] + '">'+
+                        '</figure>'+
+                    '</div>';
+                }
+                create += '<div class="media-content">\n' +
+                    '                            <div class="content">\n' +
+                    '                                <p><a href=\'/chat/' + chat_id[i] +'\'>' + community_name[i] +'</a></p>\n' +
+                    '</div>' +
+                    '</div>' +  '</article>' + '</div>' + '</div>' + '</div>';
+            }
+            $('#chats').empty().append(create);
+        });
+    });
+</script>
+
+
 <!--<script>-->
 <!--        $(document).ready(function() {-->
 <!--            $('#select_group').on('change', function () {-->
