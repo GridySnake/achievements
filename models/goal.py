@@ -28,4 +28,3 @@ class Goals:
                 on u.desired_id = a.achievement_id
                 """)
         return goals
-

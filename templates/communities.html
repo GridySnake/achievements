@@ -33,4 +33,10 @@
         <a href="{{ '/community/%s'%owner_community.community_id }}"><p>{{ owner_community.community_name }}</p></a>
     {% endfor %}
 {% endif %}
+{% if communities_recommend %}
+    <p>Recommended communities: </p>
+    {% for community in communities_recommend %}
+        <a href="{{ '/community/%s'%community.community_id }}"><p>{{ community.community_name }}</p></a>
+    {% endfor %}
+{% endif %}
 {% endblock %}

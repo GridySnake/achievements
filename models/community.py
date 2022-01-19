@@ -5,6 +5,21 @@ connection_url = BaseConfig.database_url
 
 
 class CommunityGetInfo:
+    # Recommendation system will be here!!!
+    @staticmethod
+    async def get_some_communities(user_id):
+        user_id = int(user_id)
+        conn = await asyncpg.connect(connection_url)
+        communities = await conn.fetch(f"""
+            select c.community_id, c.community_name
+            from communities as c
+            where {user_id} not in (select unnest(user_id)
+                                   from communities 
+                                   where c.community_id = community_id)
+            limit (10)
+        """)
+        return communities
+
 
     @staticmethod
     async def get_user_communities(user_id):
@@ -67,7 +82,7 @@ class CommunityAvatarAction:
             image_id = 0
         await conn.execute(f"""
                                insert into images (image_id, href, image_type, create_date) values(
-                               {image_id}, '{url}', 'user', statement_timestamp())
+                               {image_id}, '{url}', 'community', statement_timestamp())
                                """)
         await conn.execute(f"""
                                update communities
@@ -116,6 +131,7 @@ class CommunityCreate:
     @staticmethod
     async def create_community(user_id, data):
         conn = await asyncpg.connect(connection_url)
+        user_id = int(user_id)
         id = await conn.fetchrow(f"""
                                   select max(community_id)
                                   from communities
@@ -127,7 +143,7 @@ class CommunityCreate:
             id = 0
         await conn.execute(f"""
                                insert into communities (community_id, community_type, community_name, community_bio, user_id, community_owner_id, created_date, image_id, condition_id, condition_value)
-                               values({id}, '{data['community_type']}', '{data['name']}', '{data['bio']}', array({user_id}), array({user_id}), statement_timestamp(), ARRAY []::integer[], ARRAY []::integer[], ARRAY []::text[])
+                               values ({id}, '{data['community_type']}', '{data['name']}', '{data['bio']}', array[{user_id}], array[{user_id}], statement_timestamp(), ARRAY []::integer[], ARRAY []::integer[], ARRAY []::text[])
                            """)
         await conn.execute(f"""
                                 update users_information 
