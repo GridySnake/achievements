@@ -21,12 +21,19 @@
                 {% if course.new %}
                    <p>New</p>
                 {% endif %}
+                {% for sphere in spheres %}
+                    {% if sphere.sphere_name %}
+                        <p>{{ sphere.sphere_name }}</p>
+                        <p>{{ sphere.subsphere_name }}</p>
+                        <br>
+                    {% endif %}
+                {% endfor %}
                 <p>{{ course.joined }} participants</p>
                 <br>
                 <br>
                 <p>Owner:</p>
                 {% if course.course_owner_type == 0 %}
-                   <p><a href=/{{ course.course_owner_id }}>{{ course.name }} {{ course.surname }}</a></p>
+                   <p><a href="/user/{{ course.course_owner_id }}">{{ course.name }} {{ course.surname }}</a></p>
                 {% elif course.course_owner_type == 1 %}
                    <p><a href="/community/{{ course.course_owner_id }}">{{ course.community_name }}</a></p>
                 {% endif %}

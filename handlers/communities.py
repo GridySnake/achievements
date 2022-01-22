@@ -89,8 +89,9 @@ class CommunitiesInfoView(web.View):
             await CommunityAvatarAction.save_community_avatar_url(community_id=community_id, url=f"{community_avatar.filename}")
         if 'add_community_member' in str(self):
             users = [int(i) for i in data.keys()]
+            status = [i for i in range(len(users))]
             community = str(self.__dict__['_message']).split('Referer')[-1].split(',')[1].split('/community/')[-1][:-2]
-            await CommunityAvatarAction.add_member(community_id=community, users=users)
+            await CommunityAvatarAction.add_member(community_id=community, users=users, status=status)
         elif 'delete_community_member' in str(self):
             users = [int(i) for i in data.keys()]
             community = str(self.__dict__['_message']).split('Referer')[-1].split(',')[1].split('/community/')[-1][:-2]

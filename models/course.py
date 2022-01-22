@@ -27,7 +27,7 @@ class CoursesGetInfo:
         """
         conn = await asyncpg.connect(connection_url)
         courses = await conn.fetch(f"""
-                                        select c.course_id, c.course_name, c.description, c.course_owner_id, c.sphere,
+                                        select c.course_id, c.course_name, c.description, c.course_owner_id, c.sphere_id,
                                             c.online, c.free, c.country_id, c.city_id, c.new, c.course_owner_type,
                                             ui.name, ui.surname, com.community_name, array_length(c.users, 1) as joined
                                         from courses as c
@@ -37,7 +37,7 @@ class CoursesGetInfo:
                                             and c.course_owner_type = 1 and {user_id} <> any(com.community_owner_id)
                                         where {user_id} <> all(c.users) and c.course_owner_id <> {user_id}
                                         order by new desc
-        """)
+        """ )
         return courses
 
     @staticmethod
@@ -49,11 +49,14 @@ class CoursesGetInfo:
         """
         conn = await asyncpg.connect(connection_url)
         course = await conn.fetchrow(f"""
-                                        select c.course_id, c.course_name, c.description, c.course_owner_id, c.sphere,
+                                        select c.course_id, c.course_name, c.description, c.course_owner_id, 
                                             c.online, c.free, c.country_id, c.city_id, c.new, c.course_owner_type,
                                             ui.name, ui.surname, com.community_name, array_length(c.users, 1) as joined,
-                                            l.language_native
-                                        from (select * from courses where course_id = {course_id}) as c
+                                            l.language_native, c.subsphere_id
+                                        from (select course_id, course_name, description, course_owner_id, 
+                                                online, free, country_id, city_id, new,course_owner_type, users, language,
+                                                sphere_id,
+                                                 subsphere_id from courses where course_id = {course_id}) as c
                                         left join languages as l on l.language_id = c.language
                                         left join users_information as ui on ui.user_id = c.course_owner_id
                                             and c.course_owner_type = 0
@@ -71,7 +74,7 @@ class CoursesGetInfo:
         """
         conn = await asyncpg.connect(connection_url)
         courses = await conn.fetch(f"""
-                                       select c.course_id, c.course_name, c.description, c.course_owner_id, c.sphere,
+                                       select c.course_id, c.course_name, c.description, c.course_owner_id, c.sphere_id,
                                            c.online, c.free, c.country_id, c.city_id, c.new, c.course_owner_type,
                                            ui.name, ui.surname, com.community_name, array_length(c.users, 1) as joined,
                                            l.language_native
@@ -81,7 +84,7 @@ class CoursesGetInfo:
                                            and c.course_owner_type = 0
                                        left join communities as com on com.community_id = c.course_owner_id
                                            and c.course_owner_type = 1
-            """)
+            """ )
         return courses
 
     @staticmethod
@@ -93,7 +96,7 @@ class CoursesGetInfo:
         """
         conn = await asyncpg.connect(connection_url)
         courses = await conn.fetch(f"""
-                                       select c.course_id, c.course_name, c.description, c.course_owner_id, c.sphere,
+                                       select c.course_id, c.course_name, c.description, c.course_owner_id, c.sphere_id,
                                           c.online, c.free, c.country_id, c.city_id, c.new, c.course_owner_type,
                                           ui.name, ui.surname, com.community_name, array_length(c.users, 1) as joined,
                                           l.language_native
@@ -149,11 +152,11 @@ class CoursesGetInfo:
     @staticmethod
     async def get_course_participants(course_id: str):
         conn = await asyncpg.connect(connection_url)
-        participants = await conn.fetchrow(f"""
+        participants = await conn.fetch(f"""
                                                select u.user_id, u.name, u.surname
                                                from (select course_id, unnest(users) as users from courses) as c
                                                left join users_information as u on u.user_id = c.users
-                                               where course_id = {course_id}
+                                               where c.course_id = {course_id}
                                             """)
         return participants
 
@@ -258,15 +261,14 @@ class CoursesAction:
                             """)
 
     @staticmethod
-    async def add_member(course_id: str, users: list):
+    async def add_member(course_id: str, users: list, status: list):
         conn = await asyncpg.connect(connection_url)
-        for i in users:
-            await conn.execute(f"""
-                                    update courses
-                                        set requests = array_append(requests, {i}),
-                                            request_statuses = array_append(request_statuses, 1)
-                                    where course_id = {course_id}
-                                """)
+        await conn.execute(f"""
+                                update courses
+                                    set requests = array_cat(requests, array{users}),
+                                        request_statuses = array_cat(request_statuses, array{status})
+                                where course_id = {course_id}
+                            """)
 
     @staticmethod
     async def accept_decline_request(user_id: str, action: int, course_id: str):
@@ -348,12 +350,12 @@ class CourseCreate:
             chat_id = 0
         await conn.execute(f"""
                                 insert into courses (course_id, course_owner_id, users, course_owner_type, 
-                                description, level, online, create_date, free, new, sphere, 
+                                description, level, online, create_date, free, new, sphere_id, 
                                 language, course_name, image_id)
                                 values ({course_id}, {user_id}, ARRAY []::integer[], {data['type']}, '{data['description']}',
                                 {data['level']}, {data['online']}, statement_timestamp(), {data['free']}, true,
                                 '{data['sphere']}', {data['language']}, '{data['course_name']}', {image_id})
-                            """)
+                            """ )
         await conn.execute(f"""
                                insert into chats (chat_id, chat_type, participants, owner_id) values(
                                {chat_id}, 3, array[{user_id}], {course_id})

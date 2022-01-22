@@ -135,15 +135,14 @@ class CommunityAvatarAction:
                                    """)
 
     @staticmethod
-    async def add_member(community_id: str, users: list):
+    async def add_member(community_id: str, users: list, status: list):
         conn = await asyncpg.connect(connection_url)
-        for i in users:
-            await conn.execute(f"""
-                                   update communities
-                                        set requests = array_append(requests, {i}),
-                                        request_statuses = array_append(requests, 1)
-                                        where community_id = {community_id}
-                                """)
+        await conn.execute(f"""
+                               update communities
+                                    set requests = array_cat(requests, array{users}),
+                                        request_statuses = array_cat(requests, {status})
+                                    where community_id = {community_id}
+                            """)
 
     @staticmethod
     async def remove_member(community_id: str, users: list):
