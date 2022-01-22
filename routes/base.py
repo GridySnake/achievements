@@ -110,6 +110,12 @@ def setup_routes(app):
     app.router.add_route('GET', r'/course/{i}', CourseInfoView.get, name='course')
     app.router.add_route('GET', r'/course/{i}/course_content/{j}', CourseContent.get, name='course_content')
     app.router.add_route('GET', r'/create_course_content/{i}', CourseContentCreate.get, name='create_course_content')
+    app.router.add_route('POST', r'/accept_invitation_community/{i}', CommunitiesView.post, name='accept_invitation_community')
+    app.router.add_route('POST', r'/decline_invitation_community/{i}', CommunitiesView.post, name='decline_invitation_community')
+    app.router.add_route('POST', r'/accept_invitation_course/{i}', CoursesView.post, name='accept_invitation_course')
+    app.router.add_route('POST', r'/decline_invitation_course/{i}', CoursesView.post, name='decline_invitation_course')
+    app.router.add_route('POST', '/add_course_member', CourseInfoView.post, name='add_course_member')
+    app.router.add_route('POST', '/remove_course_member', CourseInfoView.post, name='remove_course_member')
 
     # ставим в конец
     app.router.add_route('GET', r'/user/{i}', PersonalPageView.get, name='personal_page')

@@ -20,7 +20,7 @@
         </p>
     {% endif %}
     <p>
-        Created at {{ achievement[0].created_date.strftime('%Y-%m-%d %H:%M') }} by <a href="/{{ achievement[0].user_id }}">{{ achievement[0].u_name }} {{ achievement[0].u_surname }} </a>
+        Created at {{ achievement[0].created_date.strftime('%Y-%m-%d %H:%M') }} by <a href="/user/{{ achievement[0].user_id }}">{{ achievement[0].u_name }} {{ achievement[0].u_surname }} </a>
     </p>
     {% if achievement[0].parameter == 'location' %}
     <p>Radius: {{ achievement[0].geo[-1] }} km</p>

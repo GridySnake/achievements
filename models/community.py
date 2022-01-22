@@ -66,6 +66,17 @@ class CommunityGetInfo:
                                 """)
         return conditions
 
+    @staticmethod
+    async def user_requests(user_id: str):
+        conn = await asyncpg.connect(connection_url)
+        conditions = await conn.fetch(f"""
+                                        select community_id, community_name
+                                        from communities
+                                        where {user_id} = any(requests) 
+                                        and request_statuses[array_position(requests, {user_id})] = 1
+                                    """)
+        return conditions
+
 
 class CommunityAvatarAction:
     @staticmethod
@@ -142,6 +153,34 @@ class CommunityAvatarAction:
                                    update communities
                                         set user_id = array_remove(user_id, {i})
                                         where community_id = {community_id}
+                                """)
+
+    @staticmethod
+    async def accept_decline_request(user_id: str, action: int, community_id: str):
+        conn = await asyncpg.connect(connection_url)
+        if action == 0:
+            await conn.execute(f"""
+                                    update communities
+                                        set requests = array_cat(requests[:array_position(requests, {user_id})-1],
+                                                                requests[array_position(requests, {user_id})+1:]),
+                                            request_statuses = array_cat(request_statuses[:array_position(requests, {user_id})-1],
+                                                                request_statuses[array_position(requests, {user_id})+1:])
+                                        where community_id = {community_id}
+                                """)
+        else:
+            await conn.execute(f"""
+                                   update communities
+                                       set user_id = array_append(user_id, {user_id}),
+                                            requests = array_cat(requests[:array_position(requests, {user_id})-1],
+                                                                requests[array_position(requests, {user_id})+1:]),
+                                            request_statuses = array_cat(request_statuses[:array_position(requests, {user_id})-1],
+                                                                request_statuses[array_position(requests, {user_id})+1:])
+                                       where community_id = {community_id}
+                                """)
+            await conn.execute(f"""
+                                   update users_information
+                                        set community_id = array_append(community_id, {community_id})
+                                   where user_id = {user_id}
                                 """)
 
 

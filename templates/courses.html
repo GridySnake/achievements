@@ -3,7 +3,9 @@
 {% set title = "Courses" %}
 
 {% block content %}
-    <div id="create_course" class="create_course">
+    <button id="create_course_button">Create Course</button>
+    <button id="hide_create_course_button" hidden>Hide</button>
+    <div id="create_course" class="create_course" hidden>
         <form action="{{ url('create_course') }}" method="post" enctype="multipart/form-data">
             <label>Create new course: </label>
             <p>Course name</p>
@@ -40,6 +42,22 @@
             <button type="submit">Send</button>
         </form>
     </div>
+    <br>
+    <br>
+    {% if requests %}
+        <p>Active requests:</p>
+        {% for req in requests %}
+            <a href="/course/{{ req.course_id }}"><p>{{ req.course_name }}</p></a>
+            <form action="/accept_invitation_course/{{ req.course_id }}" method="POST">
+                <button type="submit">Join</button>
+            </form>
+            <form action="/decline_invitation_course/{{ req.course_id }}" method="POST">
+                <button type="submit">Decline</button>
+            </form>
+        {% endfor %}
+    {% endif %}
+    <br>
+    <br>
     {% if own_courses %}
         <p>Created courses: </p>
         {% for course in own_courses %}

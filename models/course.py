@@ -91,7 +91,6 @@ class CoursesGetInfo:
         :return: asyncpg records: course_id, course_name, description, course_owner_id, sphere, online, free,
         new, course_owner_type, name, surname, community_name, language
         """
-        # todo: сделать разбивку по юзеру и его коммьюнити
         conn = await asyncpg.connect(connection_url)
         courses = await conn.fetch(f"""
                                        select c.course_id, c.course_name, c.description, c.course_owner_id, c.sphere,
@@ -104,7 +103,7 @@ class CoursesGetInfo:
                                           and c.course_owner_type = 0
                                        left join communities as com on com.community_id = c.course_owner_id
                                           and c.course_owner_type = 1
-                """)
+                                    """)
         return courses
 
     @staticmethod
@@ -127,14 +126,47 @@ class CoursesGetInfo:
         return result['result']
 
     @staticmethod
-    async def get_course_owner(course_id: str):
+    async def is_owner(course_id: str, user_id: str):
         conn = await asyncpg.connect(connection_url)
         owner = await conn.fetchrow(f"""
-                                        select course_owner_id, course_owner_type
-                                        from courses
-                                        where course_id = {course_id}
+                                        select 
+                                            case when u.user_id is not null then true
+                                                when u1.user_id is not null then true
+                                                else false
+                                            end
+                                                as is_owner
+                                        from (select course_owner_id, course_owner_type from courses where course_id = {course_id}) as c
+                                        left join users_information as u on u.user_id = c.course_owner_id
+                                          and c.course_owner_type = 0 and u.user_id = {user_id}
+                                        left join (select community_id, unnest(community_owner_id) as owner_id from communities) as com
+                                            on com.community_id = c.course_owner_id
+                                          and c.course_owner_type = 1
+                                        left join users_information as u1 on u1.user_id = com.owner_id
+                                            and u1.user_id = {user_id}
                                     """)
-        return owner
+        return owner['is_owner']
+
+    @staticmethod
+    async def get_course_participants(course_id: str):
+        conn = await asyncpg.connect(connection_url)
+        participants = await conn.fetchrow(f"""
+                                               select u.user_id, u.name, u.surname
+                                               from (select course_id, unnest(users) as users from courses) as c
+                                               left join users_information as u on u.user_id = c.users
+                                               where course_id = {course_id}
+                                            """)
+        return participants
+
+    @staticmethod
+    async def user_requests(user_id: str):
+        conn = await asyncpg.connect(connection_url)
+        requests = await conn.fetch(f"""
+                                        select c.course_id, c.course_name
+                                        from courses as c
+                                        where {user_id} = any(requests)
+                                         and request_statuses[array_position(requests, {user_id})] = 1
+                                    """)
+        return requests
 
 
 class CoursesAction:
@@ -162,7 +194,7 @@ class CoursesAction:
         conn = await asyncpg.connect(connection_url)
         await conn.execute(f"""
                                 update users_information
-                                    set courses = array_append(courses, {course_id})
+                                    set course_id = array_append(course_id, {course_id})
                                 where user_id = {user_id}
                             """)
         await conn.execute(f"""
@@ -191,10 +223,10 @@ class CoursesAction:
         conn = await asyncpg.connect(connection_url)
         await conn.execute(f"""
                                update users_information
-                                   set courses = courses[:(select array_position(courses, {course_id}) 
+                                   set course_id = course_id[:(select array_position(course_id, {course_id}) 
                                                     from users_information
                                                     where user_id = {user_id})-1] || 
-                                                    courses[(select array_position(courses, {course_id}) 
+                                                    course_id[(select array_position(course_id, {course_id}) 
                                                     from users_information
                                                     where user_id = {user_id})+1:]
                                where user_id = {user_id}
@@ -219,6 +251,50 @@ class CoursesAction:
                                 insert into courses_events (event_id, course_id, user_id, status) 
                                 values({event_id}, {course_id}, {user_id}, 0)
                             """)
+        await conn.execute(f"""
+                               update users_information
+                                    set course_id = array_remove(course_id, {course_id})
+                               where user_id = {user_id}
+                            """)
+
+    @staticmethod
+    async def add_member(course_id: str, users: list):
+        conn = await asyncpg.connect(connection_url)
+        for i in users:
+            await conn.execute(f"""
+                                    update courses
+                                        set requests = array_append(requests, {i}),
+                                            request_statuses = array_append(request_statuses, 1)
+                                    where course_id = {course_id}
+                                """)
+
+    @staticmethod
+    async def accept_decline_request(user_id: str, action: int, course_id: str):
+        conn = await asyncpg.connect(connection_url)
+        if action == 0:
+            await conn.execute(f"""
+                                    update courses
+                                        set requests = array_cat(requests[:array_position(requests, {user_id})-1],
+                                                                requests[array_position(requests, {user_id})+1:]),
+                                            request_statuses = array_cat(request_statuses[:array_position(requests, {user_id})-1],
+                                                                request_statuses[array_position(requests, {user_id})+1:])
+                                        where course_id = {course_id}
+                                """)
+        else:
+            await conn.execute(f"""
+                                   update courses
+                                       set users = array_append(users, {user_id}),
+                                            requests = array_cat(requests[:array_position(requests, {user_id})-1],
+                                                                requests[array_position(requests, {user_id})+1:]),
+                                            request_statuses = array_cat(request_statuses[:array_position(requests, {user_id})-1],
+                                                                request_statuses[array_position(requests, {user_id})+1:])
+                                       where course_id = {course_id}
+                                """)
+            await conn.execute(f"""
+                                   update users_information
+                                        set course_id = array_append(course_id, {course_id})
+                                   where user_id = {user_id}
+                                """)
 
 
 class CourseCreate:
@@ -281,6 +357,11 @@ class CourseCreate:
         await conn.execute(f"""
                                insert into chats (chat_id, chat_type, participants, owner_id) values(
                                {chat_id}, 3, array[{user_id}], {course_id})
+                            """)
+        await conn.execute(f"""
+                               update users_information
+                                    set course_id = array_append(course_id, {course_id})
+                               where user_id = {user_id}
                             """)
 
 

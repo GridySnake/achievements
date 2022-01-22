@@ -5,27 +5,37 @@
 
 <body>
 {% block content %}
-    <div id="create_achievement" class="create_achievement">
+    <button id="create_achievement_button">Create Achievement</button>
+    <button id="hide_create_achievement_button" hidden>Hide</button>
+    <div id="create_achievement" class="create_achievement" hidden>
         <form action="{{ url('add_achievement') }}" method="post">
-            <label>Create New Achievement: </label>
+            <p>Group</p>
             <select name="select_group" id="select_group">
                 {% for i in group %}
                     <option value="{{ i.group_id }}">{{ i.group_name }}</option>
                 {% endfor %}
             </select>
+            <p id="service_p" hidden>Service</p>
             <select name="select_service" id="select_service" hidden>
                 <option value="">None</option>
             </select>
+            <p>Aggregation</p>
             <select name="select_aggregation" id="select_aggregation">
                 <option value="">None</option>
             </select>
+            <p>Parameter</p>
             <select name="select_parameter" id="select_parameter">
                 <option value="">None</option>
             </select>
-            <input id="value" name="value" type="text" value=""/>
-            <input id="name" name="name" type="text" value=""/>
-            <input id="description" name="description" type="text" value=""/>
-            <input id="coords" name="coords" type="text" value="" placeholder="coordinates" hidden/>
+            <p>Value</p>
+            <input id="value" name="value" type="text" value="" placeholder="value"/>
+            <p>Name</p>
+            <input id="name" name="name" type="text" value="" placeholder="name"/>
+            <p>Description</p>
+            <input id="description" name="description" type="text" value="" placeholder="description"/>
+            <p id="coords_p" hidden>Coordinates</p>
+            <input id="coords" name="coords" type="text" value="" placeholder="coordinates" hidden />
+            <p id="radius_p" hidden>Radius</p>
             <input id="radius" name="radius" type="text" value="" placeholder="radius in km" hidden/>
             <button type="submit">Send</button>
         </form>
@@ -63,10 +73,10 @@
     <br>
     {% for achievement in achievements_sug %}
         {% if achievement.new == True %}
-        <a href="{{ '/achievement/%s'%achievement.achievement_id }}"><p>{{ achievement.title }}</a> : {{ achievement.description }}. <a href="{{ achievement.user_id }}">{{ achievement.name }} {{ achievement.surname }}</a>
+        <a href="{{ '/achievement/%s'%achievement.achievement_id }}"><p>{{ achievement.title }}</a> : {{ achievement.description }}. <a href="/user/{{ achievement.user_id }}">{{ achievement.name }} {{ achievement.surname }}</a>
         {{ achievement.created_date }} new</p>
         {% else %}
-        <a href="{{ '/achievement/%s'%achievement.achievement_id }}"><p>{{ achievement.title }} </a>: {{ achievement.description }}. <a href="{{ achievement.user_id }}">{{ achievement.name }} {{ achievement.surname }}</a>
+        <a href="{{ '/achievement/%s'%achievement.achievement_id }}"><p>{{ achievement.title }} </a>: {{ achievement.description }}. <a href="/user/{{ achievement.user_id }}">{{ achievement.name }} {{ achievement.surname }}</a>
         {{ achievement.created_date }}</p>
         {% endif %}
     {% endfor %}
