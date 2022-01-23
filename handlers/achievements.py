@@ -165,7 +165,7 @@ class AchievementInfoView(web.View):
         session = await get_session(self)
         location = str(self).split('/achievement/')[-1][:-2]
         achievement = await AchievementsGetInfo.get_achievement_info(achievement_id=location)
-        if achievement[0]['parameter'] == 'user_approve':
+        if achievement['parameter'] == 'user_approve':
             desire = await AchievementsDesireApprove.is_desire(user_id=session['user']['id'], achievement_desire_id=location)
         else:
             desire = False

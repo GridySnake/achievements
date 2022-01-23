@@ -7,6 +7,13 @@
     <br>
     <p>{{ community.community_bio }}</p>
     <br>
+    <br>
+    {% for i in range(community.sphere_name|length) %}
+        <p>{{ community.sphere_name[i] }}</p>
+        <p>{{ community.subsphere_name[i] }}</p>
+        <br>
+    {% endfor %}
+    <br>
     {% if community.href %}
         <figure class="image is-128x128">
             <img src="{{ url('static', filename='community_avatar/'+community.href) }}">

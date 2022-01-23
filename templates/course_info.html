@@ -11,7 +11,12 @@
                 <br>
                 <p>{{ course.description }}</p>
                 <br>
-                <p>{{ course.sphere }}</p>
+                {% for i in range(course.sphere_name|length) %}
+                    <p>{{ course.sphere_name[i] }}</p>
+                    <p>{{ course.subsphere_name[i] }}</p>
+                    <br>
+                {% endfor %}
+                <br>
                 {% if course.online %}
                    <p>Online</p>
                 {% endif %}

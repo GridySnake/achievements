@@ -29,15 +29,23 @@ class CoursesGetInfo:
         courses = await conn.fetch(f"""
                                         select c.course_id, c.course_name, c.description, c.course_owner_id, c.sphere_id,
                                             c.online, c.free, c.country_id, c.city_id, c.new, c.course_owner_type,
-                                            ui.name, ui.surname, com.community_name, array_length(c.users, 1) as joined
-                                        from courses as c
+                                            ui.name, ui.surname, com.community_name, array_length(c.users, 1) as joined,
+                                            s.sphere_name, s.subsphere_name
+                                            from (select * from courses where {user_id} <> all(users) 
+                                            and ({user_id} <> any(requests) or requests = array[]::integer[])) as c
                                         left join users_information as ui on ui.user_id = c.course_owner_id
-                                            and c.course_owner_type = 0
+                                            and c.course_owner_type = 0  and course_owner_id <> {user_id}
                                         left join communities as com on com.community_id = c.course_owner_id
                                             and c.course_owner_type = 1 and {user_id} <> any(com.community_owner_id)
-                                        where {user_id} <> all(c.users) and c.course_owner_id <> {user_id}
+                                        left join (
+                                                    select c.course_id, array_agg(s.subsphere_name) as subsphere_name, 
+                                                           array_agg(s.sphere_name) as sphere_name
+                                                    from courses as c
+                                                    left join spheres s on s.subsphere_id = any(c.subsphere_id)
+                                                    group by c.course_id
+                                                ) as s on c.course_id = s.course_id
                                         order by new desc
-        """ )
+        """)
         return courses
 
     @staticmethod
@@ -53,15 +61,19 @@ class CoursesGetInfo:
                                             c.online, c.free, c.country_id, c.city_id, c.new, c.course_owner_type,
                                             ui.name, ui.surname, com.community_name, array_length(c.users, 1) as joined,
                                             l.language_native, c.subsphere_id
-                                        from (select course_id, course_name, description, course_owner_id, 
-                                                online, free, country_id, city_id, new,course_owner_type, users, language,
-                                                sphere_id,
-                                                 subsphere_id from courses where course_id = {course_id}) as c
+                                        from (select * from courses where course_id = {course_id}) as c
                                         left join languages as l on l.language_id = c.language
                                         left join users_information as ui on ui.user_id = c.course_owner_id
                                             and c.course_owner_type = 0
                                         left join communities as com on com.community_id = c.course_owner_id
                                             and c.course_owner_type = 1
+                                        left join (
+                                                    select c.course_id, array_agg(s.subsphere_name) as subsphere_name, 
+                                                           array_agg(s.sphere_name) as sphere_name
+                                                    from courses as c
+                                                    left join spheres s on s.subsphere_id = any(c.subsphere_id)
+                                                    group by c.course_id
+                                                ) as s on c.course_id = s.course_id
         """)
         return course
 
@@ -74,17 +86,24 @@ class CoursesGetInfo:
         """
         conn = await asyncpg.connect(connection_url)
         courses = await conn.fetch(f"""
-                                       select c.course_id, c.course_name, c.description, c.course_owner_id, c.sphere_id,
+                                       select c.course_id, c.course_name, c.description, c.course_owner_id,
                                            c.online, c.free, c.country_id, c.city_id, c.new, c.course_owner_type,
                                            ui.name, ui.surname, com.community_name, array_length(c.users, 1) as joined,
-                                           l.language_native
+                                           l.language_native, s.sphere_name, s.subsphere_name
                                        from (select * from courses where {user_id} = any(users)) as c
                                        left join languages as l on l.language_id = c.language
                                        left join users_information as ui on ui.user_id = c.course_owner_id
-                                           and c.course_owner_type = 0
+                                           and c.course_owner_type = 0  and course_owner_id <> {user_id}
                                        left join communities as com on com.community_id = c.course_owner_id
-                                           and c.course_owner_type = 1
-            """ )
+                                           and c.course_owner_type = 1  and {user_id} <> any(com.community_owner_id)
+                                       left join (
+                                                    select c.course_id, array_agg(s.subsphere_name) as subsphere_name, 
+                                                           array_agg(s.sphere_name) as sphere_name
+                                                    from courses as c
+                                                    left join spheres s on s.subsphere_id = any(c.subsphere_id)
+                                                    group by c.course_id
+                                                ) as s on c.course_id = s.course_id
+            """)
         return courses
 
     @staticmethod
@@ -99,13 +118,20 @@ class CoursesGetInfo:
                                        select c.course_id, c.course_name, c.description, c.course_owner_id, c.sphere_id,
                                           c.online, c.free, c.country_id, c.city_id, c.new, c.course_owner_type,
                                           ui.name, ui.surname, com.community_name, array_length(c.users, 1) as joined,
-                                          l.language_native
+                                          l.language_native, s.sphere_name, s.subsphere_name
                                        from (select * from courses where {user_id} = course_owner_id) as c
                                        left join languages as l on l.language_id = c.language
                                        left join users_information as ui on ui.user_id = c.course_owner_id
                                           and c.course_owner_type = 0
                                        left join communities as com on com.community_id = c.course_owner_id
                                           and c.course_owner_type = 1
+                                        left join (
+                                            select c.course_id, array_agg(s.subsphere_name) as subsphere_name, 
+                                            array_agg(s.sphere_name) as sphere_name
+                                            from courses as c
+                                            left join spheres s on s.subsphere_id = any(c.subsphere_id)
+                                            group by c.course_id
+                                           ) s on c.course_id = s.course_id
                                     """)
         return courses
 

@@ -71,7 +71,13 @@
                              <br>
                              <p>{{ course.language_native }}</p>
                              <br>
-                             <p>{{ course.sphere }}</p>
+                             <br>
+                             {% for i in range(course.sphere_name|length) %}
+                                <p>{{ course.sphere_name[i] }}</p>
+                                <p>{{ course.subsphere_name[i] }}</p>
+                                <br>
+                             {% endfor %}
+                             <br>
                              {% if course.online %}
                                 <p>Online</p>
                              {% endif %}
@@ -86,7 +92,7 @@
                              <br>
                              <p>Owner:</p>
                              {% if course.course_owner_type == 0 %}
-                                <p><a href=/{{ course.course_owner_id }}>{{ course.name }} {{ course.surname }}</a></p>
+                                <p><a href="/user/{{ course.course_owner_id }}">{{ course.name }} {{ course.surname }}</a></p>
                              {% elif course.course_owner_type == 1 %}
                                 <p><a href="/community/{{ course.course_owner_id }}">{{ course.community_name }}</a></p>
                              {% endif %}
@@ -111,7 +117,13 @@
                              <br>
                              <p>{{ course.language_native }}</p>
                              <br>
-                             <p>{{ course.sphere }}</p>
+                             <br>
+                             {% for i in range(course.sphere_name|length) %}
+                                     <p>{{ course.sphere_name[i] }}</p>
+                                     <p>{{ course.subsphere_name[i] }}</p>
+                                     <br>
+                             {% endfor %}
+                             <br>
                              {% if course.online %}
                                 <p>Online</p>
                              {% endif %}
@@ -126,7 +138,7 @@
                              <br>
                              <p>Owner:</p>
                              {% if course.course_owner_type == 0 %}
-                                <p><a href=/{{ course.course_owner_id }}>{{ course.name }} {{ course.surname }}</a></p>
+                                <p><a href="/user/{{ course.course_owner_id }}">{{ course.name }} {{ course.surname }}</a></p>
                              {% elif course.course_owner_type == 1 %}
                                 <p><a href="/community/{{ course.course_owner_id }}">{{ course.community_name }}</a></p>
                              {% endif %}
@@ -151,7 +163,12 @@
                              <p>{{ course.language_native }}</p>
                              <br>
                              <br>
-                             <p>{{ course.sphere }}</p>
+                             {% for i in range(course.sphere_name|length) %}
+                                     <p>{{ course.sphere_name[i] }}</p>
+                                     <p>{{ course.subsphere_name[i] }}</p>
+                                     <br>
+                             {% endfor %}
+                             <br>
                              {% if course.online %}
                                 <p>Online</p>
                              {% endif %}
@@ -166,7 +183,7 @@
                              <br>
                              <p>Owner:</p>
                              {% if course.course_owner_type == 0 %}
-                                <p><a href=/{{ course.course_owner_id }}>{{ course.name }} {{ course.surname }}</a></p>
+                                <p><a href="/user/{{ course.course_owner_id }}">{{ course.name }} {{ course.surname }}</a></p>
                              {% elif course.course_owner_type == 1 %}
                                 <p><a href="/community/{{ course.course_owner_id }}">{{ course.community_name }}</a></p>
                              {% endif %}

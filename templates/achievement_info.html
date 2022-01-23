@@ -6,48 +6,49 @@
 <body>
 <div>
     <H3>
-        {{ achievement[0].name }}
+        {{ achievement.name }}
     </H3>
     <p>
-        {{ achievement[0].description }}
+        {{ achievement.description }}
     </p>
+    <p>{{ achievement.sphere_name }}: {{ achievement.subsphere_name }}</p>
     <p>
-        Verification_type: {{ achievement[0].achi_condition_group_name }}
+        Verification_type: {{ achievement.achi_condition_group_name }}
     </p>
-    {% if achievement[0].parameter != "href" %}
+    {% if achievement.parameter != "href" %}
         <p>
-            Condition: {{ achievement[0].parameter }} = {{ achievement[0].value }}
+            Condition: {{ achievement.parameter }} = {{ achievement.value }}
         </p>
     {% endif %}
     <p>
-        Created at {{ achievement[0].created_date.strftime('%Y-%m-%d %H:%M') }} by <a href="/user/{{ achievement[0].user_id }}">{{ achievement[0].u_name }} {{ achievement[0].u_surname }} </a>
+        Created at {{ achievement.created_date.strftime('%Y-%m-%d %H:%M') }} by <a href="/user/{{ achievement.user_id }}">{{ achievement.u_name }} {{ achievement.u_surname }} </a>
     </p>
-    {% if achievement[0].parameter == 'location' %}
-    <p>Radius: {{ achievement[0].geo[-1] }} km</p>
-    <p>Coordinates: {{ achievement[0].geo[0] }}</p>
-        <a href="{{ '/verify_achievement/location/%s'%achievement[0].condition_id }}"><button>
+    {% if achievement.parameter == 'location' %}
+    <p>Radius: {{ achievement.geo[-1] }} km</p>
+    <p>Coordinates: {{ achievement.geo[0] }}</p>
+        <a href="{{ '/verify_achievement/location/%s'%achievement.condition_id }}"><button>
             Verify
         </button></a>
     {% endif %}
-    {% if achievement[0].parameter == 'user_approve' and not desire %}
+    {% if achievement.parameter == 'user_approve' and not desire %}
         <form action="{{ url('desire') }}" method="post">
-            <input id="achi_id" name="achi_id" type="text" value="{{ achievement[0].achievement_id }}" hidden>
+            <input id="achi_id" name="achi_id" type="text" value="{{ achievement.achievement_id }}" hidden>
             <button type="submit" >Desire</button>
         </form>
     {% endif %}
-    {% if achievement[0].aggregation == 'send message' %}
+    {% if achievement.aggregation == 'send message' %}
         <button id="get_message_block">
             Verify
         </button>
         <form action="{{ url('verify_message_to_achi') }}" method="post">
-            <input id="achi" name="achi" type="text" value="{{ achievement[0].condition_id }}" hidden>
+            <input id="achi" name="achi" type="text" value="{{ achievement.condition_id }}" hidden>
             <input id="message" name="message" type="text" value="" hidden>
             <button id="message_send" type="submit" hidden>Send</button>
         </form>
     {% endif %}
 
-    {% if achievement[0].achi_condition_group_id == 3 %}
-        <a href="{{ '/verify_achievement/service/%s'%achievement[0].parameter }}"><button>
+    {% if achievement.achi_condition_group_id == 3 %}
+        <a href="{{ '/verify_achievement/service/%s'%achievement.parameter }}"><button>
             Verify
         </button></a>
     {% endif %}

@@ -73,12 +73,16 @@ class AchievementsGetInfo:
     @staticmethod
     async def get_achievement_info(achievement_id: str):
         conn = await asyncpg.connect(connection_url)
-        achievement = await conn.fetch(f"""
-                                            select a.achievement_id, a.name, a.description, c.aggregation, c.parameter, c.value, g.achi_condition_group_id, g.achi_condition_group_name, a.created_date, a.new, u.name as u_name, u.surname as u_surname, u.user_id, c.geo, c.condition_id
+        achievement = await conn.fetchrow(f"""
+                                            select a.achievement_id, a.name, a.description, c.aggregation, c.parameter, 
+                                            c.value, g.achi_condition_group_id, g.achi_condition_group_name, a.created_date, 
+                                            a.new, u.name as u_name, u.surname as u_surname, u.user_id, c.geo, c.condition_id,
+                                            s.sphere_name, s.subsphere_name
                                             from achi_conditions as c
-                                            right join (select achievement_id, unnest(conditions) as conditions, name, user_id, description, created_date, new from achievements) as a on a.conditions::integer = c.condition_id
+                                            right join (select achievement_id, unnest(conditions) as conditions, name, user_id, description, created_date, new, subsphere_id from achievements) as a on a.conditions::integer = c.condition_id
                                             left join achi_condition_groups as g on g.achi_condition_group_id = c.achi_condition_group_id
                                             left join users_information as u on a.user_id = u.user_id 
+                                            left join spheres s on a.subsphere_id = s.subsphere_id
                                             where a.achievement_id = {achievement_id}
             """)
         return achievement
@@ -120,8 +124,9 @@ class AchievementsGetInfo:
     async def get_created_achievements(user_id: str):
         conn = await asyncpg.connect(connection_url)
         achievements = await conn.fetch(f"""
-        select achievement_id, name, description, achievement_qr
+        select achievement_id, name, description, achievement_qr, s.sphere_name, s.subsphere_name
         from achievements
+        left join spheres s on achievements.subsphere_id = s.subsphere_id
         where user_id = {user_id}
         """)
         return achievements
@@ -130,9 +135,10 @@ class AchievementsGetInfo:
     async def get_reached_achievements(user_id: str):
         conn = await asyncpg.connect(connection_url)
         achievements = await conn.fetch(f"""
-            select achievement_id, a.name, a.description
+            select achievement_id, a.name, a.description, s.sphere_name, s.subsphere_name
             from (select user_id, unnest(achievements_id) as achievements_id from users_information) as u
             inner join achievements as a on u.achievements_id = a.achievement_id
+            left join spheres s on a.subsphere_id = s.subsphere_id
             where u.user_id = {user_id}
             """)
         return achievements
@@ -141,9 +147,11 @@ class AchievementsGetInfo:
     async def get_suggestion_achievements(user_id: str):
         conn = await asyncpg.connect(connection_url)
         achievements = await conn.fetch(f"""
-            select achievement_id, a.user_id, a.name as title, a.description, a.created_date, a.new, u.name, u.surname
+            select achievement_id, a.user_id, a.name as title, a.description, a.created_date, a.new, u.name, u.surname,
+            s.sphere_name, s.subsphere_name
             from achievements as a
             inner join users_information as u on u.user_id = a.user_id
+            left join spheres s on a.subsphere_id = s.subsphere_id
             where a.user_id <> {user_id}
             """)
         return achievements

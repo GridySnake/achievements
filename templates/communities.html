@@ -42,12 +42,22 @@
     <p>My communities: </p>
     {% for community in communities %}
         <a href="{{ '/community/%s'%community.community_id }}"><p>{{ community.community_name }}</p></a>
+        {% for i in range(community.sphere_name|length) %}
+           <p>{{ community.sphere_name[i] }}: {{ community.subsphere_name[i] }}</p>
+        {% endfor %}
+    <br>
     {% endfor %}
 {% endif %}
+<br>
+<br>
 {% if owner_communities %}
     <p>My created communities: </p>
     {% for owner_community in owner_communities %}
         <a href="{{ '/community/%s'%owner_community.community_id }}"><p>{{ owner_community.community_name }}</p></a>
+        {% for i in range(owner_community.sphere_name|length) %}
+           <p>{{ owner_community.sphere_name[i] }}: {{ owner_community.subsphere_name[i] }}</p>
+        {% endfor %}
+    <br>
     {% endfor %}
 {% endif %}
 {% endblock %}

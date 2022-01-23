@@ -10,12 +10,18 @@ class CommunityGetInfo:
     async def get_user_communities(user_id):
         conn = await asyncpg.connect(connection_url)
         communities = await conn.fetch(f"""
-                                          select c.community_id, c.community_name
+                                          select c.community_id, c.community_name, s.sphere_name, s.subsphere_name
                                           from communities as c
                                           right join (
                                                       select unnest(community_id) as community_id from users_information where user_id={user_id}
                                                       ) as u on u.community_id = c.community_id
-                                           
+                                          left join (
+                                                        select c.community_id, array_agg(s.subsphere_name) as subsphere_name, 
+                                                        array_agg(s.sphere_name) as sphere_name
+                                                        from communities as c
+                                                        left join spheres s on s.subsphere_id = any(c.subsphere_id)
+                                                        group by c.community_id
+                                                    ) s on c.community_id = s.community_id
                                           """)
         return communities
 
@@ -23,12 +29,19 @@ class CommunityGetInfo:
     async def get_user_owner_communities(user_id):
         conn = await asyncpg.connect(connection_url)
         communities = await conn.fetch(f"""
-                                           select c.community_id, c.community_name
+                                           select c.community_id, c.community_name, s.sphere_name, s.subsphere_name
                                            from (
                                                  select community_id, community_name, unnest(community_owner_id) as community_owner_id from communities) as c
                                            right join (
                                                        select unnest(community_owner_id) as community_owner_id from users_information where user_id = {user_id}
                                                        ) as u on u.community_owner_id = c.community_owner_id
+                                           left join (
+                                                        select c.community_id, array_agg(s.subsphere_name) as subsphere_name, 
+                                                        array_agg(s.sphere_name) as sphere_name
+                                                        from communities as c
+                                                        left join spheres s on s.subsphere_id = any(c.subsphere_id)
+                                                        group by c.community_id
+                                                    ) s on c.community_id = s.community_id
                                            """)
         return communities
 

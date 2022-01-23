@@ -47,6 +47,7 @@
         <br>
     {% for achievement in achievements_get %}
         <a href="{{ '/achievement/%s'%achievement.achievement_id }}"><p>{{ achievement.name }} </a> : {{ achievement.description }}</p>
+        <p>{{ achievement.sphere_name }}: {{ achievement.subsphere_name }}</p>
     {% endfor %}
     {% endif %}
     </div>
@@ -57,6 +58,7 @@
         <br>
     {% for achievement in achievements_my %}
         <div><a href="{{ '/achievement/%s'%achievement.achievement_id }}"><p>{{ achievement.name }} </a>: {{ achievement.description }}</p>
+            <p>{{ achievement.sphere_name }}: {{ achievement.subsphere_name }}</p>
             {% if achievement.achievement_qr %}
                 <figure class="image is-128x128">
                     <img src="{{ url('static', filename='QR/'+achievement.achievement_qr + '.png') }}">
@@ -73,11 +75,13 @@
     <br>
     {% for achievement in achievements_sug %}
         {% if achievement.new == True %}
-        <a href="{{ '/achievement/%s'%achievement.achievement_id }}"><p>{{ achievement.title }}</a> : {{ achievement.description }}. <a href="/user/{{ achievement.user_id }}">{{ achievement.name }} {{ achievement.surname }}</a>
-        {{ achievement.created_date }} new</p>
+            <a href="{{ '/achievement/%s'%achievement.achievement_id }}"><p>{{ achievement.title }}</a> : {{ achievement.description }}. <a href="/user/{{ achievement.user_id }}">{{ achievement.name }} {{ achievement.surname }}</a>
+            <p>{{ achievement.sphere_name }}: {{ achievement.subsphere_name }}</p>
+            {{ achievement.created_date }} new</p>
         {% else %}
-        <a href="{{ '/achievement/%s'%achievement.achievement_id }}"><p>{{ achievement.title }} </a>: {{ achievement.description }}. <a href="/user/{{ achievement.user_id }}">{{ achievement.name }} {{ achievement.surname }}</a>
-        {{ achievement.created_date }}</p>
+            <a href="{{ '/achievement/%s'%achievement.achievement_id }}"><p>{{ achievement.title }} </a>: {{ achievement.description }}. <a href="/user/{{ achievement.user_id }}">{{ achievement.name }} {{ achievement.surname }}</a>
+            <p>{{ achievement.sphere_name }}: {{ achievement.subsphere_name }}</p>
+            {{ achievement.created_date }}</p>
         {% endif %}
     {% endfor %}
     {% endif %}

@@ -76,12 +76,12 @@ class CourseInfoView(web.View):
         in_course = await CoursesGetInfo.is_user_in_course(course_id=course_id, user_id=self.session['user']['id'])
         participants = await CoursesGetInfo.get_course_participants(course_id=course_id)
         subscribers = None
-        spheres = await InfoGet.get_spheres_subspheres_by_id(subspheres_id=[i for i in course['subsphere_id']])
+        #spheres = await InfoGet.get_spheres_subspheres_by_id(subspheres_id=[i for i in course['subsphere_id']])
         owner = await CoursesGetInfo.is_owner(course_id=course_id, user_id=self.session['user']['id'])
         if owner:
             subscribers = await SubscribesGetInfo.get_user_subscribes_names(user_id=self.session['user']['id'])
             subscribers = [i for i in subscribers if i['user_id'] not in [j['user_id'] for j in participants]]
-        return dict(course=course, in_course=in_course, owner=owner, subscribers=subscribers, participants=participants, spheres=spheres)
+        return dict(course=course, in_course=in_course, owner=owner, subscribers=subscribers, participants=participants)
 
     async def post(self):
         if 'user' not in self.session:
@@ -97,7 +97,7 @@ class CourseInfoView(web.View):
             await CoursesAction.leave_course(course_id=course_id, user_id=user_id)
         elif 'add_course_member' in str(self):
             users = [int(i) for i in data.keys()]
-            status = [i for i in range(len(users))]
+            status = [1 for i in range(len(users))]
             await CoursesAction.add_member(course_id=course_id, users=users, status=status)
         return web.HTTPFound(location='/courses')
 
