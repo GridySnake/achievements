@@ -33,10 +33,31 @@
             <input id="name" name="name" type="text" value="" placeholder="name"/>
             <p>Description</p>
             <input id="description" name="description" type="text" value="" placeholder="description"/>
+            <p>Subsphere</p>
+            <select name="select_subsphere" id="select_subsphere">
+                {% for subsphere in subspheres %}
+                    <option value="{{ sphere.subsphere_id }}">{{ sphere.subsphere_name }}</option>
+                {% endfor %}
+            </select>
             <p id="coords_p" hidden>Coordinates</p>
             <input id="coords" name="coords" type="text" value="" placeholder="coordinates" hidden />
             <p id="radius_p" hidden>Radius</p>
             <input id="radius" name="radius" type="text" value="" placeholder="radius in km" hidden/>
+            <p>As community</p>
+            <input id="achi_as_community" name="as_community" type="radio"/>
+            <select name="achi_community" id="achi_community" hidden>
+                {% for i in communities %}
+                    <option value="{{ i.community_id }}">{{ i.community_name }}</option>
+                {% endfor %}
+            </select>
+            <p>As course</p>
+            <input id="achi_as_course" name="achi_as_course" type="radio"/>
+            <select name="achi_course" id="achi_course" hidden>
+                {% for i in courses %}
+                    <option value="{{ i.course_id }}">{{ i.course_name }}</option>
+                {% endfor %}
+            </select>
+            <br>
             <button type="submit">Send</button>
         </form>
     </div>

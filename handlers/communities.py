@@ -5,6 +5,7 @@ import os
 from models.subscribes import SubscribesGetInfo
 from config.common import BaseConfig
 import json
+from models.information import InfoGet
 
 
 class CommunitiesView(web.View):
@@ -36,6 +37,8 @@ class CommunitiesView(web.View):
             await CommunityAvatarAction.accept_decline_request(user_id=user_id, action=action, community_id=community_id)
         else:
             data = await self.post()
+            data = dict(data)
+            data['sphere'] = await InfoGet.get_sphere_id_by_subsphere_id(data['select_subsphere'])
             await CommunityCreate.create_community(user_id=user_id, data=data)
 
         return web.HTTPFound(location=self.app.router['community'].url_for())

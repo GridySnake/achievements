@@ -12,6 +12,12 @@
             <input id="course_name" name="course_name" type="text" value=""/>
             <p>Bio</p>
             <input id="description" name="description" type="text" value=""/>
+            <p>Subsphere</p>
+            <select name="select_subsphere" id="select_subsphere">
+                {% for subsphere in subspheres %}
+                    <option value="{{ sphere.subsphere_id }}">{{ sphere.subsphere_name }}</option>
+                {% endfor %}
+            </select>
             <p>Language</p>
             <select name="language" id="language">
                 {% for i in languages %}

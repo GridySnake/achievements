@@ -107,6 +107,18 @@
 </script>
 <script>
     $(document).ready(function() {
+        $('#achi_as_community').on('click', function () {
+            $("#achi_community").show();
+            $("#achi_as_course").disabled=true;
+        });
+        $('#achi_as_course').on('click', function () {
+            $("#achi_course").show();
+            $("#achi_community").disabled=true;
+        });
+    });
+</script>
+<script>
+    $(document).ready(function() {
         $('#as_community').on('click', function () {
             $("#community").show();
         });
@@ -210,12 +222,12 @@
     $(document).ready(function() {
         $('#create_achievement_button').on('click', function () {
             $("#create_achievement").show();
-            $("#hide_create_achievement").show();
+            $("#hide_create_achievement_button").show();
             $("#create_achievement_button").hide();
         });
-        $('#hide_create_achievement').on('click', function () {
+        $('#hide_create_achievement_button').on('click', function () {
             $("#create_achievement").hide();
-            $("#hide_create_achievement").hide();
+            $("#hide_create_achievement_button").hide();
             $("#create_achievement_button").show();
         });
     });
@@ -293,6 +305,29 @@
                 create += '<option value="'+drop_new_agg[i]['par']+'">'+drop_new_agg[i]['par']+'</option>';
             }
             $('#select_parameter').empty().append(create).show();
+        });
+    });
+</script>
+<script>
+    $(document).ready(function() {
+        var subspheres_dropdown = JSON.parse('{{ subspheres_dropdown | safe }}');
+        $('#select_sphere').on('change', function () {
+            var drop_new = subspheres_dropdown.filter(element => element.sphere_id == $(this).find('option:selected').val());
+            var lookup = {};
+            var result = [];
+            for (var item, j = 0; item = drop_new[j++];) {
+                var agg = item.agg;
+
+                if (!(agg in lookup)) {
+                    lookup[agg] = 1;
+                    result.push(agg);
+                }
+            }
+            var create = '';
+            for (var i = 0; i < result.length; i++) {
+                create += '<option value="' + result[i] + '">' + result[i] + '</option>';
+            }
+            $('#select_subsphere').empty().append(create);
         });
     });
 </script>

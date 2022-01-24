@@ -45,6 +45,21 @@ class AchievementsGetInfo:
         return achievement
 
     @staticmethod
+    async def get_users_desire_achievements(user_id: str):
+        conn = await asyncpg.connect(connection_url)
+        achievements = await conn.fetch(f"""
+                                            select a.achievement_id, a.name
+                                             from achievements as a
+                                             right join 
+                                             (
+                                                 select unnest(achievements_desired_id) as achievements_desired_id 
+                                                 from users_information
+                                                 where user_id = {user_id}
+                                             ) as u on u.achievements_desired_id = a.achievement_id
+                                            """)
+        return achievements
+
+    @staticmethod
     async def get_users_approve_achievements(user_id: str, user_active: str = None):
         conn = await asyncpg.connect(connection_url)
         if user_active is not None:
@@ -58,15 +73,20 @@ class AchievementsGetInfo:
                                                     where user_id = {user_id}
                                                 ) as u 
                                                 on u.achievements_desired_id = a.achievement_id
-                                                left join approve_achievements as aa on aa.achievement_id = a.achievement_id
-                                                where aa.user_active_id = {user_active}
+                                                left join approve_achievements as aa on aa.achievement_id = a.achievement_id and aa.user_active_id = {user_active}
+                                                right join achi_conditions as ac on ac.condition_id = any(a.conditions) and ac.achi_condition_group_id = 7
+                                                where a.achievement_id is not null
                                                 group by a.achievement_id, a.name
                             """)
         else:
             achievement = await conn.fetch(f"""
                                                 select a.achievement_id, a.name
                                                 from achievements as a
-                                                right join (select unnest(achievements_desired_id) as achievements_desired_id from users_information where user_id = {user_id}) as u on u.achievements_desired_id = a.achievement_id
+                                                right join (select unnest(achievements_desired_id) as achievements_desired_id 
+                                                from users_information where user_id = {user_id}) as u 
+                                                on u.achievements_desired_id = a.achievement_id
+                                                right join achi_conditions as ac on ac.condition_id = any(a.conditions) and ac.achi_condition_group_id = 7
+                                                where a.achievement_id is not null
                 """)
         return achievement
 
@@ -124,10 +144,13 @@ class AchievementsGetInfo:
     async def get_created_achievements(user_id: str):
         conn = await asyncpg.connect(connection_url)
         achievements = await conn.fetch(f"""
-        select achievement_id, name, description, achievement_qr, s.sphere_name, s.subsphere_name
-        from achievements
-        left join spheres s on achievements.subsphere_id = s.subsphere_id
-        where user_id = {user_id}
+        select achievement_id, name, a.description, achievement_qr, s.sphere_name, s.subsphere_name, c.community_name,
+            co.course_name
+        from achievements as a
+        left join spheres as s on a.subsphere_id = s.subsphere_id
+        left join communities as c on a.user_id = any(c.community_owner_id) and user_type = 1
+        left join courses as co on co.course_owner_id = a.user_id and user_type = 2
+        where (a.user_id = {user_id} and user_type = 0) or c.community_name is not null or co.course_name is not null
         """)
         return achievements
 
@@ -147,12 +170,18 @@ class AchievementsGetInfo:
     async def get_suggestion_achievements(user_id: str):
         conn = await asyncpg.connect(connection_url)
         achievements = await conn.fetch(f"""
-            select achievement_id, a.user_id, a.name as title, a.description, a.created_date, a.new, u.name, u.surname,
-            s.sphere_name, s.subsphere_name
+            select achievement_id, a.user_id, a.user_type, a.name as title, a.description, a.created_date, a.new, u.name, u.surname,
+            s.sphere_name, s.subsphere_name, c.community_name, c.community_owner_id, co.course_name
             from achievements as a
-            inner join users_information as u on u.user_id = a.user_id
+            left join users_information as u on u.user_id = a.user_id and a.user_type = 0
+            left join communities as c on a.user_id = c.community_id and a.user_type = 1
+            left join courses as co on co.course_id = a.user_id and a.user_type = 2
             left join spheres s on a.subsphere_id = s.subsphere_id
-            where a.user_id <> {user_id}
+            left join users_information as u1 on a.achievement_id = any(u1.achievements_id) or a.achievement_id = any(u1.achievements_desired_id)
+            where ({user_id} <> any(c.community_owner_id) or c.community_owner_id is null) and
+                  ({user_id} <> co.course_owner_id or co.course_owner_id is null) and
+                  (u1.user_id is null or u1.user_id <> {user_id}) and
+                  u.user_id <> {user_id}
             """)
         return achievements
 
@@ -332,7 +361,7 @@ class AchievementsDesireApprove:
 
 class AchievementsCreate:
     @staticmethod
-    async def create_achievement(user_id: str, data):
+    async def create_achievement(user_id: str, user_type: str, data):
         # todo: убрать параметр, иногда только по агрегации создается
         conn = await asyncpg.connect(connection_url)
         id_achi = await conn.fetch(f"""
@@ -360,8 +389,11 @@ class AchievementsCreate:
                                        {id_condi}, '{data['select_aggregation']}', '{data['select_parameter']}', '{data['value']}', {data['select_group']})
                                        """)
                 await conn.execute(f"""
-                                        insert into achievements (achievement_id, user_id, name, description, conditions, created_date, new, achievement_qr) values(
-                                        {id_achi}, {user_id}, '{data['name']}', '{data['description']}', ARRAY['{id_condi}'], statement_timestamp(), true, '{data['value']}')
+                                        insert into achievements (achievement_id, user_id, user_type, name, description, 
+                                            conditions, created_date, new, achievement_qr, sphere_id, subsphere_id) values(
+                                        {id_achi}, {user_id}, {user_type}, '{data['name']}', '{data['description']}', 
+                                            ARRAY['{id_condi}'], statement_timestamp(), true, '{data['value']}',
+                                            , {data['sphere']}, {data['select_subsphere']})
                                         """)
             elif 'lat' in data:
                 await conn.execute(f"""
@@ -369,8 +401,11 @@ class AchievementsCreate:
                                        {id_condi}, '{data['select_aggregation']}', '{data['select_parameter']}', '{data['value']}', {data['select_group']}, CIRCLE(POINT({data['lat']}, {data['lon']}), {data['radius']}))
                                        """)
                 await conn.execute(f"""
-                                       insert into achievements (achievement_id, user_id, name, description, conditions, created_date, new) values(
-                                       {id_achi}, {user_id}, '{data['name']}', '{data['description']}', ARRAY['{id_condi}'], statement_timestamp(), true)
+                                       insert into achievements (achievement_id, user_id, user_type, name, description, 
+                                            conditions, created_date, new, sphere_id, subsphere_id) values(
+                                       {id_achi}, {user_id}, {user_type}, '{data['name']}', '{data['description']}', 
+                                            ARRAY['{id_condi}'], statement_timestamp(), true, , {data['sphere']},
+                                            {data['select_subsphere']})
                                        """)
             else:
                 await conn.execute(f"""
@@ -378,8 +413,11 @@ class AchievementsCreate:
                                         {id_condi}, '{data['select_aggregation']}', '{data['select_parameter']}', '{data['value']}', {data['select_group']})
                                         """)
                 await conn.execute(f"""
-                                       insert into achievements (achievement_id, user_id, name, description, conditions, created_date, new) values(
-                                       {id_achi}, {user_id}, '{data['name']}', '{data['description']}', ARRAY['{id_condi}'], statement_timestamp(), true)
+                                       insert into achievements (achievement_id, user_id, user_type, name, description, 
+                                            conditions, created_date, new, sphere_id, subsphere_id) values(
+                                            {id_achi}, {user_id}, {user_type}, '{data['name']}', '{data['description']}', 
+                                            ARRAY['{id_condi}'], statement_timestamp(), true, {data['sphere']},
+                                            {data['select_subsphere']})
                                        """)
 
         # else:
@@ -392,8 +430,10 @@ class AchievementsCreate:
                             {id_condi}, '{data['select_parameter']}', '{data['value']}', {data['select_group']})
                             """)
             await conn.execute(f"""
-                insert into achievements (achievement_id, user_id, name, description, conditions, created_date, new) values(
-                {id_achi}, {user_id}, '{data['name']}', '{data['description']}', ARRAY['{id_condi}'], statement_timestamp(), true)
+                insert into achievements (achievement_id, user_id, user_type, name, description, conditions, 
+                created_date, new, sphere_id, subsphere_id) values(
+                {id_achi}, {user_id}, {user_type}, '{data['name']}', '{data['description']}', ARRAY['{id_condi}'], 
+                statement_timestamp(), true, {data['sphere']}, {data['select_subsphere']})
                 """)
             if data['value'].isdigit():
                 await conn.execute(f"""
@@ -422,8 +462,11 @@ class AchievementsCreate:
             img = qrcode.make(f"http://127.0.0.1:8080/verify_achievement/{token}")
             img.save(f'{str(BaseConfig.STATIC_DIR)+"/QR/"+str(id_achi)}.png')
             await conn.execute(f"""
-                                insert into achievements (achievement_id, user_id, name, description, conditions, created_date, new, achievement_qr) values(
-                                {id_achi}, {user_id}, '{data['name']}', '{data['description']}', ARRAY['{id_condi}'], statement_timestamp(), true, '{id_achi}.png')
+                                insert into achievements (achievement_id, user_id, user_type, name, description, 
+                                    conditions, created_date, new, achievement_qr, sphere_id, subsphere_id) values(
+                                {id_achi}, {user_id}, {user_type}, '{data['name']}', '{data['description']}', 
+                                    ARRAY['{id_condi}'], statement_timestamp(), true, '{id_achi}.png', {data['sphere']},
+                                    {data['select_subsphere']})
                                 """)
         elif int(data['select_group']) == 31 and data['name'] != '' and data['description'] != '' and data['radius'] != '' and (data['value'] != '' or data['coords'] != ''):
             if data['value'] != '' and data['coords'] != '':
@@ -434,20 +477,26 @@ class AchievementsCreate:
                                    {id_condi}, 'location', {data['value']}, {data['select_group']}, CIRCLE(POINT({location[0]}, {location[1]}), {data['radius']}))
                 """)
                 await conn.execute(f"""
-                                   insert into achievements (achievement_id, user_id, name, description, conditions, created_date, new) values(
-                                   {id_achi}, {user_id}, '{data['name']}', '{data['description']}', ARRAY['{id_condi}'], statement_timestamp(), true)
+                                   insert into achievements (achievement_id, user_id, user_type, name, description, 
+                                        conditions, created_date, new, sphere_id, subsphere_id) values(
+                                   {id_achi}, {user_id}, {user_type}, '{data['name']}', '{data['description']}', 
+                                        ARRAY['{id_condi}'], statement_timestamp(), true, {data['sphere']},
+                                            {data['select_subsphere']})
                                    """)
             elif data['value'] != '' and data['coords'] == '':
                 geolocator = Nominatim(user_agent="55")
                 location = geolocator.geocode(data['value'])
                 await conn.execute(f"""
-                                                   insert into achi_conditions (condition_id, parameter, value, achi_condition_group_id, geo) values(
-                                                   {id_condi}, 'location', '{data['value']}', {data['select_group']}, CIRCLE(POINT({location.latitude}, {location.longitude}), {data['radius']}))
+                                       insert into achi_conditions (condition_id, parameter, value, achi_condition_group_id, geo) values(
+                                       {id_condi}, 'location', '{data['value']}', {data['select_group']}, CIRCLE(POINT({location.latitude}, {location.longitude}), {data['radius']}))
                                 """)
                 await conn.execute(f"""
-                                                   insert into achievements (achievement_id, user_id, name, description, conditions, created_date, new) values(
-                                                   {id_achi}, {user_id}, '{data['name']}', '{data['description']}', ARRAY['{id_condi}'], statement_timestamp(), true)
-                                                   """)
+                                       insert into achievements (achievement_id, user_id, user_type, name, description, 
+                                            conditions, created_date, new, sphere_id, subsphere_id) values(
+                                       {id_achi}, {user_id}, {user_type}, '{data['name']}', '{data['description']}', 
+                                        ARRAY['{id_condi}'], statement_timestamp(), true, {data['sphere']},
+                                            {data['select_subsphere']})
+                                       """)
             elif data['value'] == '' and data['coords'] != '':
                 location = data['coords'].replace(' ', '|').replace(',', '|').split('|')
                 location = [float(i.replace('|', '')) for i in location if i != '']
@@ -458,8 +507,11 @@ class AchievementsCreate:
                                     {id_condi}, 'location', '{adres}', {data['select_group']}, CIRCLE(POINT({location[0]}, {location[1]}), {data['radius']}))
                                     """)
                 await conn.execute(f"""
-                                   insert into achievements (achievement_id, user_id, name, description, conditions, created_date, new) values(
-                                   {id_achi}, {user_id}, '{data['name']}', '{data['description']}', ARRAY['{id_condi}'], statement_timestamp(), true)
+                                   insert into achievements (achievement_id, user_id, user_type, name, description, 
+                                        conditions, created_date, new, sphere_id, subsphere_id) values(
+                                   {id_achi}, {user_id}, {user_type}, '{data['name']}', '{data['description']}', 
+                                   ARRAY['{id_condi}'], statement_timestamp(), true, {data['sphere']},
+                                            {data['select_subsphere']})
                                    """)
         elif int(data['select_group']) == 31 and data['name'] != '' and data['description'] != '' and data['value'] != '':
             await conn.execute(f"""
@@ -467,8 +519,11 @@ class AchievementsCreate:
                                     {id_condi}, 'message_to_achi', '{data['value']}', {data['select_group']})
                                     """)
             await conn.execute(f"""
-                                   insert into achievements (achievement_id, user_id, name, description, conditions, created_date, new) values(
-                                   {id_achi}, {user_id}, '{data['name']}', '{data['description']}', ARRAY['{id_condi}'], statement_timestamp(), true)
+                                   insert into achievements (achievement_id, user_id, user_type, name, description, 
+                                        conditions, created_date, new, sphere_id, subsphere_id) values(
+                                   {id_achi}, {user_id}, {user_type}, '{data['name']}', '{data['description']}', 
+                                   ARRAY['{id_condi}'], statement_timestamp(), true, {data['sphere']},
+                                            {data['select_subsphere']})
                                    """)
         elif int(data['select_group']) == 31 and data['name'] != '' and data['description'] != '' and data['value'] != '':
             await conn.execute(f"""
@@ -476,8 +531,11 @@ class AchievementsCreate:
                                     {id_condi}, 'user_approve', '{data['value']}', {data['select_group']})
                                     """)
             await conn.execute(f"""
-                                   insert into achievements (achievement_id, user_id, name, description, conditions, created_date, new) values(
-                                   {id_achi}, {user_id}, '{data['name']}', '{data['description']}', ARRAY['{id_condi}'], statement_timestamp(), true)
+                                   insert into achievements (achievement_id, user_id, user_type, name, description, 
+                                        conditions, created_date, new, sphere_id, subsphere_id) values(
+                                   {id_achi}, {user_id}, {user_type}, '{data['name']}', '{data['description']}', 
+                                   ARRAY['{id_condi}'], statement_timestamp(), true, {data['sphere']},
+                                            {data['select_subsphere']})
                                    """)
         elif int(data['select_group']) == 31 and data['name'] != '' and data['description'] != '' and data['value'] != '' and data['select_service'] == '0':
             parameter = str(data['select_service'] + '-' + data['chess_parameter_global'] + '-' + data['chess_parameter_local_profile'] + '-' + data['chess_parameter_local_last'] + '-' + data['chess_parameter_local_chess'] + '-' + data['chess_parameter_local_equal'])
@@ -486,7 +544,10 @@ class AchievementsCreate:
                                     {id_condi}, '{parameter}', '{data['value']}', {data['select_group']})
                                     """)
             await conn.execute(f"""
-                                    insert into achievements (achievement_id, user_id, name, description, conditions, created_date, new) values(
-                                    {id_achi}, {user_id}, '{data['name']}', '{data['description']}', ARRAY['{id_condi}'], statement_timestamp(), true)
+                                    insert into achievements (achievement_id, user_id, user_type, name, description, 
+                                            conditions, created_date, new, sphere_id, subsphere_id) values(
+                                    {id_achi}, {user_id}, {user_type}, '{data['name']}', '{data['description']}', 
+                                    ARRAY['{id_condi}'], statement_timestamp(), true, {data['sphere']},
+                                            {data['select_subsphere']})
                                     """)
 

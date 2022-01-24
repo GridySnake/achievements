@@ -377,10 +377,11 @@ class CourseCreate:
         await conn.execute(f"""
                                 insert into courses (course_id, course_owner_id, users, course_owner_type, 
                                 description, level, online, create_date, free, new, sphere_id, 
-                                language, course_name, image_id)
+                                language, course_name, image_id, sphere_id, subsphere_id)
                                 values ({course_id}, {user_id}, ARRAY []::integer[], {data['type']}, '{data['description']}',
                                 {data['level']}, {data['online']}, statement_timestamp(), {data['free']}, true,
-                                '{data['sphere']}', {data['language']}, '{data['course_name']}', {image_id})
+                                '{data['sphere']}', {data['language']}, '{data['course_name']}', {image_id}, array[{data['sphere']}],
+                                array[{data['select_subsphere']}])
                             """ )
         await conn.execute(f"""
                                insert into chats (chat_id, chat_type, participants, owner_id) values(

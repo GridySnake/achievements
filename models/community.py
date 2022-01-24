@@ -216,8 +216,13 @@ class CommunityCreate:
         else:
             chat_id = 0
         await conn.execute(f"""
-                               insert into communities (community_id, community_type, community_name, community_bio, user_id, community_owner_id, created_date, image_id, condition_id, condition_value)
-                               values({id}, '{data['community_type']}', '{data['name']}', '{data['bio']}', array({user_id}), array({user_id}), statement_timestamp(), ARRAY []::integer[], ARRAY []::integer[], ARRAY []::text[])
+                               insert into communities (community_id, community_type, community_name, community_bio, 
+                                    user_id, community_owner_id, created_date, image_id, condition_id, condition_value,
+                                    sphere_id, subsphere_id)
+                               values({id}, '{data['community_type']}', '{data['name']}', '{data['bio']}', 
+                                    array({user_id}), array({user_id}), statement_timestamp(), ARRAY []::integer[], 
+                                    ARRAY []::integer[], ARRAY []::text[], array[{data['sphere']}],
+                                array[{data['select_subsphere']}])
                            """)
         await conn.execute(f"""
                                 update users_information 

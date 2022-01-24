@@ -60,6 +60,7 @@ class CoursesView(web.View):
                     content = avatar.file.read()
                     f.write(content)
                 data['avatar'] = avatar.filename
+            data['sphere'] = await InfoGet.get_sphere_id_by_subsphere_id(data['select_subsphere'])
             await CourseCreate.create_course(user_id=user_id, data=data, no_image=no_image)
         return web.HTTPFound(location='/courses')
 

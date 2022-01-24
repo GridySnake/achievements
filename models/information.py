@@ -74,7 +74,7 @@ class InfoGet:
     async def get_spheres():
         conn = await asyncpg.connect(connection_url)
         spheres = await conn.fetch(f"""
-                            select sphere_id, sphere_name
+                            select distinct sphere_id, sphere_name
                             from spheres
                             """)
         return spheres
@@ -97,3 +97,13 @@ class InfoGet:
                                     where subsphere_id = any(array{subspheres_id})
                                     """)
         return subspheres
+
+    @staticmethod
+    async def get_sphere_id_by_subsphere_id(subsphere_id: list):
+        conn = await asyncpg.connect(connection_url)
+        sphere = await conn.fetchrow(f"""
+                                    select sphere_id
+                                    from spheres
+                                    where subsphere_id = {subsphere_id}
+                                    """)
+        return sphere['sphere_id']

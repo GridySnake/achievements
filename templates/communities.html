@@ -10,6 +10,12 @@
     <input id="name" name="name" type="text" value="" placeholder="name"/>
     <p>Bio</p>
     <input id="bio" name="bio" type="text" value="" placeholder="bio"/>
+    <p>Subsphere</p>
+    <select name="select_subsphere" id="select_subsphere">
+        {% for subsphere in subspheres %}
+            <option value="{{ sphere.subsphere_id }}">{{ sphere.subsphere_name }}</option>
+        {% endfor %}
+    </select>
     <p>Type</p>
     <select name="community_type" id="community_type">
         {% for community_type in community_types %}
