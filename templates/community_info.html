@@ -3,32 +3,59 @@
 {% set title = "Community info" %}
 
 {% block content %}
-<a href="{{ '/community/%s'%community.community_id }}"><p>{{ community.community_name }} ({{ community.community_type }})</p></a>
-<br>
-<p>{{ community.community_bio }}</p>
-<br>
-{% if community.href %}
-    <figure class="image is-128x128">
-        <img src="{{ url('static', filename='community_avatar/'+community.href) }}">
-    </figure>
-{% endif %}
-{% if access %}
+    <a href="{{ '/community/%s'%community.community_id }}"><p>{{ community.community_name }} ({{ community.community_type }})</p></a>
+    <br>
+    <p>{{ community.community_bio }}</p>
+    <br>
+    <br>
+    {% for i in range(community.sphere_name|length) %}
+        <p>{{ community.sphere_name[i] }}</p>
+        <p>{{ community.subsphere_name[i] }}</p>
+        <br>
+    {% endfor %}
+    <br>
+    {% if community.href %}
+        <figure class="image is-128x128">
+            <img src="{{ url('static', filename='community_avatar/'+community.href) }}">
+        </figure>
+    {% endif %}
+    {% if access %}
         <form action="{{ url('save_community_avatar') }}" method="post" accept-charset="utf-8" enctype="multipart/form-data">
             <label for="community_avatar">Community avatar</label>
             <input id="community_avatar" name="community_avatar" type="file" value=""/>
             <input type="submit" value="submit"/>
         </form>
-{% endif %}
-<br>
-<p>Community was created at: {{ community.created_date }}</p>
-{% if in_community %}
-    <form action="{{ url('leave_community') }}" method="post">
-        <button id="leave_community" type="submit">Leave</button>
-    </form>
-{% else %}
-    <form action="{{ url('join_community') }}" method="post">
-        <button id="join_community" type="submit">Join</button>
-    </form>
-{% endif %}
+    {% endif %}
+    <br>
+    <p>Community was created at: {{ community.created_date }}</p>
+    {% if access %}
+        <button id="add_member_community">Add members</button>
+        <button id="hide_add_member_community" hidden>Hide</button>
+        <form action="{{ url('add_community_member') }}" method="post" id="add_community_member" hidden>
+            {% for sub in subscribers %}
+                <a href='/user/{{ sub.user_id }}'><small>{{ sub.surname }}&nbsp</small><small>{{ sub.name }}</small></a>
+                <label for="{{ sub.user_id }}"></label><input type="radio" id="{{ sub.user_id }}" name="{{ sub.user_id }}">
+            {% endfor %}
+            <button type="submit">Add</button>
+        </form>
+        <button id="remove_member_community">Add members</button>
+        <button id="hide_remove_member_community" hidden>Hide</button>
+        <form action="{{ url('remove_community_member') }}" method="post" id="remove_community_member" hidden>
+            {% for par in participants_for_remove %}
+                <a href='/user/{{ par.user_id }}'><small>{{ par.surname }}&nbsp</small><small>{{ par.name }}</small></a>
+                <label for="{{ par.user_id }}"></label><input type="radio" id="{{ par.user_id }}" name="{{ par.user_id }}">
+            {% endfor %}
+            <button type="submit">Add</button>
+        </form>
+    {% endif %}
+    {% if in_community %}
+        <form action="{{ url('leave_community') }}" method="post">
+            <button id="leave_community" type="submit">Leave</button>
+        </form>
+    {% else %}
+        <form action="{{ url('join_community') }}" method="post">
+            <button id="join_community" type="submit">Join</button>
+        </form>
+    {% endif %}
 
 {% endblock %}

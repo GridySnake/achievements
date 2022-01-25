@@ -24,12 +24,18 @@ class CommunityGetInfo:
     async def get_user_communities(user_id):
         conn = await asyncpg.connect(connection_url)
         communities = await conn.fetch(f"""
-                                          select c.community_id, c.community_name
+                                          select c.community_id, c.community_name, s.sphere_name, s.subsphere_name
                                           from communities as c
                                           right join (
                                                       select unnest(community_id) as community_id from users_information where user_id={user_id}
                                                       ) as u on u.community_id = c.community_id
-                                           
+                                          left join (
+                                                        select c.community_id, array_agg(s.subsphere_name) as subsphere_name, 
+                                                        array_agg(s.sphere_name) as sphere_name
+                                                        from communities as c
+                                                        left join spheres s on s.subsphere_id = any(c.subsphere_id)
+                                                        group by c.community_id
+                                                    ) s on c.community_id = s.community_id
                                           """)
         return communities
 
@@ -37,12 +43,20 @@ class CommunityGetInfo:
     async def get_user_owner_communities(user_id):
         conn = await asyncpg.connect(connection_url)
         communities = await conn.fetch(f"""
-                                           select c.community_id, c.community_name
+                                           select c.community_id, c.community_name, s.sphere_name, s.subsphere_name
                                            from (
                                                  select community_id, community_name, unnest(community_owner_id) as community_owner_id from communities) as c
                                            right join (
                                                        select unnest(community_owner_id) as community_owner_id from users_information where user_id = {user_id}
                                                        ) as u on u.community_owner_id = c.community_owner_id
+                                           left join (
+                                                        select c.community_id, array_agg(s.subsphere_name) as subsphere_name, 
+                                                        array_agg(s.sphere_name) as sphere_name
+                                                        from communities as c
+                                                        left join spheres s on s.subsphere_id = any(c.subsphere_id)
+                                                        group by c.community_id
+                                                    ) s on c.community_id = s.community_id
+                                           where c.community_id is not null
                                            """)
         return communities
 
@@ -60,12 +74,35 @@ class CommunityGetInfo:
         return community
 
     @staticmethod
+    async def get_community_participants(community_id):
+        conn = await asyncpg.connect(connection_url)
+        community = await conn.fetch(f"""
+                                            select u.user_id, u.name, u.surname
+                                            from users_information as u
+                                            right join (select community_id, unnest(user_id) as user_id
+                                                         from communities) as c on c.user_id = u.user_id
+                                            where c.community_id = {community_id}
+                                        """)
+        return community
+
+    @staticmethod
     async def get_generate_conditions():
         conn = await asyncpg.connect(connection_url)
         conditions = await conn.fetch(f"""
                                     select condition_id, condition_name, condition_description, community_type
                                     from community_conditions_generate
                                 """)
+        return conditions
+
+    @staticmethod
+    async def user_requests(user_id: str):
+        conn = await asyncpg.connect(connection_url)
+        conditions = await conn.fetch(f"""
+                                        select community_id, community_name
+                                        from communities
+                                        where {user_id} = any(requests) 
+                                        and request_statuses[array_position(requests, {user_id})] = 1
+                                    """)
         return conditions
 
 
@@ -125,12 +162,59 @@ class CommunityAvatarAction:
                                    WHERE user_id = {user_id}
                                    """)
 
+    @staticmethod
+    async def add_member(community_id: str, users: list, status: list):
+        conn = await asyncpg.connect(connection_url)
+        await conn.execute(f"""
+                               update communities
+                                    set requests = array_cat(requests, array{users}),
+                                        request_statuses = array_cat(requests, {status})
+                                    where community_id = {community_id}
+                            """)
+
+    @staticmethod
+    async def remove_member(community_id: str, users: list):
+        conn = await asyncpg.connect(connection_url)
+        for i in users:
+            await conn.execute(f"""
+                                   update communities
+                                        set user_id = array_remove(user_id, {i})
+                                        where community_id = {community_id}
+                                """)
+
+    @staticmethod
+    async def accept_decline_request(user_id: str, action: int, community_id: str):
+        conn = await asyncpg.connect(connection_url)
+        if action == 0:
+            await conn.execute(f"""
+                                    update communities
+                                        set requests = array_cat(requests[:array_position(requests, {user_id})-1],
+                                                                requests[array_position(requests, {user_id})+1:]),
+                                            request_statuses = array_cat(request_statuses[:array_position(requests, {user_id})-1],
+                                                                request_statuses[array_position(requests, {user_id})+1:])
+                                        where community_id = {community_id}
+                                """)
+        else:
+            await conn.execute(f"""
+                                   update communities
+                                       set user_id = array_append(user_id, {user_id}),
+                                            requests = array_cat(requests[:array_position(requests, {user_id})-1],
+                                                                requests[array_position(requests, {user_id})+1:]),
+                                            request_statuses = array_cat(request_statuses[:array_position(requests, {user_id})-1],
+                                                                request_statuses[array_position(requests, {user_id})+1:])
+                                       where community_id = {community_id}
+                                """)
+            await conn.execute(f"""
+                                   update users_information
+                                        set community_id = array_append(community_id, {community_id})
+                                   where user_id = {user_id}
+                                """)
+
 
 class CommunityCreate:
     @staticmethod
     async def create_community(user_id, data):
         conn = await asyncpg.connect(connection_url)
-        user_id = int(user_id)
         id = await conn.fetchrow(f"""
                                   select max(community_id)
                                   from communities
@@ -147,8 +231,13 @@ class CommunityCreate:
         else:
             chat_id = 0
         await conn.execute(f"""
-                               insert into communities (community_id, community_type, community_name, community_bio, user_id, community_owner_id, created_date, image_id, condition_id, condition_value)
-                               values ({id}, '{data['community_type']}', '{data['name']}', '{data['bio']}', array[{user_id}], array[{user_id}], statement_timestamp(), ARRAY []::integer[], ARRAY []::integer[], ARRAY []::text[])
+                               insert into communities (community_id, community_type, community_name, community_bio, 
+                                    user_id, community_owner_id, created_date, image_id, condition_id, condition_value,
+                                    sphere_id, subsphere_id)
+                               values({id}, '{data['community_type']}', '{data['name']}', '{data['bio']}', 
+                                    array[{user_id}], array[{user_id}], statement_timestamp(), ARRAY []::integer[], 
+                                    ARRAY []::integer[], ARRAY []::text[], array[{data['sphere']}],
+                                array[{data['select_subsphere']}])
                            """)
         await conn.execute(f"""
                                 update users_information 
@@ -158,5 +247,5 @@ class CommunityCreate:
                             """)
         await conn.execute(f"""
                                 insert into chats (chat_id, chat_type, participants, owner_id) values(
-                                {chat_id}, 2, array[{user_id}], {id})\
+                                {chat_id}, 2, array[{user_id}], {id})
                             """)

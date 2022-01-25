@@ -227,8 +227,7 @@ class MessageCreate:
                                     insert INTO chats (chat_id, chat_type, participants, owner_id) values(
                                     {chat_id}, 0, ARRAY[{from_user}, {to_user}], null) 
                                 """)
-        print(message_id, from_user, message,
-                                type1, chat_id)
+
         await conn.execute(f"""
                                 insert INTO messages (message_id, from_user, message, from_user_type,
                                 datetime, is_read, chat_id) values(
@@ -277,13 +276,11 @@ class MessageCreate:
     @staticmethod
     async def add_member(chat_id: str, users: list):
         conn = await asyncpg.connect(connection_url)
-        # todo: заменить цикл
-        for i in users:
-            await conn.execute(f"""
-                                    update chats
-                                        set participants = participants || {i}
-                                        where chat_id = {chat_id}
-                                """)
+        await conn.execute(f"""
+                               update chats
+                                   set participants = array_cat(participants, array{users})
+                                   where chat_id = {chat_id}
+                            """)
 
     @staticmethod
     async def remove_member(chat_id: str, users: list):

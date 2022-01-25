@@ -3,34 +3,67 @@
 {% set title = "Communities" %}
 
 {% block content %}
-
-<form action="{{ url('create_community') }}" method="post">
-    <label for="name"></label>
-    <input id="name" name="name" type="text" value=""/>
-    <label for="bio"></label>
-    <input id="bio" name="bio" type="text" value=""/>
-    <label for="community_type"></label>
+<button id="create_community_button">Create Community</button>
+<button id="hide_create_community_button" hidden>Hide</button>
+<form id="create_community" action="{{ url('create_community') }}" method="post" hidden>
+    <p>Name</p>
+    <input id="name" name="name" type="text" value="" placeholder="name"/>
+    <p>Bio</p>
+    <input id="bio" name="bio" type="text" value="" placeholder="bio"/>
+    <p>Subsphere</p>
+    <select name="select_subsphere" id="select_subsphere">
+        {% for subsphere in subspheres %}
+            <option value="{{ subsphere.subsphere_id }}">{{ subsphere.subsphere_name }}</option>
+        {% endfor %}
+    </select>
+    <p>Type</p>
     <select name="community_type" id="community_type">
         {% for community_type in community_types %}
             <option value="{{ community_type }}">{{ community_type }}</option>
         {% endfor %}
     </select>
-    <label for="community_condition"></label>
+    <p>Conditions</p>
     <select name="community_condition" id="community_condition">
         <option value="None">None</option>
     </select>
     <button type="submit">Send</button>
 </form>
+<br>
+<br>
+{% if requests %}
+    <p>Active requests:</p>
+    {% for req in requests %}
+        <a href="/community/{{ req.community_id }}"><p>{{ req.community_name }}</p></a>
+        <form action="/accept_invitation_comm/{{ req.community_id }}" method="POST">
+            <button type="submit">Join</button>
+        </form>
+        <form action="/decline_invitation_comm/{{ req.community_id }}" method="POST">
+            <button type="submit">Decline</button>
+        </form>
+    {% endfor %}
+{% endif %}
+<br>
+<br>
 {% if communities %}
     <p>My communities: </p>
     {% for community in communities %}
         <a href="{{ '/community/%s'%community.community_id }}"><p>{{ community.community_name }}</p></a>
+        {% for i in range(community.sphere_name|length) %}
+           <p>{{ community.sphere_name[i] }}: {{ community.subsphere_name[i] }}</p>
+        {% endfor %}
+    <br>
     {% endfor %}
 {% endif %}
+<br>
+<br>
 {% if owner_communities %}
     <p>My created communities: </p>
     {% for owner_community in owner_communities %}
         <a href="{{ '/community/%s'%owner_community.community_id }}"><p>{{ owner_community.community_name }}</p></a>
+        {% for i in range(owner_community.sphere_name|length) %}
+           <p>{{ owner_community.sphere_name[i] }}: {{ owner_community.subsphere_name[i] }}</p>
+        {% endfor %}
+    <br>
     {% endfor %}
 {% endif %}
 {% if communities_recommend %}

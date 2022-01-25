@@ -11,7 +11,12 @@
                 <br>
                 <p>{{ course.description }}</p>
                 <br>
-                <p>{{ course.sphere }}</p>
+                {% for i in range(course.sphere_name|length) %}
+                    <p>{{ course.sphere_name[i] }}</p>
+                    <p>{{ course.subsphere_name[i] }}</p>
+                    <br>
+                {% endfor %}
+                <br>
                 {% if course.online %}
                    <p>Online</p>
                 {% endif %}
@@ -21,27 +26,47 @@
                 {% if course.new %}
                    <p>New</p>
                 {% endif %}
+                {% for sphere in spheres %}
+                    {% if sphere.sphere_name %}
+                        <p>{{ sphere.sphere_name }}</p>
+                        <p>{{ sphere.subsphere_name }}</p>
+                        <br>
+                    {% endif %}
+                {% endfor %}
                 <p>{{ course.joined }} participants</p>
                 <br>
                 <br>
                 <p>Owner:</p>
                 {% if course.course_owner_type == 0 %}
-                   <p><a href=/{{ course.course_owner_id }}>{{ course.name }} {{ course.surname }}</a></p>
+                   <p><a href="/user/{{ course.course_owner_id }}">{{ course.name }} {{ course.surname }}</a></p>
                 {% elif course.course_owner_type == 1 %}
                    <p><a href="/community/{{ course.course_owner_id }}">{{ course.community_name }}</a></p>
                 {% endif %}
             </div>
-            {% if in_course %}
+            {% if owner %}
                 <a href="/course/{{ course.course_id }}/course_content/0" class="button">Go to course</a>
-                <form action="{{ url('course_action') }}" method="post">
-                     <input type="hidden" name="leave" value=False>
-                     <button type="submit">Leave</button>
+                <button id="add_member_course">Add members</button>
+                <button id="hide_add_member_course" hidden>Hide</button>
+                <form action="{{ url('add_course_member') }}" method="post" id="add_course_member" hidden>
+                    {% for sub in subscribers %}
+                        <a href='/user/{{ sub.user_id }}'><small>{{ sub.surname }}&nbsp</small><small>{{ sub.name }}</small></a>
+                        <label for="{{ sub.user_id }}"></label><input type="radio" id="{{ sub.user_id }}" name="{{ sub.user_id }}">
+                    {% endfor %}
+                    <button type="submit">Add</button>
                 </form>
             {% else %}
-                <form action="{{ url('course_action') }}" method="post">
-                     <input type="hidden" name="join" value=True>
-                     <button type="submit">Join</button>
-                </form>
+                {% if in_course %}
+                    <a href="/course/{{ course.course_id }}/course_content/0" class="button">Go to course</a>
+                    <form action="{{ url('course_action') }}" method="post">
+                         <input type="hidden" name="leave" value=False>
+                         <button type="submit">Leave</button>
+                    </form>
+                {% else %}
+                    <form action="{{ url('course_action') }}" method="post">
+                         <input type="hidden" name="join" value=True>
+                         <button type="submit">Join</button>
+                    </form>
+                {% endif %}
             {% endif %}
         </div>
     </article>

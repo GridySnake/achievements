@@ -62,7 +62,7 @@
 
     <ul>
     {% for post in posts %}
-        <li><a href={{ post.user_id }}>{{ post.name }} {{ post.surname }}</a> {{ post.message }} {{ post.date_created }}</li>
+        <li><a href="/user/{{ post.user_id }}">{{ post.name }} {{ post.surname }}</a> {{ post.message }} {{ post.date_created }}</li>
         {% if post.href %}
             <figure class="image is-128x128">
                 <img src="{{ url('static', filename='image_posts/' + post.href) }}">
@@ -101,7 +101,7 @@
         {% endfor %}
         {% endif %}
         <br>
-        {% if achievements_approve %}
+        {% if achievements_desired %}
             {% if me %}
                 <p>
                     My desire achievements:
@@ -109,6 +109,22 @@
             {% else %}
                 <p>
                     {{ user.name }} desire achievements:
+                </p>
+            {% endif %}
+            {% for achievement in achievements_desired %}
+                <br>
+                <a href="{{ '/achievement/%s'%achievement.achievement_id }}"> <p>{{ achievement.name }}</p></a>
+            {% endfor %}
+        {% endif %}
+        <br>
+        {% if achievements_approve %}
+            {% if me %}
+                <p>
+                    My achievements to approve:
+                </p>
+            {% else %}
+                <p>
+                    {{ user.name }} achievements to approve:
                 </p>
             {% endif %}
         {% for achievement in achievements_approve %}

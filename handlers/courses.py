@@ -4,6 +4,7 @@ from models.course import *
 from models.information import InfoGet
 from models.community import CommunityGetInfo
 import os
+from models.subscribes import SubscribesGetInfo
 
 
 class CoursesView(web.View):
@@ -13,44 +14,56 @@ class CoursesView(web.View):
         if 'user' not in self.session:
             return web.HTTPFound(location=self.app.router['login'].url_for())
 
-        own_courses = await CoursesGetInfo.get_own_courses(user_id=self.session['user']['id'])
-        communities = await CommunityGetInfo.get_user_owner_communities(user_id=self.session['user']['id'])
+        user_id = self.session['user']['id']
+        own_courses = await CoursesGetInfo.get_own_courses(user_id=user_id)
+        communities = await CommunityGetInfo.get_user_owner_communities(user_id=user_id)
         languages = await InfoGet.get_languages()
-        courses = await CoursesGetInfo.get_user_course_suggestions(user_id=self.session['user']['id'])
-        my_courses = await CoursesGetInfo.get_user_courses(user_id=self.session['user']['id'])
-        return dict(courses=courses, my_courses=my_courses, languages=languages, communities=communities, own_courses=own_courses)
+        courses = await CoursesGetInfo.get_user_course_suggestions(user_id=user_id)
+        my_courses = await CoursesGetInfo.get_user_courses(user_id=user_id)
+        requests = await CoursesGetInfo.user_requests(user_id=user_id)
+        subspheres = await InfoGet.get_subspheres()
+        return dict(courses=courses, my_courses=my_courses, languages=languages, communities=communities, own_courses=own_courses, requests=requests, subspheres=subspheres)
 
     async def post(self):
         if 'user' not in self.session:
             return web.HTTPFound(location=self.app.router['login'].url_for())
 
+        user_id = self.session['user']['id']
         data = await self.post()
-        avatar = data['avatar']
-        data = dict(data)
-        if 'online' in data.keys():
-            data['online'] = True
+        if 'invitation_course' in str(self):
+            course_id = str(self).split('/')[-1][:-2]
+            action = 0
+            if 'accept' in str(self):
+                action = 1
+            await CoursesAction.accept_decline_request(user_id=user_id, action=action, course_id=course_id)
         else:
-            data['online'] = False
-        if 'free' in data.keys():
-            data['free'] = True
-        else:
-            data['free'] = False
-        if 'as_community' in data.keys():
-            data['type'] = 1
-            user_id = data['community']
-        else:
-            data['type'] = 0
-            user_id = self.session['user']['id']
-        no_image = False
-        if data['avatar'] == bytearray(b''):
-            no_image = True
-        else:
-            with open(os.path.join(BaseConfig.STATIC_DIR + '/course_avatar/', avatar.filename), 'wb') as f:
-                content = avatar.file.read()
-                f.write(content)
-            data['avatar'] = avatar.filename
-        await CourseCreate.create_course(user_id=user_id, data=data, no_image=no_image)
-        return web.HTTPFound(location='courses')
+            avatar = data['avatar']
+            data = dict(data)
+            if 'online' in data.keys():
+                data['online'] = True
+            else:
+                data['online'] = False
+            if 'free' in data.keys():
+                data['free'] = True
+            else:
+                data['free'] = False
+            if 'as_community' in data.keys():
+                data['type'] = 1
+                user_id = data['community']
+            else:
+                data['type'] = 0
+                user_id = self.session['user']['id']
+            no_image = False
+            if data['avatar'] == bytearray(b''):
+                no_image = True
+            else:
+                with open(os.path.join(BaseConfig.STATIC_DIR + '/course_avatar/', avatar.filename), 'wb') as f:
+                    content = avatar.file.read()
+                    f.write(content)
+                data['avatar'] = avatar.filename
+            data['sphere'] = await InfoGet.get_sphere_id_by_subsphere_id(data['select_subsphere'])
+            await CourseCreate.create_course(user_id=user_id, data=data, no_image=no_image)
+        return web.HTTPFound(location='/courses')
 
 
 class CourseInfoView(web.View):
@@ -59,23 +72,36 @@ class CourseInfoView(web.View):
     async def get(self):
         if 'user' not in self.session:
             return web.HTTPFound(location=self.app.router['login'].url_for())
-
-        location = str(self).split('/')[-1][:-2]
-        course = await CoursesGetInfo.get_course_info(course_id=location)
-        in_course = await CoursesGetInfo.is_user_in_course(course_id=location, user_id=self.session['user']['id'])
-        return dict(course=course, in_course=in_course)
+        # todo : убрать из subscribers тех, кому уже отправлено приглашение
+        course_id = str(self).split('/')[-1][:-2]
+        course = await CoursesGetInfo.get_course_info(course_id=course_id)
+        in_course = await CoursesGetInfo.is_user_in_course(course_id=course_id, user_id=self.session['user']['id'])
+        participants = await CoursesGetInfo.get_course_participants(course_id=course_id)
+        subscribers = None
+        #spheres = await InfoGet.get_spheres_subspheres_by_id(subspheres_id=[i for i in course['subsphere_id']])
+        owner = await CoursesGetInfo.is_owner(course_id=course_id, user_id=self.session['user']['id'])
+        if owner:
+            subscribers = await SubscribesGetInfo.get_user_subscribes_names(user_id=self.session['user']['id'])
+            subscribers = [i for i in subscribers if i['user_id'] not in [j['user_id'] for j in participants]]
+        return dict(course=course, in_course=in_course, owner=owner, subscribers=subscribers, participants=participants)
 
     async def post(self):
         if 'user' not in self.session:
             return web.HTTPFound(location=self.app.router['login'].url_for())
 
         course_id = str(self.__dict__['_message']).split('Referer')[-1].split(',')[1].split('course/')[1][:-2]
+
+        user_id = self.session['user']['id']
         data = await self.post()
         if 'join' in data.keys():
-            await CoursesAction.join_course(course_id=course_id, user_id=self.session['user']['id'])
-        else:
-            await CoursesAction.leave_course(course_id=course_id, user_id=self.session['user']['id'])
-        return web.HTTPFound(location='courses')
+            await CoursesAction.join_course(course_id=course_id, user_id=user_id)
+        elif 'leave' in data.keys():
+            await CoursesAction.leave_course(course_id=course_id, user_id=user_id)
+        elif 'add_course_member' in str(self):
+            users = [int(i) for i in data.keys()]
+            status = [1 for i in range(len(users))]
+            await CoursesAction.add_member(course_id=course_id, users=users, status=status)
+        return web.HTTPFound(location='/courses')
 
 
 class CourseContent(web.View):

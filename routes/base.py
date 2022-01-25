@@ -95,6 +95,8 @@ def setup_routes(app):
     app.router.add_route('POST', '/add_member', MessageView.post, name='add_member')
     app.router.add_route('POST', '/remove_member', MessageView.post, name='remove_member')
     app.router.add_route('POST', '/create_group_chat', MessageView.post, name='create_group_chat')
+    app.router.add_route('POST', '/add_community_member', CommunitiesInfoView.post, name='add_community_member')
+    app.router.add_route('POST', '/remove_community_member', CommunitiesInfoView.post, name='remove_community_member')
     app.router.add_route('GET', '/courses', CoursesView.get, name='courses')
     app.router.add_route('GET', r'/chat/{i}', ChatView.get, name='chat')
     app.router.add_route('GET', r'/verify/{i}', Verify.get, name='verify_i')
@@ -108,6 +110,12 @@ def setup_routes(app):
     app.router.add_route('GET', r'/course/{i}', CourseInfoView.get, name='course')
     app.router.add_route('GET', r'/course/{i}/course_content/{j}', CourseContent.get, name='course_content')
     app.router.add_route('GET', r'/create_course_content/{i}', CourseContentCreate.get, name='create_course_content')
+    app.router.add_route('POST', r'/accept_invitation_community/{i}', CommunitiesView.post, name='accept_invitation_community')
+    app.router.add_route('POST', r'/decline_invitation_community/{i}', CommunitiesView.post, name='decline_invitation_community')
+    app.router.add_route('POST', r'/accept_invitation_course/{i}', CoursesView.post, name='accept_invitation_course')
+    app.router.add_route('POST', r'/decline_invitation_course/{i}', CoursesView.post, name='decline_invitation_course')
+    app.router.add_route('POST', '/add_course_member', CourseInfoView.post, name='add_course_member')
+    app.router.add_route('POST', '/remove_course_member', CourseInfoView.post, name='remove_course_member')
 
     # ставим в конец
     app.router.add_route('GET', r'/user/{i}', PersonalPageView.get, name='personal_page')

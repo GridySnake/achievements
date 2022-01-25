@@ -3,13 +3,21 @@
 {% set title = "Courses" %}
 
 {% block content %}
-    <div id="create_course" class="create_course">
+    <button id="create_course_button">Create Course</button>
+    <button id="hide_create_course_button" hidden>Hide</button>
+    <div id="create_course" class="create_course" hidden>
         <form action="{{ url('create_course') }}" method="post" enctype="multipart/form-data">
             <label>Create new course: </label>
             <p>Course name</p>
             <input id="course_name" name="course_name" type="text" value=""/>
             <p>Bio</p>
             <input id="description" name="description" type="text" value=""/>
+            <p>Subsphere</p>
+            <select name="select_subsphere" id="select_subsphere">
+                {% for subsphere in subspheres %}
+                    <option value="{{ subsphere.subsphere_id }}">{{ subsphere.subsphere_name }}</option>
+                {% endfor %}
+            </select>
             <p>Language</p>
             <select name="language" id="language">
                 {% for i in languages %}
@@ -17,8 +25,6 @@
                 {% endfor %}
             </select>
             <input id="avatar" name="avatar" type="file" value=""/>
-            <p>Sphere</p>
-            <input id="sphere" name="sphere" type="text" value=""/>
             <p>Create as community</p>
             <input id="as_community" name="as_community" type="radio"/>
             <select name="community" id="community" hidden>
@@ -40,6 +46,22 @@
             <button type="submit">Send</button>
         </form>
     </div>
+    <br>
+    <br>
+    {% if requests %}
+        <p>Active requests:</p>
+        {% for req in requests %}
+            <a href="/course/{{ req.course_id }}"><p>{{ req.course_name }}</p></a>
+            <form action="/accept_invitation_course/{{ req.course_id }}" method="POST">
+                <button type="submit">Join</button>
+            </form>
+            <form action="/decline_invitation_course/{{ req.course_id }}" method="POST">
+                <button type="submit">Decline</button>
+            </form>
+        {% endfor %}
+    {% endif %}
+    <br>
+    <br>
     {% if own_courses %}
         <p>Created courses: </p>
         {% for course in own_courses %}
@@ -53,7 +75,13 @@
                              <br>
                              <p>{{ course.language_native }}</p>
                              <br>
-                             <p>{{ course.sphere }}</p>
+                             <br>
+                             {% for i in range(course.sphere_name|length) %}
+                                <p>{{ course.sphere_name[i] }}</p>
+                                <p>{{ course.subsphere_name[i] }}</p>
+                                <br>
+                             {% endfor %}
+                             <br>
                              {% if course.online %}
                                 <p>Online</p>
                              {% endif %}
@@ -68,7 +96,7 @@
                              <br>
                              <p>Owner:</p>
                              {% if course.course_owner_type == 0 %}
-                                <p><a href=/{{ course.course_owner_id }}>{{ course.name }} {{ course.surname }}</a></p>
+                                <p><a href="/user/{{ course.course_owner_id }}">{{ course.name }} {{ course.surname }}</a></p>
                              {% elif course.course_owner_type == 1 %}
                                 <p><a href="/community/{{ course.course_owner_id }}">{{ course.community_name }}</a></p>
                              {% endif %}
@@ -93,7 +121,13 @@
                              <br>
                              <p>{{ course.language_native }}</p>
                              <br>
-                             <p>{{ course.sphere }}</p>
+                             <br>
+                             {% for i in range(course.sphere_name|length) %}
+                                     <p>{{ course.sphere_name[i] }}</p>
+                                     <p>{{ course.subsphere_name[i] }}</p>
+                                     <br>
+                             {% endfor %}
+                             <br>
                              {% if course.online %}
                                 <p>Online</p>
                              {% endif %}
@@ -108,7 +142,7 @@
                              <br>
                              <p>Owner:</p>
                              {% if course.course_owner_type == 0 %}
-                                <p><a href=/{{ course.course_owner_id }}>{{ course.name }} {{ course.surname }}</a></p>
+                                <p><a href="/user/{{ course.course_owner_id }}">{{ course.name }} {{ course.surname }}</a></p>
                              {% elif course.course_owner_type == 1 %}
                                 <p><a href="/community/{{ course.course_owner_id }}">{{ course.community_name }}</a></p>
                              {% endif %}
@@ -133,7 +167,12 @@
                              <p>{{ course.language_native }}</p>
                              <br>
                              <br>
-                             <p>{{ course.sphere }}</p>
+                             {% for i in range(course.sphere_name|length) %}
+                                     <p>{{ course.sphere_name[i] }}</p>
+                                     <p>{{ course.subsphere_name[i] }}</p>
+                                     <br>
+                             {% endfor %}
+                             <br>
                              {% if course.online %}
                                 <p>Online</p>
                              {% endif %}
@@ -148,7 +187,7 @@
                              <br>
                              <p>Owner:</p>
                              {% if course.course_owner_type == 0 %}
-                                <p><a href=/{{ course.course_owner_id }}>{{ course.name }} {{ course.surname }}</a></p>
+                                <p><a href="/user/{{ course.course_owner_id }}">{{ course.name }} {{ course.surname }}</a></p>
                              {% elif course.course_owner_type == 1 %}
                                 <p><a href="/community/{{ course.course_owner_id }}">{{ course.community_name }}</a></p>
                              {% endif %}
