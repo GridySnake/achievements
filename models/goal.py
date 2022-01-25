@@ -1,29 +1,29 @@
 import asyncpg
-import datetime
 from config.common import BaseConfig
 connection_url = BaseConfig.database_url
 
 
 class Goals:
     @staticmethod
-    async def get_goals(user_id: str = None,
-                        community_id: str = None):
-        if user_id is not None:
-            table = 'users_information'
-            ident = int(user_id)
-            column_name = 'user_id'
-        if community_id is not None:
-            table = 'communities'
-            ident = int(community_id)
-            column_name = 'community_id'
+    async def get_goals(user_id: str,
+                        user_type: int):
         conn = await asyncpg.connect(connection_url)
+        if user_type == 0:
+            table = 'users_information'
+            column = 'user_id'
+        if user_type == 1:
+            table = 'communities'
+            column = 'community_id'
+        if user_type == 2:
+            table = 'courses'
+            column = 'course_id'
         goals = await conn.fetch(f"""
             select a.name, a.achievement_id
             from achievements a 
             right join (
                 select unnest(achievements_desired_id) as desired_id 
                 from {table} 
-                where {column_name}={ident}
+                where {column}={user_id}
                 ) as u 
                 on u.desired_id = a.achievement_id
                 """)

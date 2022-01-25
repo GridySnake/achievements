@@ -11,8 +11,8 @@
         <form action="{{ url('add_achievement') }}" method="post">
             <p>Group</p>
             <select name="select_group" id="select_group">
-                {% for i in group %}
-                    <option value="{{ i.group_id }}">{{ i.group_name }}</option>
+                {% for group in groups %}
+                    <option value="{{ group.group_id }}">{{ group.group_name }}</option>
                 {% endfor %}
             </select>
             <p id="service_p" hidden>Service</p>
@@ -21,11 +21,21 @@
             </select>
             <p>Aggregation</p>
             <select name="select_aggregation" id="select_aggregation">
-                <option value="">None</option>
+                {% for i in group %}
+                    {% if i.aggregate_id is not none %}
+                        <option value="{{ i.aggregate_id }}">{{ i.group_name + "/" + i.aggregate_name }}</option>
+                    {% endif %}
+                {% endfor %}
             </select>
             <p>Parameter</p>
             <select name="select_parameter" id="select_parameter">
-                <option value="">None</option>
+                {% for i in group %}
+                    {% if i.parameter_id and i.aggregate_id is not none %}
+                        <option value="{{ i.parameter_id }}">{{ i.group_name + "/" + i.aggregate_name + "/" + i.parameter_name }}</option>
+                    {% elif i.parameter_id and i.aggregate_id is none %}
+                        <option value="{{ i.parameter_id }}">{{ i.group_name + "/" + i.parameter_name }}</option>
+                    {% endif %}
+                {% endfor %}
             </select>
             <p>Value</p>
             <input id="value" name="value" type="text" value="" placeholder="value"/>
@@ -39,10 +49,8 @@
                     <option value="{{ subsphere.subsphere_id }}">{{ subsphere.subsphere_name }}</option>
                 {% endfor %}
             </select>
-            <p id="coords_p" hidden>Coordinates</p>
-            <input id="coords" name="coords" type="text" value="" placeholder="coordinates" hidden />
-            <p id="radius_p" hidden>Radius</p>
-            <input id="radius" name="radius" type="text" value="" placeholder="radius in km" hidden/>
+            <p id="coords_p">Coordinates</p>
+            <input id="coords" name="coords" type="text" value="" placeholder="coordinates"/>
             <p>As community</p>
             <input id="achi_as_community" name="as_community" type="radio"/>
             <select name="achi_community" id="achi_community" hidden>
