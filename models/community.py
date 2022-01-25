@@ -20,7 +20,6 @@ class CommunityGetInfo:
         """)
         return communities
 
-
     @staticmethod
     async def get_user_communities(user_id):
         conn = await asyncpg.connect(connection_url)

@@ -19,6 +19,7 @@ class ChatView(web.View):
         block = False
         is_owner = False
         subscribers = None
+        participants = None
         if 0 in [i['chat_type'] for i in messages]:
             user_passive_id = [i for i in messages[0]['participants'] if int(session['user']['id']) != i][0]
             block = await SubscribesGetInfo.is_block(user_active_id=session['user']['id'], user_passive_id=user_passive_id)

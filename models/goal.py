@@ -28,3 +28,10 @@ class Goals:
                 on u.desired_id = a.achievement_id
                 """)
         return goals
+
+    # @staticmethod
+    # async def get_goals_for_community(user_id: str, community_id: str):
+    #     user_id = int(user_id)
+    #     community_id = int(community_id)
+
+

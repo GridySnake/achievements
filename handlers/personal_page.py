@@ -27,10 +27,6 @@ class PersonalPageView(web.View):
         else:
             achievements_approve = await AchievementsGetInfo.get_users_approve_achievements(user_id=location)
         block = await SubscribesGetInfo.is_block(user_active_id=session['user']['id'], user_passive_id=location)
-        if block:
-            block = block[0]['status_id']
-        else:
-            block = 0
         if str(session['user']['id']) == location:
             my_page = True
         return dict(user=user, friends=friends, posts=posts, me=my_page, avatar=avatar, block=block, achievements_user=achievements_user, achievements_approve=achievements_approve)

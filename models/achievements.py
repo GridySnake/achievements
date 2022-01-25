@@ -282,20 +282,39 @@ class AchievementsDesireApprove:
     @staticmethod
     async def desire_achievement(user_id: str, achievement_desire_id: str):
         conn = await asyncpg.connect(connection_url)
-        achievement = await conn.fetch(f"""
-                                        update users_information
-                                        set achievements_desired_id = array_append(achievements_desired_id, {achievement_desire_id})
-                                        where user_id = {user_id} and {achievement_desire_id} not in (
-                                        select unnest(achievements_desired_id) from users_information where user_id = {user_id})
+        await conn.execute(f"""
+                             update users_information
+                                 set achievements_desired_id = array_append(achievements_desired_id, {achievement_desire_id})
+                                 where user_id = {user_id} and {achievement_desire_id} not in (
+                                 select unnest(achievements_desired_id) 
+                             from users_information 
+                             where user_id = {user_id})
            """)
-        return achievement
+
+    @staticmethod
+    async def desire_achievement_for_community(user_id: str,
+                                               community_id: str,
+                                               achievement_desire_id: str):
+        conn = await asyncpg.connect(connection_url)
+        await conn.execute(f"""
+                               update communities
+                                   set achievements_desired_id = array_append(achievements_desired_id, {achievement_desire_id})
+                                   where community_id = {community_id} 
+                                        and {user_id} = any(community_owner_id)
+                                        and {achievement_desire_id} not in (
+                                   select unnest(achievements_desired_id) 
+                                   from communities 
+                                   where community_id = {community_id})
+                   """)
 
     @staticmethod
     async def is_desire(user_id: str, achievement_desire_id: str):
         conn = await asyncpg.connect(connection_url)
         data = await conn.fetchrow(f"""
                                        select count(achievements_desired_id)
-                                       from (select unnest(achievements_desired_id) as achievements_desired_id from users_information where user_id = {user_id}) as u 
+                                       from (select unnest(achievements_desired_id) as achievements_desired_id 
+                                             from users_information 
+                                             where user_id = {user_id}) as u 
                                        where u.achievements_desired_id = {achievement_desire_id}
                """)
         if data['count'] > 0:

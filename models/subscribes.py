@@ -93,7 +93,11 @@ class SubscribesGetInfo:
                         inner join users_information as u on u.user_id = f.users_id
                         where f.user_id = {user_active_id} and u.user_id={user_passive_id}
         """)
-        return block['block']
+        if block is None:
+            block = False
+        else:
+            block = block['block']
+        return block
 
 
 class SubscribesAction:
