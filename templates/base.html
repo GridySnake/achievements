@@ -276,6 +276,28 @@
 </script>
 <script>
     $(document).ready(function() {
+        $('#desire').on('click', function () {
+            $("#desire_achi").show();
+            $("#hide_desire").show();
+            $("#submit_desire").show();
+            $("#desire").hide();
+        });
+        $('#hide_desire').on('click', function () {
+            $("#desire_achi").hide();
+            $("#hide_desire").hide();
+            $("#submit_desire").hide();
+            $("#desire").show();
+        });
+        $('#desire_achi_as_community').on('click', function () {
+            $("#desire_achi_community").show();
+        });
+        $('#desire_achi_as_course').on('click', function () {
+            $("#desire_achi_course").show();
+        });
+    });
+</script>
+<script>
+    $(document).ready(function() {
         var drop = JSON.parse('{{ dropdown_json | safe }}');
         $('#select_group').on('change', function () {
             var drop_new = drop.filter(element => element.group_id == $(this).find('option:selected').val());

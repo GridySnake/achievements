@@ -33,14 +33,14 @@ class AchievementsView(web.View):
         achievements_sug = await AchievementsGetInfo.get_suggestion_achievements(user_id=user_id)
         spheres = await InfoGet.get_spheres()
         subspheres = await InfoGet.get_subspheres()
-        dropdown_create = await AchievementsGenerateData.data_for_drop_downs_generate_achievements()
-        values = [dict(record) if record['service_id'] is not None else {key: dict(record).get(key) for key in dict(record).keys() if key not in ['service_id', 'service_name']} for record in dropdown_create]
-        dropdown_create_json = json.dumps(values).replace("</", "<\\/")
-        group = await AchievementsGenerateData.data_for_group_drop_down_generate_achievements()
+        group = await AchievementsGenerateData.data_for_drop_downs_generate_achievements()
+        # values = [dict(record) if record['service_id'] is not None else {key: dict(record).get(key) for key in dict(record).keys() if key not in ['service_id', 'service_name']} for record in dropdown_create]
+        # dropdown_create_json = json.dumps(values).replace("</", "<\\/")
+        groups = await AchievementsGenerateData.data_for_group_drop_down_generate_achievements()
         services = await InfoGet.get_services()
         communities = await CommunityGetInfo.get_user_owner_communities(user_id=user_id)
         courses = await CoursesGetInfo.get_own_courses(user_id=user_id)
-        return dict(achievements_my=achievements_created, achievements_sug=achievements_sug, achievements_get=achievements_get, services=services, dropdown=dropdown_create, dropdown_json=dropdown_create_json, group=group, communities=communities, courses=courses, subspheres=subspheres)
+        return dict(achievements_my=achievements_created, achievements_sug=achievements_sug, achievements_get=achievements_get, services=services, group=group, communities=communities, courses=courses, subspheres=subspheres, groups=groups)
 
     async def post(self):
         if 'user' not in self.session:
@@ -57,32 +57,66 @@ class AchievementsView(web.View):
         elif 'achi_as_course' in data.keys():
             user_type = 2
             user_id = data['achi_course']
-        if data['select_group'] == '1':
+        if data['select_group'] == '0':
+            None
+            data['geo'] = 'null'
+            data['achievement_qr'] = 'null'
+        elif data['select_group'] == '1':
             token = hashlib.sha256(data['name'].replace(' ', '_').lower().encode('utf8')).hexdigest()
             img = qrcode.make(f"http://127.0.0.1:8080/verify_achievement/{token}")
             img.save(f'{str(BaseConfig.STATIC_DIR) + "/QR/" + str(token)}.png')
             data['value'] = token
+            data['achievement_qr'] = str(token)
+            data['geo'] = 'null'
+            data['select_parameter'] = 'null'
+            data['select_aggregation'] = 'null'
         elif data['select_group'] == '2':
-            geolocator = Nominatim(user_agent="55")
-            location = geolocator.geocode(data['value'])
-            data['lat'] = location.latitude
-            data['lon'] = location.longitude
-            data['radius'] = 10
+            if data['select_aggregation'] == '1':
+                if data['coords'] != '' and data['value'] == '':
+                    location = data['coords'].replace(' ', '|').replace(',', '|').split('|')
+                    location = [float(i.replace('|', '')) for i in location if i != '']
+                    geolocator = Nominatim(user_agent="55")
+                    data['value'] = "_".join(geolocator.reverse(f'{location[0]}, {location[1]}').address.replace(' ', '_').split(',')).replace('+', '')
+                elif data['value'] != '' and data['coords'] == '':
+                    geolocator = Nominatim(user_agent="55")
+                    location = geolocator.geocode(data['value'])
+                    location = [location.latitude, location.longitude]
+                else:
+                    location = data['coords'].replace(' ', '|').replace(',', '|').split('|')
+                    location = [float(i.replace('|', '')) for i in location if i != '']
+                data['geo'] = f'CIRCLE(POINT({location[0]}, {location[1]}), 10)'
+                data['achievement_qr'] = 'null'
+            else:
+                data['geo'] = 'null'
+                data['achievement_qr'] = 'null'
         elif data['select_group'] == '3':
             None
+            data['geo'] = 'null'
+            data['achievement_qr'] = 'null'
         elif data['select_group'] == '4':
             None
+            data['geo'] = 'null'
+            data['achievement_qr'] = 'null'
         elif data['select_group'] == '5':
             None
+            data['geo'] = 'null'
+            data['achievement_qr'] = 'null'
         elif data['select_group'] == '6':
             None
+            data['geo'] = 'null'
+            data['achievement_qr'] = 'null'
         elif data['select_group'] == '7':
-            None
+            data['select_aggregation'] = 'null'
+            data['geo'] = 'null'
+            data['achievement_qr'] = 'null'
         elif data['select_group'] == '8':
-            data['select_parameter'] = None
+            data['select_aggregation'] = 'null'
+            data['select_parameter'] = 'null'
+            data['geo'] = 'null'
+            data['achievement_qr'] = 'null'
         data['sphere'] = await InfoGet.get_sphere_id_by_subsphere_id(data['select_subsphere'])
         await AchievementsCreate.create_achievement(user_id=user_id, user_type=user_type, data=data)
-        raise web.HTTPFound(location=self.app.router['achievements'].url_for())
+        return web.HTTPFound(location=self.app.router['achievements'].url_for())
 
 
 class AchievementsVerificationView(web.View):
@@ -186,13 +220,17 @@ class AchievementInfoView(web.View):
             return web.HTTPFound(location=self.app.router['login'].url_for())
 
         session = await get_session(self)
+        user_id = session['user']['id']
+        communities = await CommunityGetInfo.get_user_owner_communities(user_id=user_id)
+        courses = await CoursesGetInfo.get_own_courses(user_id=user_id)
+
         location = str(self).split('/achievement/')[-1][:-2]
         achievement = await AchievementsGetInfo.get_achievement_info(achievement_id=location)
         if achievement['parameter'] == 'user_approve':
-            desire = await AchievementsDesireApprove.is_desire(user_id=session['user']['id'], achievement_desire_id=location)
+            desire = await AchievementsDesireApprove.is_desire(user_id=user_id, achievement_desire_id=location)
         else:
             desire = False
-        return dict(achievement=achievement, desire=desire)
+        return dict(achievement=achievement, desire=desire, communities=communities, courses=courses)
 
     @aiohttp_jinja2.template('achievements_verify.html')
     async def post(self):
@@ -221,8 +259,18 @@ class AchievementDesireView(web.View):
         session = await get_session(self)
         url = str(self).split('/')[-1][:-2]
         if url != 'desire':
-            await AchievementsDesireApprove.approve_achievement(user_active_id=session['user']['id'], user_passive_id=str(self.__dict__['_message']).split('Referer')[-1].split(',')[1].split('8080/')[1][:-2], achievement_id=data['achi_id'])
+            await AchievementsDesireApprove.approve_achievement(user_active_id=session['user']['id'], user_passive_id=str(self.__dict__['_message']).split('Referer')[-1].split(',')[1].split('user/')[-1][:-2], achievement_id=data['achi_id'])
             return web.HTTPFound(location=f"/{data['user_passive_id']}")
         else:
-            await AchievementsDesireApprove.desire_achievement(user_id=session['user']['id'], achievement_desire_id=data['achi_id'])
+            user_id = session['user']['id']
+            user_type = 0
+            data = dict(data)
+            if 'desire_achi_as_community' in data.keys():
+                user_type = 1
+                user_id = data['desire_achi_community']
+            elif 'desire_achi_as_course' in data.keys():
+                user_type = 2
+                user_id = data['desire_achi_course']
+            achievement_id = str(self.__dict__['_message']).split('Referer')[-1].split(',')[1].split('achievement/')[-1][:-2]
+            await AchievementsDesireApprove.desire_achievement(user_id=user_id, user_type=user_type, achievement_desire_id=achievement_id)
             return web.HTTPFound(location=f"achievement/{data['achi_id']}")

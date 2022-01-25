@@ -27,6 +27,13 @@
         </form>
     {% endif %}
     <br>
+    {% if goals %}
+        <p>{{ community.community_name }} desired achievements:</p>
+        {% for goal in goals %}
+            <a href="/achievement/{{ goal.achievement_id }}"><p>{{ goal.name }}</p></a>
+        {% endfor %}
+    {% endif %}
+    <br>
     <p>Community was created at: {{ community.created_date }}</p>
     {% if access %}
         <button id="add_member_community">Add members</button>

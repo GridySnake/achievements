@@ -5,6 +5,7 @@ from models.information import InfoGet
 from models.community import CommunityGetInfo
 import os
 from models.subscribes import SubscribesGetInfo
+from models.goal import Goals
 
 
 class CoursesView(web.View):
@@ -74,6 +75,7 @@ class CourseInfoView(web.View):
             return web.HTTPFound(location=self.app.router['login'].url_for())
         # todo : убрать из subscribers тех, кому уже отправлено приглашение
         course_id = str(self).split('/')[-1][:-2]
+        goals = await Goals.get_goals(user_id=course_id, user_type=2)
         course = await CoursesGetInfo.get_course_info(course_id=course_id)
         in_course = await CoursesGetInfo.is_user_in_course(course_id=course_id, user_id=self.session['user']['id'])
         participants = await CoursesGetInfo.get_course_participants(course_id=course_id)
@@ -83,7 +85,7 @@ class CourseInfoView(web.View):
         if owner:
             subscribers = await SubscribesGetInfo.get_user_subscribes_names(user_id=self.session['user']['id'])
             subscribers = [i for i in subscribers if i['user_id'] not in [j['user_id'] for j in participants]]
-        return dict(course=course, in_course=in_course, owner=owner, subscribers=subscribers, participants=participants)
+        return dict(course=course, in_course=in_course, owner=owner, subscribers=subscribers, participants=participants, goals=goals)
 
     async def post(self):
         if 'user' not in self.session:

@@ -43,6 +43,14 @@
                    <p><a href="/community/{{ course.course_owner_id }}">{{ course.community_name }}</a></p>
                 {% endif %}
             </div>
+            <br>
+            {% if goals %}
+                <p>{{ course.course_name }} desired achievements:</p>
+                {% for goal in goals %}
+                    <a href="/achievement/{{ goal.achievement_id }}"><p>{{ goal.name }}</p></a>
+                {% endfor %}
+            {% endif %}
+            <br>
             {% if owner %}
                 <a href="/course/{{ course.course_id }}/course_content/0" class="button">Go to course</a>
                 <button id="add_member_course">Add members</button>

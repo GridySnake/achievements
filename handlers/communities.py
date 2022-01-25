@@ -6,6 +6,7 @@ from models.subscribes import SubscribesGetInfo
 from config.common import BaseConfig
 import json
 from models.information import InfoGet
+from models.goal import Goals
 
 
 class CommunitiesView(web.View):
@@ -64,6 +65,7 @@ class CommunitiesInfoView(web.View):
         participants = await CommunityGetInfo.get_community_participants(community_id=community_id)
         participants_for_remove = None
         subscribers = None
+        goals = await Goals.get_goals(user_id=community_id, user_type=1)
         if type(community['community_owner_id']) == int:
             if self.session['user']['id'] == community['community_owner_id']:
                 access = True
@@ -81,7 +83,7 @@ class CommunitiesInfoView(web.View):
         else:
             if self.session['user']['id'] in [i['user_id'] for i in community]:
                 is_in_community = True
-        return dict(community=community, access=access, in_community=is_in_community, subscribers=subscribers, participants=participants, participants_for_remove=participants_for_remove)
+        return dict(community=community, access=access, in_community=is_in_community, subscribers=subscribers, participants=participants, participants_for_remove=participants_for_remove, goals=goals)
 
     async def post(self):
         if 'user' not in self.session:
