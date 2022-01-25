@@ -24,7 +24,14 @@ class CommunitiesView(web.View):
         communities = await CommunityGetInfo.get_user_communities(user_id=user_id)
         requests = await CommunityGetInfo.user_requests(user_id=user_id)
         subspheres = await InfoGet.get_subspheres()
-        return dict(communities=communities, owner_communities=owner_communities, conditions=conditions, community_types=community_types, dropdown_community=dropdown_community, requests=requests, subspheres=subspheres)
+        communities_recommend = await CommunityGetInfo.get_some_communities(user_id=user_id)
+        return dict(communities=communities, owner_communities=owner_communities,
+                    conditions=conditions,
+                    community_types=community_types,
+                    dropdown_community=dropdown_community,
+                    requests=requests,
+                    subspheres=subspheres,
+                    communities_recommend=communities_recommend)
 
     async def post(self):
         if 'user' not in self.session:

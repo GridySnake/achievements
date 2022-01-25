@@ -38,3 +38,38 @@ engine = create_engine(BaseConfig.database_url)
 # Select * from users_main
 # """).fetchall()
 # print(ava)
+df = pd.read_csv('C:/Users/mamed/PycharmProjects/achievements/static/All_Occupations.csv', sep=',')
+print(df.columns)
+df.drop(['Code'], axis=1, inplace=True)
+n = 24
+k = 0
+print(len(df['Occupation'].unique()))
+print(len(df['Job Family'].unique()))
+# df['subsphere_id'] = range(23)
+# sphere_name
+# subsphere_name
+df_sphere = pd.DataFrame()
+df_sphere['sphere_id'] = list(range(0, len(df['Job Family'].unique()), 1))
+df_sphere['Job Family'] = df['Job Family'].unique()
+# print(df_sphere)
+# df['subsphere_id'] = ''
+# df['sphere_id'] = ''
+# for i in range(len(df['Occupation'])):
+# print(df)
+df['subsphere_id'] = list(range(23, len(df['Occupation'])+23, 1))
+df_1 = df.merge(df_sphere, how='inner', on='Job Family')
+# pd.set_option('display.max_columns', None)
+# print(df_1)
+d_finish = {'subsphere_id': [], 'subsphere_name': [], 'sphere_id': [], 'sphere_name': []}
+d_finish['subsphere_id'] = df_1['subsphere_id']
+d_finish['subsphere_name'] = df_1['Occupation']
+d_finish['sphere_id'] = df_1['sphere_id']
+d_finish['sphere_name'] = df_1['Job Family'].copy()
+df_finish = pd.DataFrame(d_finish)
+# pd.set_option('display.max_columns', None)
+# print(df_finish)
+df_finish.to_sql('spheres',
+                    create_engine('postgresql://gachi_achi:achi_for_gachi@204.2.63.15:10485/achievements'),
+                    if_exists='append', method='multi', index=False)
+
+
