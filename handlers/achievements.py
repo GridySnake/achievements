@@ -47,6 +47,7 @@ class AchievementsView(web.View):
             return web.HTTPFound(location=self.app.router['login'].url_for())
 
         data = await self.post()
+        data = dict(data)
         session = await get_session(self)
         user_id = session['user']['id']
         user_type = 0
@@ -60,17 +61,24 @@ class AchievementsView(web.View):
             token = hashlib.sha256(data['name'].replace(' ', '_').lower().encode('utf8')).hexdigest()
             img = qrcode.make(f"http://127.0.0.1:8080/verify_achievement/{token}")
             img.save(f'{str(BaseConfig.STATIC_DIR) + "/QR/" + str(token)}.png')
-            data = dict(data)
             data['value'] = token
         elif data['select_group'] == '2':
             geolocator = Nominatim(user_agent="55")
             location = geolocator.geocode(data['value'])
-            data = dict(data)
             data['lat'] = location.latitude
             data['lon'] = location.longitude
             data['radius'] = 10
+        elif data['select_group'] == '3':
+            None
+        elif data['select_group'] == '4':
+            None
+        elif data['select_group'] == '5':
+            None
+        elif data['select_group'] == '6':
+            None
+        elif data['select_group'] == '7':
+            None
         elif data['select_group'] == '8':
-            data = dict(data)
             data['select_parameter'] = None
         data['sphere'] = await InfoGet.get_sphere_id_by_subsphere_id(data['select_subsphere'])
         await AchievementsCreate.create_achievement(user_id=user_id, user_type=user_type, data=data)

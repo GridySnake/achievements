@@ -42,6 +42,7 @@ class CommunityGetInfo:
                                                         left join spheres s on s.subsphere_id = any(c.subsphere_id)
                                                         group by c.community_id
                                                     ) s on c.community_id = s.community_id
+                                           where c.community_id is not null
                                            """)
         return communities
 
@@ -220,7 +221,7 @@ class CommunityCreate:
                                     user_id, community_owner_id, created_date, image_id, condition_id, condition_value,
                                     sphere_id, subsphere_id)
                                values({id}, '{data['community_type']}', '{data['name']}', '{data['bio']}', 
-                                    array({user_id}), array({user_id}), statement_timestamp(), ARRAY []::integer[], 
+                                    array[{user_id}], array[{user_id}], statement_timestamp(), ARRAY []::integer[], 
                                     ARRAY []::integer[], ARRAY []::text[], array[{data['sphere']}],
                                 array[{data['select_subsphere']}])
                            """)
@@ -232,5 +233,5 @@ class CommunityCreate:
                             """)
         await conn.execute(f"""
                                 insert into chats (chat_id, chat_type, participants, owner_id) values(
-                                {chat_id}, 2, array[{user_id}], {id})\
+                                {chat_id}, 2, array[{user_id}], {id})
                             """)

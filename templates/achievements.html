@@ -36,7 +36,7 @@
             <p>Subsphere</p>
             <select name="select_subsphere" id="select_subsphere">
                 {% for subsphere in subspheres %}
-                    <option value="{{ sphere.subsphere_id }}">{{ sphere.subsphere_name }}</option>
+                    <option value="{{ subsphere.subsphere_id }}">{{ subsphere.subsphere_name }}</option>
                 {% endfor %}
             </select>
             <p id="coords_p" hidden>Coordinates</p>

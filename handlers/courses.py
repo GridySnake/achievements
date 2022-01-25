@@ -21,7 +21,8 @@ class CoursesView(web.View):
         courses = await CoursesGetInfo.get_user_course_suggestions(user_id=user_id)
         my_courses = await CoursesGetInfo.get_user_courses(user_id=user_id)
         requests = await CoursesGetInfo.user_requests(user_id=user_id)
-        return dict(courses=courses, my_courses=my_courses, languages=languages, communities=communities, own_courses=own_courses, requests=requests)
+        subspheres = await InfoGet.get_subspheres()
+        return dict(courses=courses, my_courses=my_courses, languages=languages, communities=communities, own_courses=own_courses, requests=requests, subspheres=subspheres)
 
     async def post(self):
         if 'user' not in self.session:

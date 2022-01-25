@@ -15,7 +15,7 @@
             <p>Subsphere</p>
             <select name="select_subsphere" id="select_subsphere">
                 {% for subsphere in subspheres %}
-                    <option value="{{ sphere.subsphere_id }}">{{ sphere.subsphere_name }}</option>
+                    <option value="{{ subsphere.subsphere_id }}">{{ subsphere.subsphere_name }}</option>
                 {% endfor %}
             </select>
             <p>Language</p>
@@ -25,8 +25,6 @@
                 {% endfor %}
             </select>
             <input id="avatar" name="avatar" type="file" value=""/>
-            <p>Sphere</p>
-            <input id="sphere" name="sphere" type="text" value=""/>
             <p>Create as community</p>
             <input id="as_community" name="as_community" type="radio"/>
             <select name="community" id="community" hidden>
