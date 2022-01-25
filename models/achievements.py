@@ -317,31 +317,27 @@ class AchievementsGiveVerify:
 
 class AchievementsDesireApprove:
     @staticmethod
-    async def desire_achievement(user_id: str, achievement_desire_id: str):
+    async def desire_achievement(user_id: str,
+                                 user_type: int,
+                                 achievement_desire_id: str):
         conn = await asyncpg.connect(connection_url)
+        if user_type == 0:
+            table = 'users_information'
+            column = 'user_id'
+        if user_type == 1:
+            table = 'communities'
+            column = 'community_id'
+        if user_type == 2:
+            table = 'courses'
+            column = 'course_id'
         await conn.execute(f"""
-                             update users_information
-                                 set achievements_desired_id = array_append(achievements_desired_id, {achievement_desire_id})
-                                 where user_id = {user_id} and {achievement_desire_id} not in (
-                                 select unnest(achievements_desired_id) 
-                             from users_information 
-                             where user_id = {user_id})
-           """)
-
-    @staticmethod
-    async def desire_achievement_for_community(user_id: str,
-                                               community_id: str,
-                                               achievement_desire_id: str):
-        conn = await asyncpg.connect(connection_url)
-        await conn.execute(f"""
-                               update communities
+                               update {table}
                                    set achievements_desired_id = array_append(achievements_desired_id, {achievement_desire_id})
-                                   where community_id = {community_id} 
-                                        and {user_id} = any(community_owner_id)
+                                   where {column} = {user_id}
                                         and {achievement_desire_id} not in (
                                    select unnest(achievements_desired_id) 
-                                   from communities 
-                                   where community_id = {community_id})
+                                   from {table} 
+                                   where {column} = {user_id})
                    """)
 
     @staticmethod
