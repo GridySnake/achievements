@@ -98,3 +98,5 @@ class Instagram:
             return likes_max_count, video_views_max
         except ConnectionError:
             print('Username or password is incorrect')
+
+# print(Instagram.get_count_of_followers(username='ivan_qwerty', password='ivanpivan'))

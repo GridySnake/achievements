@@ -26,7 +26,7 @@ class BaseConfig:
     google_client_id = '206162279954-0s1kegd06mt5sebpq1q6isgs53dotlf2.apps.googleusercontent.com'
     google_client_secret = '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'
     instagram_username = 'ivan_querty'
-    instagram_password = 'ivanpivanko'
+    instagram_password = 'ivanpivan'
     steam_api_key = '0C809E8B28192DCDBADCF3B7BC712BF5'
     stepik_client_id = "5GCfL4nbzNh7Zy9sdgXyRc4nlnuvIThOVhDYT4SY"
     stepik_client_secret = "DB1ndWU1g2qNMVEbfB7jA4SiBhswwdRScENl5bL7mzLPtap9oVYsqgMxx5zRx0cmosPbvEE1k2s8sNzSnMpXSX4LnuobB57nJwmPMP3qiKJTVBWCFo98widuX8b73KbQ"
