@@ -31,7 +31,10 @@ class Twitch:
         for i in video_data:
             if parameter:
                 for j in parameter:
-                    data[str('video_' + j)].append(i[j])
+                    try:
+                        data[str('video_' + j)].append(i[j])
+                    except:
+                        print(f'error: {i, j}')
             if views:
                 data['video_views'].append(i['view_count'])
         return data

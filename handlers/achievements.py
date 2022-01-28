@@ -1,6 +1,9 @@
 import aiohttp_jinja2
 from aiohttp import web
 import json
+import hashlib
+import qrcode
+from geopy import Nominatim
 from aiohttp_session import get_session
 from models.achievements import *
 from aioipapi import IpApiClient
@@ -27,11 +30,11 @@ class AchievementsView(web.View):
 
         user_id = self.session['user']['id']
         #await Achievements.update_user_info_achievements(user_id=user_id)
-        await AchievementsGiveVerify.desired_to_reached_achievement(user_id=user_id)
+        # await AchievementsGiveVerify.desired_to_reached_achievement(user_id=user_id)
         achievements_created = await AchievementsGetInfo.get_created_achievements(user_id=user_id)
         achievements_get = await AchievementsGetInfo.get_reached_achievements(user_id=user_id)
         achievements_sug = await AchievementsGetInfo.get_suggestion_achievements(user_id=user_id)
-        spheres = await InfoGet.get_spheres()
+        # spheres = await InfoGet.get_spheres()
         subspheres = await InfoGet.get_subspheres()
         group = await AchievementsGenerateData.data_for_drop_downs_generate_achievements()
         # values = [dict(record) if record['service_id'] is not None else {key: dict(record).get(key) for key in dict(record).keys() if key not in ['service_id', 'service_name']} for record in dropdown_create]
@@ -57,19 +60,13 @@ class AchievementsView(web.View):
         elif 'achi_as_course' in data.keys():
             user_type = 2
             user_id = data['achi_course']
-        if data['select_group'] == '0':
-            None
-            data['geo'] = 'null'
-            data['achievement_qr'] = 'null'
-        elif data['select_group'] == '1':
+        data['geo'] = 'null'
+        data['achievement_qr'] = 'null'
+        if data['select_group'] == '1':
             token = hashlib.sha256(data['name'].replace(' ', '_').lower().encode('utf8')).hexdigest()
             img = qrcode.make(f"http://127.0.0.1:8080/verify_achievement/{token}")
             img.save(f'{str(BaseConfig.STATIC_DIR) + "/QR/" + str(token)}.png')
-            data['value'] = token
             data['achievement_qr'] = str(token)
-            data['geo'] = 'null'
-            data['select_parameter'] = 'null'
-            data['select_aggregation'] = 'null'
         elif data['select_group'] == '2':
             if data['select_aggregation'] == '1':
                 if data['coords'] != '' and data['value'] == '':
@@ -86,34 +83,6 @@ class AchievementsView(web.View):
                     location = [float(i.replace('|', '')) for i in location if i != '']
                 data['geo'] = f'CIRCLE(POINT({location[0]}, {location[1]}), 10)'
                 data['achievement_qr'] = 'null'
-            else:
-                data['geo'] = 'null'
-                data['achievement_qr'] = 'null'
-        elif data['select_group'] == '3':
-            None
-            data['geo'] = 'null'
-            data['achievement_qr'] = 'null'
-        elif data['select_group'] == '4':
-            None
-            data['geo'] = 'null'
-            data['achievement_qr'] = 'null'
-        elif data['select_group'] == '5':
-            None
-            data['geo'] = 'null'
-            data['achievement_qr'] = 'null'
-        elif data['select_group'] == '6':
-            None
-            data['geo'] = 'null'
-            data['achievement_qr'] = 'null'
-        elif data['select_group'] == '7':
-            data['select_aggregation'] = 'null'
-            data['geo'] = 'null'
-            data['achievement_qr'] = 'null'
-        elif data['select_group'] == '8':
-            data['select_aggregation'] = 'null'
-            data['select_parameter'] = 'null'
-            data['geo'] = 'null'
-            data['achievement_qr'] = 'null'
         data['sphere'] = await InfoGet.get_sphere_id_by_subsphere_id(data['select_subsphere'])
         await AchievementsCreate.create_achievement(user_id=user_id, user_type=user_type, data=data)
         return web.HTTPFound(location=self.app.router['achievements'].url_for())
@@ -127,8 +96,21 @@ class AchievementsVerificationView(web.View):
             return web.HTTPFound(location=self.app.router['login'].url_for())
 
         session = await get_session(self)
-        location = str(self).split('/verify_achievement/')[-1][:-2]
-        types = location.split('/')[0]
+        achievement_id = str(self.__dict__['_message']).split('Referer')[-1].split(',')[1].split('achievement/')[-1][:-2]
+        conditions = await AchievementsGetInfo.get_achievement_conditions(achievement_id=achievement_id, user_id=session['user']['id'])
+        # if len(conditions) > 1:
+        #     print('more than one condition')
+        # else:
+        #     conditions = conditions[0]
+        #     conditions['parameter_name'] = conditions['parameter_name'].replace('     ', '__r__').replace(' ', '_')
+        groups = [i for i in set([i['condition_group_id'] for i in conditions])]
+        if len(groups) > 1:
+            print('more than one')
+        else:
+            groups = groups[0]
+        if groups == 3:
+
+        print(groups)
         if types == 'qr':
             result = await AchievementsGiveVerify.qr_verify(user_id=session['user']['id'], value=location.split('/')[-1])
             achievement = await AchievementsGetInfo.get_achievement_by_condition_value(value=location.split('/')[-1])
@@ -226,7 +208,7 @@ class AchievementInfoView(web.View):
 
         location = str(self).split('/achievement/')[-1][:-2]
         achievement = await AchievementsGetInfo.get_achievement_info(achievement_id=location)
-        if achievement['parameter'] == 'user_approve':
+        if achievement['achi_condition_group_id'] == 7:
             desire = await AchievementsDesireApprove.is_desire(user_id=user_id, achievement_desire_id=location)
         else:
             desire = False

@@ -23,7 +23,7 @@
     <p>
         Created at {{ achievement.created_date.strftime('%Y-%m-%d %H:%M') }} by <a href="/user/{{ achievement.user_id }}">{{ achievement.u_name }} {{ achievement.u_surname }} </a>
     </p>
-    {% if achievement.parameter == 'location' %}
+    {% if achievement.achi_condition_group_id == 2 %}
     <p>Radius: {{ achievement.geo[-1] }} km</p>
     <p>Coordinates: {{ achievement.geo[0] }}</p>
         <a href="{{ '/verify_achievement/location/%s'%achievement.condition_id }}"><button>
@@ -65,7 +65,7 @@
     {% endif %}
 
     {% if achievement.achi_condition_group_id == 3 %}
-        <a href="{{ '/verify_achievement/service/%s'%achievement.parameter }}"><button>
+        <a href="/verify_achievement"><button>
             Verify
         </button></a>
     {% endif %}

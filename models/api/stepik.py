@@ -20,7 +20,10 @@ class Stepik:
         response = response['users'][0]
         if parameter:
             for i in parameter:
-                data[i] = response[i]
+                try:
+                    data[i] = response[i]
+                except:
+                    print(f'error: {i}')
         if parameter_count:
             for i in parameter_count:
                 data[i] = response[str(i+'_count')]

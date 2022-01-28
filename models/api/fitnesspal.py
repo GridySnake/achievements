@@ -23,7 +23,10 @@ class Fitnesspal:
         day = client.get_date(date)
         if parameter:
             for j in parameter:
-                data[j] = sum([i[0][j] for i in day.meals])
+                try:
+                    data[j] = sum([i[0][j] for i in day.meals])
+                except:
+                    print(f'error: {i}')
         if water:
             data['water'] = int(day.water)
         if complete_goal:
