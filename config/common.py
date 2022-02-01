@@ -1,6 +1,5 @@
 import pathlib
 
-
 class BaseConfig:
 
     debug = True

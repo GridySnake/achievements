@@ -53,22 +53,23 @@
             </div>
         <button type="submit" id="submit_desire" hidden>Submit</button>
     </form>
-    {% if achievement.aggregation == 'send message' %}
-        <button id="get_message_block">
-            Verify
-        </button>
-        <form action="{{ url('verify_message_to_achi') }}" method="post">
-            <input id="achi" name="achi" type="text" value="{{ achievement.condition_id }}" hidden>
-            <input id="message" name="message" type="text" value="" hidden>
-            <button id="message_send" type="submit" hidden>Send</button>
-        </form>
-    {% endif %}
+    <a href="/verify_achievement"><button>
+        Verify
+    </button></a>
+<!--    {% if achievement.aggregation == 'send message' %}-->
+<!--        <button id="get_message_block">-->
+<!--            Verify-->
+<!--        </button>-->
+<!--        <form action="{{ url('verify_message_to_achi') }}" method="post">-->
+<!--            <input id="achi" name="achi" type="text" value="{{ achievement.condition_id }}" hidden>-->
+<!--            <input id="message" name="message" type="text" value="" hidden>-->
+<!--            <button id="message_send" type="submit" hidden>Send</button>-->
+<!--        </form>-->
+<!--    {% endif %}-->
 
-    {% if achievement.achi_condition_group_id == 3 %}
-        <a href="/verify_achievement"><button>
-            Verify
-        </button></a>
-    {% endif %}
+    <!--{% if achievement.achi_condition_group_id == 3 %}-->
+
+    <!--{% endif %}-->
 </div>
 </body>
 {% endblock %}

@@ -27,6 +27,7 @@ class Steam:
 
     @staticmethod
     def get_friends(steam_id, friends=False):
+        steam_id = SteamID(steam_id)
         data = {}
         response = [i for i in requests.get(f'http://api.steampowered.com/ISteamUser/GetFriendList/v0001/?key={BaseConfig.steam_api_key}&steamid={steam_id}&relationship=friend').json()['friendslist']['friends'] if i['relationship'] == 'friend']
         if friends:
@@ -62,14 +63,14 @@ class Steam:
         return {i['name']: i['value'] for i in requests.get(f'http://api.steampowered.com/ISteamUserStats/GetUserStatsForGame/v0002/?appid={app_id}&key={BaseConfig.steam_api_key}&steamid={steam_id}').json()['playerstats']['stats']}
 
     @staticmethod
-    def get_games(steam_id, games=False, total_play_time=False, game_id=False, game_play_time=False):
+    def get_games(steam_id, game_id, *args):#games=False, total_play_time=False, game_id=False, game_play_time=False):
         response = requests.get(f'http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={BaseConfig.steam_api_key}&steamid={steam_id}').json()['response']
         data = {}
-        if games:
+        if 'games' in args[0]:
             data['games'] = response['game_count']
-        if total_play_time:
+        if 'total_play_time' in args[0]:
             data['total_play_time'] = sum([i['playtime_forever'] for i in response['games']])
-        if game_id and game_play_time:
+        if game_id and 'game_play_time' in args[0]:
             data['game_play_time'] = [i['playtime_forever'] for i in response['games'] if i['app_id'] == game_id]
         return data
 

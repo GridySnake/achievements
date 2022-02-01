@@ -36,8 +36,8 @@ class Fitnesspal:
         return data
 
     @staticmethod
-    def user_info(client, date=datetime.date.today(), created_at=None, exercise_minutes=None, exercise_burned=None,
-                  start_weight=None, current_weight=None, height=None, activity_type=None):
+    def user_info(client, date=datetime.date.today(), created_at=False, exercise_minutes=False, exercise_burned=False,
+                  start_weight=False, current_weight=False, height=False, activity_type=False):
         metadata = client.user_metadata
         user_data = metadata['profiles'][0]
         data = {}

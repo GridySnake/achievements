@@ -40,14 +40,16 @@ class AchievementsGetInfo:
         conn = await asyncpg.connect(connection_url)
         conditions = await conn.fetch(f"""
                                           select agc.parameter_name, agc.condition_group_id, agc.aggregate_id, 
-                                                agc.service_id, ui.services_username
+                                                agc.service_id, ui.services_username, c.geo, c.value
                                           from (select conditions from achievements where 
                                                 achievement_id = {achievement_id}) as a 
                                           left join achi_conditions as c on c.condition_id = any(a.conditions)
                                           left join achi_generate_conditions agc on c.parameter_id = agc.parameter_id
-                                          left join (select services_id, unnest(services_username) as services_username 
+                                          left join (select services_id, unnest(services_username) as services_username,
+                                                unnest(services_id) as services_ids 
                                                 from users_information where user_id = {user_id}) as ui 
-                                                on agc.service_id = any(ui.services_id)
+                                                on agc.service_id = ui.services_ids
+                                          order by agc.service_id
                                       """)
         return conditions
 
@@ -241,40 +243,40 @@ class AchievementsGiveVerify:
             return 1
 
     @staticmethod
-    async def update_user_info_achievements(user_id: str):
+    async def user_info_achievements_verify(achievement_id: str, value: str):
         conn = await asyncpg.connect(connection_url)
         data = await conn.fetch(f"""
-                                select a.achievement_id, c.parameter_id, c.value
-                                from (select achievement_id, unnest(conditions) as conditions from achievements) as a
-                                inner join achi_conditions as c on text(c.condition_id) = a.conditions
-                                left join achi_generate_conditions agc on c.parameter_id = agc.parameter_id
-                                where agc.condition_group_id = 0  and a.achievement_id not in (select 
-                                    unnest(achievements_id) as achievements_id from users_information 
-                                    where user_id = {user_id})
+                                select case a.achievement_id is null then false
+                                        else true
+                                        end as result
+                                from (select achievement_id, conditions from achievements 
+                                        where achievement_id = {achievement_id}) as a
+                                inner join achi_conditions as c on c.condition_id = any(a.conditions) and c.value = {value}
+                                left join achi_generate_conditions agc on c.parameter_id = agc.parameter_id and agc.condition_group_id = 0
+                            
         """)
-        for i in data:
-            if i['value'].isdigit():
-                await conn.execute(f"""
-                                    update users_information
-                                    set achievements_id = array_append(achievements_id, {i['achievement_id']})
-                                    where user_id = {user_id} and {i['parameter']} = {i['value']} 
-                                        and {i['achievement_id']} not in (
-                                        select unnest(achievements_id) from users_information where user_id = {user_id})
-                                    """)
-            else:
-                await conn.execute(f"""
-                                    update users_information
-                                    set achievements_id = array_append(achievements_id, {i['achievement_id']})
-                                    where user_id = {user_id} and {i['parameter']} = '{i['value']}' 
-                                        and {i['achievement_id']} not in (
-                                        select unnest(achievements_id) from users_information where user_id = {user_id})
-                                   """)
+        # for i in data:
+        #     if i['value'].isdigit():
+        #         await conn.execute(f"""
+        #                             update users_information
+        #                             set achievements_id = array_append(achievements_id, {i['achievement_id']})
+        #                             where user_id = {user_id} and {i['parameter']} = {i['value']}
+        #                                 and {i['achievement_id']} not in (
+        #                                 select unnest(achievements_id) from users_information where user_id = {user_id})
+        #                             """)
+        #     else:
+        #         await conn.execute(f"""
+        #                             update users_information
+        #                             set achievements_id = array_append(achievements_id, {i['achievement_id']})
+        #                             where user_id = {user_id} and {i['parameter']} = '{i['value']}'
+        #                                 and {i['achievement_id']} not in (
+        #                                 select unnest(achievements_id) from users_information where user_id = {user_id})
+        #                            """)
 
     @staticmethod
     async def qr_verify(user_id: str, value: str):
         conn = await asyncpg.connect(connection_url)
-        try:
-            achi_id = await conn.fetchrow(f"""
+        qr = await conn.fetchrow(f"""
                             select a.achievement_id
                             from achi_conditions as c
                             inner join (select achievement_id, unnest(conditions) as conditions from achievements) as a 
@@ -282,14 +284,17 @@ class AchievementsGiveVerify:
                             left join achi_generate_conditions agc on c.parameter_id = agc.parameter_id
                             where agc.condition_group_id = 1 and value = '{value}'
             """)
-            await conn.execute(f"""
-                                update users_information
-                                set achievements_id = array_append(achievements_id, {achi_id['achievement_id']})
-                                where user_id = {user_id} and {achi_id['achievement_id']} not in (
-                                        select unnest(achievements_id) from users_information where user_id = {user_id})
-            """)
-        except:
-            return 1
+            # await conn.execute(f"""
+            #                     update users_information
+            #                     set achievements_id = array_append(achievements_id, {achi_id['achievement_id']})
+            #                     where user_id = {user_id} and {achi_id['achievement_id']} not in (
+            #                             select unnest(achievements_id) from users_information where user_id = {user_id})
+            # """)
+        if qr is None:
+            qr = False
+        else:
+            qr = True
+        return qr
 
     @staticmethod
     async def location_verify(user_id: str, value: str):
@@ -309,64 +314,60 @@ class AchievementsGiveVerify:
                                         select unnest(achievements_id) from users_information where user_id = {user_id})
             """)
 
-    @staticmethod
-    async def chess_verify(user_id: str, achievement_id: str):
-        conn = await asyncpg.connect(connection_url)
-        await conn.execute(f"""
-                               update users_information
-                               set achievements_id = array_append(achievements_id, {achievement_id})
-                               where user_id = {user_id} and {achievement_id} not in (
-                                       select unnest(achievements_id) from users_information where user_id = {user_id})
-            """)
+    # @staticmethod
+    # async def chess_verify(user_id: str, achievement_id: str):
+    #     conn = await asyncpg.connect(connection_url)
+    #     await conn.execute(f"""
+    #                            update users_information
+    #                            set achievements_id = array_append(achievements_id, {achievement_id})
+    #                            where user_id = {user_id} and {achievement_id} not in (
+    #                                    select unnest(achievements_id) from users_information where user_id = {user_id})
+    #         """)
 
     @staticmethod
-    async def desired_to_reached_achievement(user_id: str):
+    async def approve_verify(user_id: str, achievement_id: str):
         conn = await asyncpg.connect(connection_url)
-        achievements = await conn.fetch(f"""
-                                select a.achievement_id as achievement_id
-                                from (select achievement_id, unnest(conditions) as conditions from achievements) as a
-                                left join achi_conditions as c on c.condition_id = a.conditions::integer
-                                left join (
-                                    select a.achievement_id, COUNT(aa.user_passive_id) as approve
-                                from achievements as a
-                                right join 
-                                (
-                                    select unnest(achievements_desired_id) as achievements_desired_id 
-                                    from users_information 
-                                    where user_id = {user_id}
-                                ) as u 
-                                on u.achievements_desired_id = a.achievement_id
-                                left join approve_achievements as aa on aa.achievement_id = a.achievement_id
-                                group by a.achievement_id) as q on q.achievement_id = a.achievement_id
-                                right join (
-                                    select unnest(achievements_desired_id) as achievements_desired_id 
-                                    from users_information 
-                                    where user_id = {user_id}
-                                ) as u 
-                                on u.achievements_desired_id = a.achievement_id
-                                right join achi_generate_conditions agc on c.parameter_id = agc.parameter_id
-                                where agc.condition_group_id = 7 and c.value::integer <= q.approve
-                   """)
-        for i in achievements:
-            await conn.execute(f"""
-                                  update users_information
-                                  set achievements_id = array_append(achievements_id, {i['achievement_id']})
-                                  where user_id = {user_id} and {i['achievement_id']} not in (select 
-                                        unnest(achievements_id) as achievements_id from users_information where 
-                                        user_id = {user_id})
-            """)
-            await conn.execute(f"""
-                                    update users_information
-                                    set  achievements_desired_id = achievements_desired_id[:(select 
-                                        array_position(achievements_desired_id, {i['achievement_id']})
-                                    from users_information						 
-                                    WHERE user_id = {user_id})-1] ||
-                                    achievements_desired_id[(select 
-                                        array_position(achievements_desired_id, {i['achievement_id']})
-                                    from users_information
-                                    WHERE user_id = {user_id})+1:]
-                                    WHERE user_id = {user_id}
-            """)
+        achievements = await conn.fetchrow(f"""
+                                                select case when a.achievement_id is null then false
+                                                        else true
+                                                        end as approve
+                                                from (select achievement_id, conditions from achievements
+                                                    where achievement_id = {achievement_id}) as a
+                                                left join achi_conditions as c on c.condition_id = any(a.conditions)
+                                                left join (
+                                                    select a.achievement_id, COUNT(aa.user_passive_id) as approve_count
+                                                from achievements as a
+                                                left join approve_achievements as aa on aa.achievement_id = a.achievement_id
+                                                    where aa.user_passive_id = {user_id}
+                                                group by a.achievement_id) as q on q.achievement_id = a.achievement_id
+                                                left join achi_generate_conditions agc on c.parameter_id = agc.parameter_id
+                                                where agc.condition_group_id = 7 and c.value::integer <= q.approve_count
+                                             """)
+        if achievements is None:
+            achievements = False
+        else:
+            achievements = True
+        return achievements
+        # for i in achievements:
+        #     await conn.execute(f"""
+        #                           update users_information
+        #                           set achievements_id = array_append(achievements_id, {i['achievement_id']})
+        #                           where user_id = {user_id} and {i['achievement_id']} not in (select
+        #                                 unnest(achievements_id) as achievements_id from users_information where
+        #                                 user_id = {user_id})
+        #     """)
+        #     await conn.execute(f"""
+        #                             update users_information
+        #                             set  achievements_desired_id = achievements_desired_id[:(select
+        #                                 array_position(achievements_desired_id, {i['achievement_id']})
+        #                             from users_information
+        #                             WHERE user_id = {user_id})-1] ||
+        #                             achievements_desired_id[(select
+        #                                 array_position(achievements_desired_id, {i['achievement_id']})
+        #                             from users_information
+        #                             WHERE user_id = {user_id})+1:]
+        #                             WHERE user_id = {user_id}
+        #     """)
 
 
 class AchievementsDesireApprove:
