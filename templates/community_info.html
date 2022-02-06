@@ -56,6 +56,12 @@
         </form>
     {% endif %}
     {% if in_community %}
+        {% for i in payment_goals %}
+            <p>{{ i.goal_name }}: {{ i.current_value }}/{{ i.target_value }}</p>
+        {% endfor %}
+
+        <br>
+
         <form action="{{ url('leave_community') }}" method="post">
             <button id="leave_community" type="submit">Leave</button>
         </form>

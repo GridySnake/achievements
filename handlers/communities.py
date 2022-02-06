@@ -7,6 +7,7 @@ from config.common import BaseConfig
 import json
 from models.information import InfoGet
 from models.goal import Goals
+from models.wallet_community_goal import *
 
 
 class CommunitiesView(web.View):
@@ -66,6 +67,7 @@ class CommunitiesInfoView(web.View):
         participants_for_remove = None
         subscribers = None
         goals = await Goals.get_goals(user_id=community_id, user_type=1)
+        payment_goals = await CommunityWalletGoal.get_payment_goal(community_id=community_id)
         if type(community['community_owner_id']) == int:
             if self.session['user']['id'] == community['community_owner_id']:
                 access = True
@@ -83,7 +85,8 @@ class CommunitiesInfoView(web.View):
         else:
             if self.session['user']['id'] in [i['user_id'] for i in community]:
                 is_in_community = True
-        return dict(community=community, access=access, in_community=is_in_community, subscribers=subscribers, participants=participants, participants_for_remove=participants_for_remove, goals=goals)
+        return dict(community=community, access=access, in_community=is_in_community, subscribers=subscribers, participants=participants, participants_for_remove=participants_for_remove,
+                    goals=goals, payment_goals=payment_goals)
 
     async def post(self):
         if 'user' not in self.session:
