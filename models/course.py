@@ -49,6 +49,16 @@ class CoursesGetInfo:
         return courses
 
     @staticmethod
+    async def get_course_info_by_value(course_id: str, value: str):
+        conn = await asyncpg.connect(connection_url)
+        course = await conn.fetchrow(f"""
+                                      select {value} 
+                                      from courses_statistics
+                                      where course_id = {course_id}
+                                    """)
+        return course[value]
+
+    @staticmethod
     async def get_course_info(course_id: str):
         """
         :param course_id: str
@@ -242,6 +252,7 @@ class CoursesAction:
                                values({event_id}, {course_id}, {user_id}, 1)
                              """)
 
+
     @staticmethod
     async def leave_course(course_id: str, user_id: str):
         """
@@ -391,6 +402,12 @@ class CourseCreate:
                                update users_information
                                     set course_id = array_append(course_id, {course_id})
                                where user_id = {user_id}
+                            """)
+        await conn.execute(f"""
+                               insert into courses_statistics (course_id, participants, rating, likes, 
+                                    participants_complete_course, comments, create_achievements, recommendation, 
+                                    reach_achievements, steps_course, participants_in_progress_course) values(
+                                    {course_id}, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0)
                             """)
 
 

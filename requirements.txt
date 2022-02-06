@@ -25,7 +25,7 @@ pytz~=2020.1
 six~=1.15.0
 # tqdm~=4.11.2
 steam~=1.2.0
-myfitnesspal==1.16.4
+myfitnesspal==1.16.6
 runkeeper==0.1.2
 tiktokapi~=4.0.4
 huepy==1.2.1

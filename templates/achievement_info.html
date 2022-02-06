@@ -23,7 +23,7 @@
     <p>
         Created at {{ achievement.created_date.strftime('%Y-%m-%d %H:%M') }} by <a href="/user/{{ achievement.user_id }}">{{ achievement.u_name }} {{ achievement.u_surname }} </a>
     </p>
-    {% if achievement.parameter == 'location' %}
+    {% if achievement.achi_condition_group_id == 2 %}
     <p>Radius: {{ achievement.geo[-1] }} km</p>
     <p>Coordinates: {{ achievement.geo[0] }}</p>
         <a href="{{ '/verify_achievement/location/%s'%achievement.condition_id }}"><button>
@@ -32,43 +32,62 @@
     {% endif %}
     <form action="{{ url('desire') }}" method="post">
         <input id="achi_id" name="achi_id" type="text" value="{{ achievement.achievement_id }}" hidden>
-        <button id="desire" type="button">Desire</button>
-        <button id="hide_desire" type="button" hidden>Hide</button>
-        <div id="desire_achi" hidden>
-            <p>As community</p>
-                <input id="desire_achi_as_community" name="desire_achi_as_community" type="radio"/>
-                <select name="desire_achi_community" id="desire_achi_community" hidden>
-                {% for i in communities %}
-                    <option value="{{ i.community_id }}">{{ i.community_name }}</option>
-                {% endfor %}
-            </select>
-            <p>As course</p>
-            <input id="desire_achi_as_course" name="desire_achi_as_course" type="radio"/>
-            <select name="desire_achi_course" id="desire_achi_course" hidden>
-                {% for i in courses %}
-                    <option value="{{ i.course_id }}">{{ i.course_name }}</option>
-                {% endfor %}
-            </select>
-            <br>
-            </div>
+        {% if achievement.achi_condition_group_id == 4 or achievement.achi_condition_group_id == 5 %}
+            <button id="desire" type="button">Desire</button>
+            <button id="hide_desire" type="button" hidden>Hide</button>
+            <div id="desire_achi" hidden>
+             {% if achievement.achi_condition_group_id == 4 %}
+                 <p>As community</p>
+                     <input id="desire_achi_as_community" name="desire_achi_as_community" type="radio"/>
+                     <select name="desire_achi_community" id="desire_achi_community" hidden>
+                     {% for i in communities %}
+                         <option value="{{ i.community_id }}">{{ i.community_name }}</option>
+                     {% endfor %}
+                 </select>
+             {% elif achievement.achi_condition_group_id == 5 %}
+                 <p>As course</p>
+                 <input id="desire_achi_as_course" name="desire_achi_as_course" type="radio"/>
+                 <select name="desire_achi_course" id="desire_achi_course" hidden>
+                     {% for i in courses %}
+                         <option value="{{ i.course_id }}">{{ i.course_name }}</option>
+                     {% endfor %}
+                 </select>
+             {% endif %}
+             <br>
+             </div>
+        {% endif %}
         <button type="submit" id="submit_desire" hidden>Submit</button>
     </form>
-    {% if achievement.aggregation == 'send message' %}
-        <button id="get_message_block">
-            Verify
-        </button>
-        <form action="{{ url('verify_message_to_achi') }}" method="post">
-            <input id="achi" name="achi" type="text" value="{{ achievement.condition_id }}" hidden>
-            <input id="message" name="message" type="text" value="" hidden>
-            <button id="message_send" type="submit" hidden>Send</button>
-        </form>
-    {% endif %}
+    <form action="{{ url('verify_achievement') }}" method="post">
+        {% if achievement.achi_condition_group_id == 4 %}
+            <select name="verify_achi_community" id="verify_achi_community">
+                 {% for i in communities %}
+                     <option value="{{ i.community_id }}">{{ i.community_name }}</option>
+                 {% endfor %}
+            </select>
+        {% elif achievement.achi_condition_group_id == 5 %}
+            <select name="verify_achi_course" id="verify_achi_course">
+                 {% for i in courses %}
+                     <option value="{{ i.course_id }}">{{ i.course_name }}</option>
+                 {% endfor %}
+            </select>
+        {% endif %}
+        <button type="submit" id="verify">Verify</button>
+    </form>
+<!--    {% if achievement.aggregation == 'send message' %}-->
+<!--        <button id="get_message_block">-->
+<!--            Verify-->
+<!--        </button>-->
+<!--        <form action="{{ url('verify_message_to_achi') }}" method="post">-->
+<!--            <input id="achi" name="achi" type="text" value="{{ achievement.condition_id }}" hidden>-->
+<!--            <input id="message" name="message" type="text" value="" hidden>-->
+<!--            <button id="message_send" type="submit" hidden>Send</button>-->
+<!--        </form>-->
+<!--    {% endif %}-->
 
-    {% if achievement.achi_condition_group_id == 3 %}
-        <a href="{{ '/verify_achievement/service/%s'%achievement.parameter }}"><button>
-            Verify
-        </button></a>
-    {% endif %}
+    <!--{% if achievement.achi_condition_group_id == 3 %}-->
+
+    <!--{% endif %}-->
 </div>
 </body>
 {% endblock %}

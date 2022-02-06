@@ -1,6 +1,9 @@
 import aiohttp_jinja2
 from aiohttp import web
 import json
+import hashlib
+import qrcode
+from geopy import Nominatim
 from aiohttp_session import get_session
 from models.achievements import *
 from aioipapi import IpApiClient
@@ -10,6 +13,7 @@ from models.user import UserGetInfo
 from models.api.chess_com import Chesscom
 from models.community import CommunityGetInfo
 from models.course import CoursesGetInfo
+from config.services_our_api import ServicesConfig
 from models.api.twitch_tv import Twitch
 from models.api.youtube import Youtube
 from models.api.instagram import Instagram
@@ -27,11 +31,11 @@ class AchievementsView(web.View):
 
         user_id = self.session['user']['id']
         #await Achievements.update_user_info_achievements(user_id=user_id)
-        await AchievementsGiveVerify.desired_to_reached_achievement(user_id=user_id)
+        # await AchievementsGiveVerify.desired_to_reached_achievement(user_id=user_id)
         achievements_created = await AchievementsGetInfo.get_created_achievements(user_id=user_id)
         achievements_get = await AchievementsGetInfo.get_reached_achievements(user_id=user_id)
         achievements_sug = await AchievementsGetInfo.get_suggestion_achievements(user_id=user_id)
-        spheres = await InfoGet.get_spheres()
+        # spheres = await InfoGet.get_spheres()
         subspheres = await InfoGet.get_subspheres()
         group = await AchievementsGenerateData.data_for_drop_downs_generate_achievements()
         # values = [dict(record) if record['service_id'] is not None else {key: dict(record).get(key) for key in dict(record).keys() if key not in ['service_id', 'service_name']} for record in dropdown_create]
@@ -48,6 +52,7 @@ class AchievementsView(web.View):
 
         data = await self.post()
         data = dict(data)
+        # todo: unique achievement name
         session = await get_session(self)
         user_id = session['user']['id']
         user_type = 0
@@ -57,19 +62,13 @@ class AchievementsView(web.View):
         elif 'achi_as_course' in data.keys():
             user_type = 2
             user_id = data['achi_course']
-        if data['select_group'] == '0':
-            None
-            data['geo'] = 'null'
-            data['achievement_qr'] = 'null'
-        elif data['select_group'] == '1':
+        data['geo'] = 'null'
+        data['achievement_qr'] = 'null'
+        if data['select_group'] == '1':
             token = hashlib.sha256(data['name'].replace(' ', '_').lower().encode('utf8')).hexdigest()
             img = qrcode.make(f"http://127.0.0.1:8080/verify_achievement/{token}")
             img.save(f'{str(BaseConfig.STATIC_DIR) + "/QR/" + str(token)}.png')
-            data['value'] = token
             data['achievement_qr'] = str(token)
-            data['geo'] = 'null'
-            data['select_parameter'] = 'null'
-            data['select_aggregation'] = 'null'
         elif data['select_group'] == '2':
             if data['select_aggregation'] == '1':
                 if data['coords'] != '' and data['value'] == '':
@@ -86,34 +85,6 @@ class AchievementsView(web.View):
                     location = [float(i.replace('|', '')) for i in location if i != '']
                 data['geo'] = f'CIRCLE(POINT({location[0]}, {location[1]}), 10)'
                 data['achievement_qr'] = 'null'
-            else:
-                data['geo'] = 'null'
-                data['achievement_qr'] = 'null'
-        elif data['select_group'] == '3':
-            None
-            data['geo'] = 'null'
-            data['achievement_qr'] = 'null'
-        elif data['select_group'] == '4':
-            None
-            data['geo'] = 'null'
-            data['achievement_qr'] = 'null'
-        elif data['select_group'] == '5':
-            None
-            data['geo'] = 'null'
-            data['achievement_qr'] = 'null'
-        elif data['select_group'] == '6':
-            None
-            data['geo'] = 'null'
-            data['achievement_qr'] = 'null'
-        elif data['select_group'] == '7':
-            data['select_aggregation'] = 'null'
-            data['geo'] = 'null'
-            data['achievement_qr'] = 'null'
-        elif data['select_group'] == '8':
-            data['select_aggregation'] = 'null'
-            data['select_parameter'] = 'null'
-            data['geo'] = 'null'
-            data['achievement_qr'] = 'null'
         data['sphere'] = await InfoGet.get_sphere_id_by_subsphere_id(data['select_subsphere'])
         await AchievementsCreate.create_achievement(user_id=user_id, user_type=user_type, data=data)
         return web.HTTPFound(location=self.app.router['achievements'].url_for())
@@ -122,95 +93,137 @@ class AchievementsView(web.View):
 class AchievementsVerificationView(web.View):
 
     @aiohttp_jinja2.template('achievements_verify.html')
-    async def get(self):
+    async def post(self):
         if 'user' not in self.session:
             return web.HTTPFound(location=self.app.router['login'].url_for())
 
         session = await get_session(self)
-        location = str(self).split('/verify_achievement/')[-1][:-2]
-        types = location.split('/')[0]
-        if types == 'qr':
-            result = await AchievementsGiveVerify.qr_verify(user_id=session['user']['id'], value=location.split('/')[-1])
-            achievement = await AchievementsGetInfo.get_achievement_by_condition_value(value=location.split('/')[-1])
-            if result:
-                return dict(decline=True, achievement=achievement)
-            else:
-                return dict(achievement=achievement)
-        elif types == 'location':
+        if str(self).split('/')[-1][:-2] == 'verify_achievement':
+            achievement_id = str(self.__dict__['_message']).split('Referer')[-1].split(',')[1].split('achievement/')[-1][:-2]
+        else:
+            qr_value = str(self).split('/')[-1][:-2]
+            achievement_id = await AchievementsGetInfo.get_achievement_by_condition_value(value=qr_value)
+            if not achievement_id:
+                return dict(decline=True)
+
+        data = await self.post()
+        data = dict(data)
+        if 'verify_achi_community' in data.keys():
+            user_type = 1
+            user_id = data['verify_achi_community']
+        elif 'verify_achi_course' in data.keys():
+            user_type = 2
+            user_id = data['verify_achi_course']
+        else:
+            user_type = 0
+            user_id = session['user']['id']
+        conditions = await AchievementsGetInfo.get_achievement_conditions(achievement_id=achievement_id, user_id=session['user']['id'])
+        reach = []
+
+        groups = [i for i in set([i['condition_group_id'] for i in conditions])]
+        print(conditions)
+        if 0 in groups:
+            # todo: equality implementation
+            user_conditions = [i for i in conditions if i['condition_group_id'] == 0]
+            for i in user_conditions:
+                result = False
+                if i['aggregate_id'] == 0:
+                    value = await UserGetInfo.get_user_info_by_count(user_id=user_id, value=i['parameter_name'].replace(' ', '_'))
+                    if int(i['value']) <= value:
+                        result = True
+                elif i['aggregate_id'] == 1:
+                    value = await UserGetInfo.get_user_info_by_value(user_id=user_id, value=i['parameter_name'].replace(' ', '_'))
+                    if i['value'] == value:
+                        result = True
+                reach.append(result)
+                # result = await AchievementsGiveVerify.user_info_achievements_verify(achievement_id=achievement_id, value=str(value))
+
+        if 1 in groups:
+            result = await AchievementsGiveVerify.qr_verify(user_id=session['user']['id'], value=qr_value)
+            reach.append(result)
+        if 2 in groups:
             async with IpApiClient() as client:
                 loc = await client.location()
             coord = (loc['lat'], loc['lon'])
-            coord_achi = await AchievementsGetInfo.get_achievement_by_condition_id(condition_id=location.split('/')[-1])
-            r = coord_achi[0]['geo'][-1]
-            distance = great_circle((coord[0], coord[1]), (coord_achi[0]['geo'][0][0], coord_achi[0]['geo'][0][1])).meters
-            val = 'm'
-            if distance/1000 <= r:
-                result = True
-            else:
+            geo_conditions = [i for i in conditions if i['condition_group_id'] == 2]
+            for i in geo_conditions:
+                coords_achi = i['geo']
+                r = coords_achi[-1]
+                distance = great_circle((coord[0], coord[1]), (coords_achi[0][0], coords_achi[0][1])).meters
+                # val = 'm'
+                if distance/1000 <= r:
+                    reach.append(True)
+                else:
+                    reach.append(False)
+                # if distance > 1000:
+                    # distance = distance/1000
+                    # val = 'km'
+                    #await AchievementsGiveVerify.location_verify(user_id=session['user']['id'], value=i['value'])
+                # distance = distance
+                # val = val
+        if 3 in groups:
+            service_conditions = [i for i in conditions if i['condition_group_id'] == 3]
+            for i in service_conditions:
+                i = dict(i)
+                i['parameter_name'] = i['parameter_name'].replace('     ', '__r__').replace(' ', '_')
+                service = ServicesConfig.service_classes[i['service_id']]
+                functions = [j for j in ServicesConfig.service_functions.keys() if service.__name__ in j and i['parameter_name'] in j][0]
+                print(ServicesConfig.service_functions[functions](i['services_username'], (i['parameter_name'])))
                 result = False
-            if distance > 1000:
-                distance = distance/1000
-                val = 'km'
-            if result:
-                await AchievementsGiveVerify.location_verify(user_id=session['user']['id'], value=location.split('/')[-1])
-                return dict(achievement=coord_achi)
-            else:
-                return dict(decline=True, achievement=coord_achi, distance=distance, val=val)
-        elif types == 'service':
-            parameters = location[location.find('/')+1:].split('-')
-            is_connected = await UserGetInfo.check_connect(session['user']['id'], parameters[0])
-            if is_connected:
-                username = await UserGetInfo.get_user_name_by_service(session['user']['id'], parameters[0])
-                username = username[0][0]
-                if parameters[1] == 'profile':
-                    profile = Chesscom.get_player_profile(username)[parameters[2]]
-                    if parameters[2] == 'country':
-                        profile = profile.split('/')[-1]
-                        profile = await InfoGet.get_country_by_iso(profile)
-                        profile = profile[0][0]
-                    achievement = await AchievementsGetInfo.get_achievement_by_condition_parameter(location[location.find('/')+1:])
-                    if profile == achievement[0]['value']:
-                        await AchievementsGiveVerify.chess_verify(user_id=session['user']['id'], achievement_id=str(achievement[0]['achievement_id']))
-                        return dict(achievement=achievement)
-                    else:
-                        return dict(decline=True, achievement=achievement)
-
-                elif 'profile_stats' in parameters[1]:
-                    chess = Chesscom.get_player_stats(username)[parameters[1].replace('profile_stats_', '')][parameters[2]]['rating']
-                    achievement = await AchievementsGetInfo.get_achievement_by_condition_parameter(location[location.find('/') + 1:])
-                    result = False
-                    if parameters[3] == 'more':
-                        if chess > int(achievement[0]['value']):
+                if i['aggregate_id'] == 0:
+                    if i['equality'] == 1:
+                        if ServicesConfig.service_functions[functions](i['services_username'], (i['parameter_name']))[i['parameter_name']] >= int(i['value']):
                             result = True
-                    if parameters[3] == 'less':
-                        if chess < int(achievement[0]['value']):
+                    elif i['equality'] == 0:
+                        if ServicesConfig.service_functions[functions](i['services_username'], (i['parameter_name']))[i['parameter_name']] <= int(i['value']):
                             result = True
-                    if parameters[3] == 'equal':
-                        if chess == int(achievement[0]['value']):
+                elif i['aggregate_id'] == 1:
+                    if ServicesConfig.service_functions[functions](i['services_username'], (i['parameter_name']))[i['parameter_name']] == i['value']:
+                        result = True
+                elif i['aggregate_id'] == 2:
+                    if ServicesConfig.service_functions[functions](i['services_username'], (i['parameter_name']))[i['parameter_name']]:
+                        result = True
+                elif i['aggregate_id'] == 3:
+                    if i['equality'] == 1:
+                        if ServicesConfig.service_functions[functions](i['services_username'], (i['parameter_name']))[i['parameter_name']] >= i['value']:
                             result = True
-                    if result:
-                        await AchievementsGiveVerify.chess_verify(user_id=session['user']['id'], achievement_id=str(achievement[0]['achievement_id']))
-                        return dict(achievement=achievement)
+                    elif i['equality'] == 0:
+                        if ServicesConfig.service_functions[functions](i['services_username'], (i['parameter_name']))[i['parameter_name']] <= i['value']:
+                            result = True
+                reach.append(result)
+        if 4 in groups:
+            community_conditions = [i for i in conditions if i['condition_group_id'] == 4]
+            for i in community_conditions:
+                if i['aggregate_id'] == 0:
+                    value = await CommunityGetInfo.get_community_info_by_value(community_id=user_id, value=i['parameter_name'].replace(' ', '_'))
+                    if int(i['value']) >= value:
+                        reach.append(True)
                     else:
-                        return dict(decline=True, achievement=achievement)
-
-                elif parameters[1] == 'title':
-                    achievement = await AchievementsGetInfo.get_achievement_by_condition_parameter(location[location.find('/') + 1:])
-                    title = Chesscom.get_titled_players(achievement[0]['value'])['players']
-                    if username in title:
-                        await AchievementsGiveVerify.chess_verify(user_id=session['user']['id'], achievement_id=str(achievement[0]['achievement_id']))
-                        return dict(achievement=achievement)
+                        reach.append(False)
+        if 5 in groups:
+            course_conditions = [i for i in conditions if i['condition_group_id'] == 5]
+            for i in course_conditions:
+                if i['aggregate_id'] == 0:
+                    value = await CoursesGetInfo.get_course_info_by_value(course_id=user_id, value=i['parameter_name'].replace(' ', '_'))
+                    if int(i['value']) >= value:
+                        reach.append(True)
                     else:
-                        return dict(decline=True, achievement=achievement)
-
-                elif parameters[1] == 'leaderboard_daily':
-                    title = Chesscom.get_leaderboards()['daily']
-                    achievement = await AchievementsGetInfo.get_achievement_by_condition_parameter(location[location.find('/') + 1:])
-                    if username in [i['username'] for i in title]:
-                        await AchievementsGiveVerify.chess_verify(user_id=session['user']['id'], achievement_id=str(achievement[0]['achievement_id']))
-                        return dict(achievement=achievement)
-                    else:
-                        return dict(decline=True, achievement=achievement)
+                        reach.append(False)
+        if 7 in groups:
+            approve_conditions = [i for i in conditions if i['condition_group_id'] == 7]
+            for i in approve_conditions:
+                result = await AchievementsGiveVerify.approve_verify(user_id=user_id, parameter_id=i['parameter_id'])
+                reach.append(result)
+        conditions_not_reached = []
+        if False in reach:
+            decline = True
+            not_reached = [i for i, e in enumerate(reach) if e is False]
+            conditions_not_reached = [i for i in conditions if conditions.index(i) in not_reached]
+        else:
+            await AchievementsGiveVerify.give_achievement_to_user(user_id=user_id, achievement_id=achievement_id, user_type=user_type)
+            decline = False
+        achievement = await AchievementsGetInfo.get_achievement_info(achievement_id)
+        return dict(achievement=achievement, decline=decline, conditions_not_reached=conditions_not_reached)
 
 
 class AchievementInfoView(web.View):
@@ -226,7 +239,8 @@ class AchievementInfoView(web.View):
 
         location = str(self).split('/achievement/')[-1][:-2]
         achievement = await AchievementsGetInfo.get_achievement_info(achievement_id=location)
-        if achievement['parameter'] == 'user_approve':
+        print(achievement)
+        if achievement['achi_condition_group_id'] == 7:
             desire = await AchievementsDesireApprove.is_desire(user_id=user_id, achievement_desire_id=location)
         else:
             desire = False

@@ -42,6 +42,26 @@ class UserGetInfo:
             return None
 
     @staticmethod
+    async def get_user_info_by_value(user_id: str, value: str):
+        conn = await asyncpg.connect(connection_url)
+        user = await conn.fetchrow(f"""
+                    select {value}
+                    from users_information
+                    where user_id = {user_id}
+                    """)
+        return user[value]
+
+    @staticmethod
+    async def get_user_info_by_count(user_id: str, value: str):
+        conn = await asyncpg.connect(connection_url)
+        course = await conn.fetchrow(f"""
+                                      select {value} 
+                                      from user_statistics
+                                      where user_id = {user_id}
+                                    """)
+        return course[value]
+
+    @staticmethod
     async def get_avatar_by_user_id(user_id: str):
         conn = await asyncpg.connect(connection_url)
         avatar = await conn.fetch(f"""
@@ -130,37 +150,40 @@ class UserCreate:
             else:
                 data['email'] = None
             await conn.execute(f"""
-                                   insert INTO users_main (user_id, user_name, email, phone) values(
+                                   insert into users_main (user_id, user_name, email, phone) values(
                                    {id}, '{data['user_name']}', '{data['email']}', '{data['phone']}')
                                    """)
             await conn.execute(f"""
-                                   insert INTO authentication (email, phone, user_name, password, second_authentication, 
+                                   insert into authentication (email, phone, user_name, password, second_authentication, 
                                    user_id, verified, verifying_token) values(
                                    '{data['email']}', '{data['phone']}', '{data['user_name']}', '{data['password']}',
                                    False, {id}, False, '{token}')
                                    """)
             await conn.execute(f"""
                                 insert INTO users_information (user_id, country_id, city_id, sex, date_born, age, bio, name, 
-                                surname, relation_ship_id, language_id, wedding, communication_conditions, status_work, 
-                                position, company_id, school_id, bachelor_id, master_id, image_id, achievements_id, achievements_desired_id, services_id, services_username,
-                                community_id, community_owner_id) values(
-                                {id}, null, null, null, null, null, null, null, null,
-                                ARRAY []::integer[], null, null, ARRAY []::text[], null, null, null, null, null, 
-                                null, ARRAY []::integer[], ARRAY []::integer[], ARRAY []::integer[], ARRAY []::integer[], ARRAY []::varchar[],
-                                ARRAY []::integer[], ARRAY []::integer[])
+                                    surname, relation_ship_id, language_id, wedding, communication_conditions, status_work, 
+                                    position, company_id, school_id, bachelor_id, master_id, image_id, achievements_id, 
+                                    achievements_desired_id, services_id, services_username,
+                                    community_id, community_owner_id) values(
+                                    {id}, null, null, null, null, null, null, null, null,
+                                    ARRAY []::integer[], null, null, ARRAY []::text[], null, null, null, null, null, 
+                                    null, ARRAY []::integer[], ARRAY []::integer[], ARRAY []::integer[], 
+                                    ARRAY []::integer[], ARRAY []::varchar[], ARRAY []::integer[], ARRAY []::integer[])
                                 """)
             await conn.execute(f"""
-                                    insert INTO user_statistics (user_id, friends, likes, comments, recommendations, 
-                                    achievements, courses) values(
-                                    {id}, null, null, null, null, null, null)
+                                    insert into user_statistics (user_id, subscribers, likes, comments, recommendations, 
+                                        create_achievements, create_courses, create_communities, reach_achievements, 
+                                        join_courses, join_communities, posts, completed_courses) values(
+                                        {id}, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
                                     """)
             await conn.execute(f"""
-                                    insert INTO user_calendar (user_id, from_date, to_date, free) values(
+                                    insert into user_calendar (user_id, from_date, to_date, free) values(
                                     {id}, null, null, null)
                                     """)
 
             result = await conn.execute(f"""
-                                            insert INTO friends (relationship_id, user_id, users_id, status_id, last_update) 
+                                            insert into subscribes (relationship_id, user_id, users_id, status_id, 
+                                                last_update) 
                                             values(
                                             {id}, {id}, ARRAY []::integer[], ARRAY []::integer[], null)
                                             """)

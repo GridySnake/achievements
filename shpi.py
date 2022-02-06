@@ -1,86 +1,41 @@
-import twitch
-from config.common import BaseConfig
-helix = twitch.Helix(BaseConfig.twitch_client_id, BaseConfig.twitch_client_secret)
-import requests
-import urllib.request
+# import pandas as pd
+# df = pd.read_csv('https://docs.google.com/spreadsheets/d/1IfGwdFNR59b0lbpRK_2MM8sx3GXdpjhZ8RmdKVVG9Ng/export?format=csv')
+# df = df[[i for i in df.columns[1:3]]]
+# dict_result = {'email': [], 'result': []}
+# dict_result['email'] = [i for i in df[df.columns[0]]]
+# dict_result['result'] = [int(i.split(' / ')[0]) for i in df[df.columns[1]]]
+# print(dict_result)
 
-import json
-# from win10toast import ToastNotifier
+# print("""
+# date, created_at, exercise_minutes, exercise_burned,
+# start_weight, current_weight, height, activity_type
+# """.replace('=False', '').replace(',\n', '').replace(', ', ''))
+
+
+from config.services_our_api import ServicesConfig
+ser_id = 0
+parameter = 'puzzle_rush__best__total_attempts'
+param = 'tactics__highest__date', 'chess_blitz__last__rating'
+
+# func_name = [i for i in ServicesConfig.service_functions.keys() if ServicesConfig.service_classes[ser_id].__name__ in i and parameter in i]
+# print(ServicesConfig.service_functions[func_name[0]]('crazyniga1917', param))
+
+# todo: need params not T/F:
+#   Chess.com:
+#       1. username - all functions
+#       2. title
+#       3. club_name/club_url
+#   MyFitnesspal:
+#       1. user_name, password - login
+#       2. date - optional = now()
+#   Steam:
+#       1. username, password - login
+#       2. game_id
+#   Stepik:
+#       1. username
+#   Twitch:
+#       1. username
+#       2. follow_user
+#   Youtube:
+#       1. channel_id
 #
-# import emoji
-
-
-# name = "UCEfbRQVAzI1ZkGwYXs7VJVw"
-#
-# key = 'AIzaSyAmn8JyIJIkHhqC6IaVLrN-TiTvdHXpwQo'
-#
-#
-# data = urllib.request.urlopen(f'https://www.googleapis.com/youtube/v3/channels?part=statistics&id={name}&key={key}').read()
-# subs = json.loads(data)#["items"][0]["statistics"]["subscriberCount"]
-# print(subs)
-
-
-
-# toaster= ToastNotifier()
-#
-# a=emoji.emojize("You have %d" %int(subs) +" subscribers :penguin:")
-#
-# toaster.show_toast("Sample",a)
-
-# from TikTokApi import TikTokApi
-# api = TikTokApi()
-
-# results = 5
-# trending = api.by_trending(count=results)
-# for tiktok in trending:
-#     print(tiktok)
-# print(len(trending))
-# print(api.by_username('mfsisthat'))
-# user = api.by_username('mfsisthat')
-# print(user)
-#print()
-
-client_id = 'blif82wvvraojfm84xp82fam1ljnii'
-client_secret = 'abqm6gspq4lhaddede83szum1u0v2b'
-user = 'crazyniga1917'
-# helix = twitch.Helix(client_id, client_secret)
-# a = helix.user('Flashynthen1ght').videos()
-# print(a)
-helix = twitch.Helix(client_id, client_secret)
-# for user, videos in helix.users(['Flashynthen1ght']).videos():
-#     print(user.display_name)
-#     for i in videos:
-#         print(i.data)
-# for i in helix.user('Flashynthen1ght').chatters:
-#     print(i)
-#print([i for i in helix.video(350637800).comments])
-
-# print(helix.video(1183094159).view_count)
-
-# profile = chessdotcom.get_player_profile(user).json['player']
-# profile_current_games = chessdotcom.get_player_current_games(user)
-# profile_clubs = chessdotcom.get_player_clubs(user).json
-# profile_tournaments = chessdotcom.get_player_tournaments(user)
-# profile_stats_modes = chessdotcom.get_player_stats(user).json['stats']
-# profile_chess_rapid_last = profile_stats_modes['chess_rapid']['last']
-# profile_chess_rapid_best = profile_stats_modes['chess_rapid']['best']
-# profile_chess_rapid_stats = profile_stats_modes['chess_rapid']['record']
-# profile_chess_blitz_last = profile_stats_modes['chess_blitz']['last']
-# profile_chess_blitz_stats = profile_stats_modes['chess_blitz']['record']
-# profile_fide = profile_stats_modes['fide']
-# profile_tactics_highest = profile_stats_modes['tactics']['highest']
-# profile_tactics_lowest = profile_stats_modes['tactics']['lowest']
-# profile_lessons = profile_stats_modes['lessons']  # todo: add parameters
-# profile_puzzle_rush = chessdotcom.get_player_stats(user).json['stats']['puzzle_rush']['best']
-# grand_masters = chessdotcom.get_titled_players('GM').json['players']  # todo: others titles
-# leaderboards = chessdotcom.get_leaderboards().json['leaderboards']['daily']  # todo: others features
-#
-# print(profile)
-
-# helix = twitch.Helix(client_id, client_secret)
-# us = helix.user('Flashynthen1ght').followers
-# print(us)
-# print(requests.get('https://api.twitch.tv/v5/videos/1191177667/comments',
-#                    headers={'client-id': client_id, 'Authorization': client_secret}))
-
-#print(hashlib.sha256('0-profile_stats_chess_rapid-last-more'.encode('utf8')).hexdigest())

@@ -4,17 +4,14 @@
 
 {% block content %}
 {% if decline %}
-    <H>
-        Sorry, but you have not met the condition of receipt achievement : {{ achievement[0].name }}
-    </H>
-{% if achievement[0].achi_condition_group_id == '2' %}
-    <p>
-        You need to move near on {{ distance }} {{ val }}
-    </p>
-{% endif %}
+    <p>Sorry, but you have not met the condition of receipt achievement :</p><p><a href="/achievement/{{ achievement.achievement_id }}">{{ achievement.name }}</a></p>
+    <br>
+    {% for condition in conditions_not_reached %}
+        <p>Group:{{ condition.condition_group_id }}</p>
+        <p>{{ condition.parameter_name }} != {{condition.value}}</p>
+        <br>
+    {% endfor %}
 {% else %}
-    <H>
-        Congratulations! U have got new achievement: {{ achievement[0].name }}
-    </H>
+<p>Congratulations! U have got new achievement:</p><p><a href="/achievement/{{ achievement.achievement_id }}">{{ achievement.name }}</a></p>
 {% endif %}
 {% endblock %}
