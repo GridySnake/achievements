@@ -52,6 +52,7 @@ class AchievementsView(web.View):
 
         data = await self.post()
         data = dict(data)
+        # todo: unique achievement name
         session = await get_session(self)
         user_id = session['user']['id']
         user_type = 0
@@ -92,26 +93,53 @@ class AchievementsView(web.View):
 class AchievementsVerificationView(web.View):
 
     @aiohttp_jinja2.template('achievements_verify.html')
-    async def get(self):
+    async def post(self):
         if 'user' not in self.session:
             return web.HTTPFound(location=self.app.router['login'].url_for())
 
         session = await get_session(self)
-        achievement_id = str(self.__dict__['_message']).split('Referer')[-1].split(',')[1].split('achievement/')[-1][:-2]
+        if str(self).split('/')[-1][:-2] == 'verify_achievement':
+            achievement_id = str(self.__dict__['_message']).split('Referer')[-1].split(',')[1].split('achievement/')[-1][:-2]
+        else:
+            qr_value = str(self).split('/')[-1][:-2]
+            achievement_id = await AchievementsGetInfo.get_achievement_by_condition_value(value=qr_value)
+            if not achievement_id:
+                return dict(decline=True)
+
+        data = await self.post()
+        data = dict(data)
+        if 'verify_achi_community' in data.keys():
+            user_type = 1
+            user_id = data['verify_achi_community']
+        elif 'verify_achi_course' in data.keys():
+            user_type = 2
+            user_id = data['verify_achi_course']
+        else:
+            user_type = 0
+            user_id = session['user']['id']
         conditions = await AchievementsGetInfo.get_achievement_conditions(achievement_id=achievement_id, user_id=session['user']['id'])
         reach = []
+
         groups = [i for i in set([i['condition_group_id'] for i in conditions])]
-        #todo: добавить =, >, <, >=, <=
         print(conditions)
         if 0 in groups:
+            # todo: equality implementation
             user_conditions = [i for i in conditions if i['condition_group_id'] == 0]
             for i in user_conditions:
-                #todo: чекер исходя из параметра
-                result = await AchievementsGiveVerify.user_info_achievements_verify(achievement_id=achievement_id, value='')
+                result = False
+                if i['aggregate_id'] == 0:
+                    value = await UserGetInfo.get_user_info_by_count(user_id=user_id, value=i['parameter_name'].replace(' ', '_'))
+                    if int(i['value']) <= value:
+                        result = True
+                elif i['aggregate_id'] == 1:
+                    value = await UserGetInfo.get_user_info_by_value(user_id=user_id, value=i['parameter_name'].replace(' ', '_'))
+                    if i['value'] == value:
+                        result = True
                 reach.append(result)
+                # result = await AchievementsGiveVerify.user_info_achievements_verify(achievement_id=achievement_id, value=str(value))
+
         if 1 in groups:
-            #todo: вернуть урл на qr
-            result = await AchievementsGiveVerify.qr_verify(user_id=session['user']['id'], value=i['value'])
+            result = await AchievementsGiveVerify.qr_verify(user_id=session['user']['id'], value=qr_value)
             reach.append(result)
         if 2 in groups:
             async with IpApiClient() as client:
@@ -143,20 +171,48 @@ class AchievementsVerificationView(web.View):
                 print(ServicesConfig.service_functions[functions](i['services_username'], (i['parameter_name'])))
                 result = False
                 if i['aggregate_id'] == 0:
-                    if ServicesConfig.service_functions[functions](i['services_username'], (i['parameter_name']))[i['parameter_name']] >= int(i['value']):
-                        result = True
+                    if i['equality'] == 1:
+                        if ServicesConfig.service_functions[functions](i['services_username'], (i['parameter_name']))[i['parameter_name']] >= int(i['value']):
+                            result = True
+                    elif i['equality'] == 0:
+                        if ServicesConfig.service_functions[functions](i['services_username'], (i['parameter_name']))[i['parameter_name']] <= int(i['value']):
+                            result = True
                 elif i['aggregate_id'] == 1:
                     if ServicesConfig.service_functions[functions](i['services_username'], (i['parameter_name']))[i['parameter_name']] == i['value']:
                         result = True
                 elif i['aggregate_id'] == 2:
                     if ServicesConfig.service_functions[functions](i['services_username'], (i['parameter_name']))[i['parameter_name']]:
                         result = True
+                elif i['aggregate_id'] == 3:
+                    if i['equality'] == 1:
+                        if ServicesConfig.service_functions[functions](i['services_username'], (i['parameter_name']))[i['parameter_name']] >= i['value']:
+                            result = True
+                    elif i['equality'] == 0:
+                        if ServicesConfig.service_functions[functions](i['services_username'], (i['parameter_name']))[i['parameter_name']] <= i['value']:
+                            result = True
                 reach.append(result)
+        if 4 in groups:
+            community_conditions = [i for i in conditions if i['condition_group_id'] == 4]
+            for i in community_conditions:
+                if i['aggregate_id'] == 0:
+                    value = await CommunityGetInfo.get_community_info_by_value(community_id=user_id, value=i['parameter_name'].replace(' ', '_'))
+                    if int(i['value']) >= value:
+                        reach.append(True)
+                    else:
+                        reach.append(False)
+        if 5 in groups:
+            course_conditions = [i for i in conditions if i['condition_group_id'] == 5]
+            for i in course_conditions:
+                if i['aggregate_id'] == 0:
+                    value = await CoursesGetInfo.get_course_info_by_value(course_id=user_id, value=i['parameter_name'].replace(' ', '_'))
+                    if int(i['value']) >= value:
+                        reach.append(True)
+                    else:
+                        reach.append(False)
         if 7 in groups:
             approve_conditions = [i for i in conditions if i['condition_group_id'] == 7]
             for i in approve_conditions:
-                #todo: parameter_id to check multiple
-                result = await AchievementsGiveVerify.approve_verify(user_id=session['user']['id'], achievement_id=achievement_id)
+                result = await AchievementsGiveVerify.approve_verify(user_id=user_id, parameter_id=i['parameter_id'])
                 reach.append(result)
         conditions_not_reached = []
         if False in reach:
@@ -164,7 +220,7 @@ class AchievementsVerificationView(web.View):
             not_reached = [i for i, e in enumerate(reach) if e is False]
             conditions_not_reached = [i for i in conditions if conditions.index(i) in not_reached]
         else:
-            await AchievementsGiveVerify.give_achievement_to_user(user_id=session['user']['id'], achievement_id=achievement_id)
+            await AchievementsGiveVerify.give_achievement_to_user(user_id=user_id, achievement_id=achievement_id, user_type=user_type)
             decline = False
         achievement = await AchievementsGetInfo.get_achievement_info(achievement_id)
         return dict(achievement=achievement, decline=decline, conditions_not_reached=conditions_not_reached)

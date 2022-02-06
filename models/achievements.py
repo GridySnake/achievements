@@ -40,7 +40,8 @@ class AchievementsGetInfo:
         conn = await asyncpg.connect(connection_url)
         conditions = await conn.fetch(f"""
                                           select agc.parameter_name, agc.condition_group_id, agc.aggregate_id, 
-                                                agc.service_id, ui.services_username, c.geo, c.value
+                                                agc.service_id, ui.services_username, c.geo, c.value, c.equality, 
+                                                    c.parameter_id
                                           from (select conditions from achievements where 
                                                 achievement_id = {achievement_id}) as a 
                                           left join achi_conditions as c on c.condition_id = any(a.conditions)
@@ -156,14 +157,18 @@ class AchievementsGetInfo:
     @staticmethod
     async def get_achievement_by_condition_value(value: str):
         conn = await asyncpg.connect(connection_url)
-        achievements = await conn.fetch(f"""
-            select a.name, c.value, c.geo, agc.condition_group_id
+        achievements = await conn.fetchrow(f"""
+            select a.achievement_id
             from achi_conditions as c
-            left join (select name, unnest(conditions) as conditions from achievements) as a 
-                on a.conditions::integer = c.condition_id
+            left join (select achievement_id, conditions from achievements) as a 
+                on c.condition_id = any(a.conditions)
             left join achi_generate_conditions agc on c.parameter_id = agc.parameter_id
             where c.value = '{value}'
             """)
+        if achievements is not None:
+            achievements = achievements['achievement_id']
+        else:
+            achievements = False
         return achievements
 
     @staticmethod
@@ -230,31 +235,63 @@ class AchievementsGetInfo:
 
 class AchievementsGiveVerify:
     @staticmethod
-    async def give_achievement_to_user(achievement_id: str, user_id: str):
+    async def give_achievement_to_user(achievement_id: str, user_id: str, user_type: int):
         conn = await asyncpg.connect(connection_url)
-        try:
+        if user_type == 0:
             await conn.execute(f"""
-                                update users_information
-                                set achievements_id = array_append(achievements_id, {achievement_id})
-                                where user_id = {user_id} and {achievement_id} not in (
-                                        select unnest(achievements_id) from users_information where user_id = {user_id})
+                                    update users_information
+                                    set achievements_id = array_append(achievements_id, {achievement_id})
+                                    where user_id = {user_id} and {achievement_id} not in (
+                                            select unnest(achievements_id) from users_information where user_id = {user_id})
                                 """)
-        except:
-            return 1
+            await conn.execute(f"""
+                                   update user_statistics
+                                   set reach_achievements = reach_achievements + 1
+                                   where user_id = {user_id}
+                                """)
+        elif user_type == 1:
+            await conn.execute(f"""
+                                    update communities
+                                    set achievements_get_id = array_append(achievements_get_id, {achievement_id})
+                                    where community_id = {user_id} and {achievement_id} not in (
+                                            select unnest(achievements_get_id) from communities where community_id = {user_id})
+                                """)
+            await conn.execute(f"""
+                                   update community_statistics
+                                   set reach_achievements = reach_achievements + 1
+                                   where community_id = {user_id}
+                                """)
+        elif user_type == 2:
+            await conn.execute(f"""
+                                   update courses
+                                   set achievements_get = array_append(achievements_get, {achievement_id})
+                                   where course_id = {user_id} and {achievement_id} not in (
+                                           select unnest(achievements_get) from courses where course_id = {user_id})
+                                """)
+            await conn.execute(f"""
+                                   update courses_statistics
+                                   set reach_achievements = reach_achievements + 1
+                                   where course_id = {user_id}
+                                """)
 
-    @staticmethod
-    async def user_info_achievements_verify(achievement_id: str, value: str):
-        conn = await asyncpg.connect(connection_url)
-        data = await conn.fetch(f"""
-                                select case a.achievement_id is null then false
-                                        else true
-                                        end as result
-                                from (select achievement_id, conditions from achievements 
-                                        where achievement_id = {achievement_id}) as a
-                                inner join achi_conditions as c on c.condition_id = any(a.conditions) and c.value = {value}
-                                left join achi_generate_conditions agc on c.parameter_id = agc.parameter_id and agc.condition_group_id = 0
-                            
-        """)
+    # @staticmethod
+    # async def user_info_achievements_verify(achievement_id: str, value: str):
+    #     conn = await asyncpg.connect(connection_url)
+    #     data = await conn.fetchrow(f"""
+    #                             select case when a.achievement_id is null then false
+    #                                     else true
+    #                                     end as result
+    #                             from (select achievement_id, conditions from achievements
+    #                                     where achievement_id = {achievement_id}) as a
+    #                             inner join achi_conditions as c on c.condition_id = any(a.conditions) and c.value = '{value}'
+    #                             left join achi_generate_conditions agc on c.parameter_id = agc.parameter_id and agc.condition_group_id = 0
+    #
+    #     """)
+    #     if data is None:
+    #         result = False
+    #     else:
+    #         result = True
+    #     return result
         # for i in data:
         #     if i['value'].isdigit():
         #         await conn.execute(f"""
@@ -296,23 +333,28 @@ class AchievementsGiveVerify:
             qr = True
         return qr
 
-    @staticmethod
-    async def location_verify(user_id: str, value: str):
-        conn = await asyncpg.connect(connection_url)
-        achi_id = await conn.fetchrow(f"""
-                            select a.achievement_id
-                            from achi_conditions as c
-                            inner join (select achievement_id, unnest(conditions) as conditions from achievements) as a 
-                                on a.conditions::integer = c.condition_id
-                            left join achi_generate_conditions agc on c.parameter_id = agc.parameter_id
-                            where agc.condition_group_id = 2 and value = '{value}'
-            """)
-        await conn.execute(f"""
-                                update users_information
-                                set achievements_id = array_append(achievements_id, {achi_id['achievement_id']})
-                                where user_id = {user_id} and {achi_id['achievement_id']} not in (
-                                        select unnest(achievements_id) from users_information where user_id = {user_id})
-            """)
+    # @staticmethod
+    # async def location_verify(user_id: str, value: str):
+    #     conn = await asyncpg.connect(connection_url)
+    #     achi_id = await conn.fetchrow(f"""
+    #                         select a.achievement_id
+    #                         from achi_conditions as c
+    #                         inner join (select achievement_id, unnest(conditions) as conditions from achievements) as a
+    #                             on a.conditions::integer = c.condition_id
+    #                         left join achi_generate_conditions agc on c.parameter_id = agc.parameter_id
+    #                         where agc.condition_group_id = 2 and value = '{value}'
+    #         """)
+    #     if achi_id:
+    #         result = True
+    #     else:
+    #         result = False
+    #     return result
+        # await conn.execute(f"""
+        #                         update users_information
+        #                         set achievements_id = array_append(achievements_id, {achi_id['achievement_id']})
+        #                         where user_id = {user_id} and {achi_id['achievement_id']} not in (
+        #                                 select unnest(achievements_id) from users_information where user_id = {user_id})
+        #     """)
 
     # @staticmethod
     # async def chess_verify(user_id: str, achievement_id: str):
@@ -325,15 +367,14 @@ class AchievementsGiveVerify:
     #         """)
 
     @staticmethod
-    async def approve_verify(user_id: str, achievement_id: str):
+    async def approve_verify(user_id: str, parameter_id: str):
         conn = await asyncpg.connect(connection_url)
         achievements = await conn.fetchrow(f"""
                                                 select case when a.achievement_id is null then false
                                                         else true
                                                         end as approve
-                                                from (select achievement_id, conditions from achievements
-                                                    where achievement_id = {achievement_id}) as a
-                                                left join achi_conditions as c on c.condition_id = any(a.conditions)
+                                                from (select achievement_id, conditions from achievements) as a
+                                                right join achi_conditions as c on c.condition_id = any(a.conditions)
                                                 left join (
                                                     select a.achievement_id, COUNT(aa.user_passive_id) as approve_count
                                                 from achievements as a
@@ -342,6 +383,7 @@ class AchievementsGiveVerify:
                                                 group by a.achievement_id) as q on q.achievement_id = a.achievement_id
                                                 left join achi_generate_conditions agc on c.parameter_id = agc.parameter_id
                                                 where agc.condition_group_id = 7 and c.value::integer <= q.approve_count
+                                                    and c.parameter_id = {parameter_id}
                                              """)
         if achievements is None:
             achievements = False
@@ -467,6 +509,34 @@ class AchievementsCreate:
                                         {id_achi}, {user_id}, {user_type}, '{data['name']}', '{data['description']}',
                                         ARRAY[{id_condi}], statement_timestamp(), true, '{data['achievement_qr']}', 
                                         {data['sphere']}, {data['select_subsphere']})
+                                """)
+        if user_type == 0:
+            await conn.execute(f"""
+                                   update user_statistics
+                                       set create_achievements = create_achievements + 1
+                                       where user_id = {user_id}
+                                """)
+        elif user_type == 1:
+            await conn.execute(f"""
+                                   update communities
+                                       set achievements_give_id = array_append(achievements_give_id, {id_achi})
+                                       where community_id = {user_id}
+                                """)
+            await conn.execute(f"""
+                                   update community_statistics
+                                       set create_achievements = create_achievements + 1
+                                       where community_id = {user_id}
+                                """)
+        elif user_type == 2:
+            await conn.execute(f"""
+                                   update courses
+                                       set achievements_give = array_append(achievements_give, {id_achi})
+                                       where course_id = {user_id}
+                                """)
+            await conn.execute(f"""
+                                   update courses_statistics
+                                       set create_achievements = create_achievements + 1
+                                       where course_id = {user_id}
                                 """)
         # elif int(data['select_group']) == 31 and data['name'] != '' and data['description'] != '' and data['value'] != '' and data['select_service'] == '0':
         #     parameter = str(data['select_service'] + '-' + data['chess_parameter_global'] + '-' + data['chess_parameter_local_profile'] + '-' + data['chess_parameter_local_last'] + '-' + data['chess_parameter_local_chess'] + '-' + data['chess_parameter_local_equal'])

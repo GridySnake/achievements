@@ -21,6 +21,16 @@ class CommunityGetInfo:
         return communities
 
     @staticmethod
+    async def get_community_info_by_value(community_id: str, value: str):
+        conn = await asyncpg.connect(connection_url)
+        community = await conn.fetchrow(f"""
+                                         select {value} 
+                                         from community_statistics
+                                         where community_id = {community_id}
+                                     """)
+        return community[value]
+
+    @staticmethod
     async def get_user_communities(user_id):
         conn = await asyncpg.connect(connection_url)
         communities = await conn.fetch(f"""
@@ -248,4 +258,9 @@ class CommunityCreate:
         await conn.execute(f"""
                                 insert into chats (chat_id, chat_type, participants, owner_id) values(
                                 {chat_id}, 2, array[{user_id}], {id})
+                            """)
+        await conn.execute(f"""
+                               insert into community_statistics (community_id, participants, rating, likes, comments, 
+                                    reach_achievements, create_achievements, create_courses) values(
+                                    {id}, 1, 0, 0, 0, 0, 0, 0)
                             """)

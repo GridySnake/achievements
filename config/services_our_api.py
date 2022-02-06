@@ -5,6 +5,7 @@ from models.api.steam_games import Steam
 from models.api.stepik import Stepik
 from models.api.fitnesspal import Fitnesspal
 from models.api.api_parameters import *
+from models.achievements import AchievementsGetInfo
 import inspect
 
 
