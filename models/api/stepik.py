@@ -9,12 +9,12 @@ class Stepik:
     #                   reputation=False, solved_steps=False, created_courses=False, created_lessons=False,
     #                   issued_certificates=False, followers=False, created_at=False):
     #     frame = inspect.currentframe()
-        parameter = [i for i in args[0]
+        parameter = [i for i in args
                      if i not in ['user_id', 'created_at', 'solved_steps', 'created_courses', 'created_lessons',
                                    'issued_certificates', 'followers']]
 
-        parameter_count = [i for i in args[0] if i not in ['user_id', 'created_at', 'organization', 'knowledge_rank', 'reputation_rank',
-                                   'knowledge', 'reputation']]
+        parameter_count = [i for i in args if i not in ['user_id', 'created_at', 'organization', 'knowledge_rank', 'reputation_rank',
+                                   'knowledge', 'reputation', 'is_organization']]
     #     parameter = [i for i in inspect.getargvalues(frame)[3].keys() if inspect.getargvalues(frame)[3][i] is True
     #                  and i not in ['user_id', 'created_at', 'solved_steps', 'created_courses', 'created_lessons',
     #                                'issued_certificates', 'followers']]
@@ -38,4 +38,4 @@ class Stepik:
         return data
 
 
-# print(Stepik.get_user_info(43723297, is_organization=True))
+# print(Stepik.get_user_info(43723297, ('solved_steps')))

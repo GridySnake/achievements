@@ -71,6 +71,8 @@
                      <option value="{{ i.course_id }}">{{ i.course_name }}</option>
                  {% endfor %}
             </select>
+        {% elif achievement.achi_condition_group_id == 6 %}
+            <a href="{{ achievement.test_url }}" target="_blank">Go to test</a>
         {% endif %}
         <button type="submit" id="verify">Verify</button>
     </form>

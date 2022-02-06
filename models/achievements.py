@@ -41,7 +41,7 @@ class AchievementsGetInfo:
         conditions = await conn.fetch(f"""
                                           select agc.parameter_name, agc.condition_group_id, agc.aggregate_id, 
                                                 agc.service_id, ui.services_username, c.geo, c.value, c.equality, 
-                                                    c.parameter_id
+                                                    c.parameter_id, c.condition_id
                                           from (select conditions from achievements where 
                                                 achievement_id = {achievement_id}) as a 
                                           left join achi_conditions as c on c.condition_id = any(a.conditions)
@@ -127,7 +127,7 @@ class AchievementsGetInfo:
                                                 c.parameter_id, c.value, g.achi_condition_group_id, 
                                                 g.achi_condition_group_name, a.created_date, a.new, u.name as u_name, 
                                                 u.surname as u_surname, u.user_id, c.geo, c.condition_id, s.sphere_name, 
-                                                s.subsphere_name
+                                                s.subsphere_name, c.test_url
                                             from achi_conditions as c
                                             right join (select achievement_id, unnest(conditions) as conditions, name, 
                                                 user_id, description, created_date, new, subsphere_id from achievements) 
@@ -467,6 +467,22 @@ class AchievementsDesireApprove:
                                {id}, {user_active_id}, {user_passive_id}, {achievement_id})
                        """)
 
+    @staticmethod
+    async def get_data_for_test(user_id: str, condition_id: str):
+        conn = await asyncpg.connect(connection_url)
+        email = await conn.fetchrow(f"""
+                                        select u.email
+                                        from users_main as u
+                                        where user_id = {user_id}
+                                    """)
+        answers = await conn.fetchrow(f"""
+                                       select c.answers_url
+                                       from achi_conditions as c
+                                       where c.condition_id={condition_id}
+                                    """)
+        data = {'answers': answers['answers_url'], 'email': email['email']}
+        return data
+
 
 class AchievementsCreate:
     @staticmethod
@@ -490,10 +506,24 @@ class AchievementsCreate:
             id_condi = int(id_condi) + 1
         else:
             id_condi = 0
-        await conn.execute(f"""
-                               insert into achi_conditions (condition_id, parameter_id, value, geo) values(
-                                {id_condi}, {data['select_parameter']}, '{data['value']}', {data['geo']})
-                            """)
+        if data['value'] == 'null':
+            await conn.execute(f"""
+                                   insert into achi_conditions (condition_id, parameter_id, value, geo, test_url, 
+                                        answers_url) values({id_condi}, {data['select_parameter']}, {data['value']}, 
+                                        {data['geo']}, {data["test_url"]}, {data["answers_url"]})
+                                """)
+        if data['value'] != 'null' and data['test_url'] == 'null' and data['answers_url'] == 'null':
+            await conn.execute(f"""
+                                   insert into achi_conditions (condition_id, parameter_id, value, geo, test_url, 
+                                        answers_url) values({id_condi}, {data['select_parameter']}, '{data['value']}', 
+                                        {data['geo']}, {data["test_url"]}, {data["answers_url"]})
+                                """)
+        if data['value'] != 'null' and data['test_url'] != 'null' and data['answers_url'] != 'null':
+            await conn.execute(f"""
+                                   insert into achi_conditions (condition_id, parameter_id, value, geo, test_url, 
+                                        answers_url) values({id_condi}, {data['select_parameter']}, '{data['value']}', 
+                                        {data['geo']}, '{data["test_url"]}', '{data["answers_url"]}')
+                                """)
         if data['achievement_qr'] == 'null':
             await conn.execute(f"""
                                    insert into achievements (achievement_id, user_id, user_type, name, description, 

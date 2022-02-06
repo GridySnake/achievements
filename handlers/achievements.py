@@ -1,6 +1,5 @@
 import aiohttp_jinja2
 from aiohttp import web
-import json
 import hashlib
 import qrcode
 from geopy import Nominatim
@@ -10,16 +9,10 @@ from aioipapi import IpApiClient
 from geopy.distance import great_circle
 from models.information import InfoGet
 from models.user import UserGetInfo
-from models.api.chess_com import Chesscom
 from models.community import CommunityGetInfo
 from models.course import CoursesGetInfo
 from config.services_our_api import ServicesConfig
-from models.api.twitch_tv import Twitch
-from models.api.youtube import Youtube
-from models.api.instagram import Instagram
-from models.api.steam_games import Steam
-from models.api.stepik import Stepik
-from models.api.fitnesspal import Fitnesspal
+from models.api.tests import test_result
 
 
 class AchievementsView(web.View):
@@ -64,6 +57,8 @@ class AchievementsView(web.View):
             user_id = data['achi_course']
         data['geo'] = 'null'
         data['achievement_qr'] = 'null'
+        data['test_url'] = 'null'
+        data['answers_url'] = 'null'
         if data['select_group'] == '1':
             token = hashlib.sha256(data['name'].replace(' ', '_').lower().encode('utf8')).hexdigest()
             img = qrcode.make(f"http://127.0.0.1:8080/verify_achievement/{token}")
@@ -85,6 +80,13 @@ class AchievementsView(web.View):
                     location = [float(i.replace('|', '')) for i in location if i != '']
                 data['geo'] = f'CIRCLE(POINT({location[0]}, {location[1]}), 10)'
                 data['achievement_qr'] = 'null'
+        elif data['select_group'] == '6':
+            data['test_url'] = data['test_web']
+            data['answers_url'] = ''.join(data['answers_web'].split('/')[:3]) + '/export?format=csv'
+            data['value'] = data['value'].replace(',', '.')
+        elif data['select_group'] == '8':
+            data['select_parameter'] = 'null'
+            data['value'] = 'null'
         data['sphere'] = await InfoGet.get_sphere_id_by_subsphere_id(data['select_subsphere'])
         await AchievementsCreate.create_achievement(user_id=user_id, user_type=user_type, data=data)
         return web.HTTPFound(location=self.app.router['achievements'].url_for())
@@ -209,11 +211,30 @@ class AchievementsVerificationView(web.View):
                         reach.append(True)
                     else:
                         reach.append(False)
+        if 6 in groups:
+            test_conditions = [i for i in conditions if i['condition_group_id'] == 6]
+            for i in test_conditions:
+                data = await AchievementsDesireApprove.get_data_for_test(user_id=user_id, condition_id=i['condition_id'])
+                percentage = None
+                if 'percentage' in i['parameter_name']:
+                    percentage = True
+                result = test_result(email=data['email'], url=data['answers'], percentage=percentage)
+                if result:
+                    if result >= float(i['value']):
+                        reach.append(True)
+                    else:
+                        reach.append(False)
+                else:
+                    reach.append(False)
         if 7 in groups:
             approve_conditions = [i for i in conditions if i['condition_group_id'] == 7]
             for i in approve_conditions:
                 result = await AchievementsGiveVerify.approve_verify(user_id=user_id, parameter_id=i['parameter_id'])
                 reach.append(result)
+        if 8 in groups:
+            no_verify_conditions = [i for i in conditions if i['condition_group_id'] == 8]
+            for i in no_verify_conditions:
+                reach.append(True)
         conditions_not_reached = []
         if False in reach:
             decline = True
