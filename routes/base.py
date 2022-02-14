@@ -115,6 +115,7 @@ def setup_routes(app):
     app.router.add_route('POST', r'/decline_invitation_course/{i}', CoursesView.post, name='decline_invitation_course')
     app.router.add_route('POST', '/add_course_member', CourseInfoView.post, name='add_course_member')
     app.router.add_route('POST', '/remove_course_member', CourseInfoView.post, name='remove_course_member')
+    app.router.add_route('POST', '/add_payment_goal', CommunitiesInfoView.post, name='add_payment_goal')
 
     # ставим в конец
     app.router.add_route('GET', r'/user/{i}', PersonalPageView.get, name='personal_page')

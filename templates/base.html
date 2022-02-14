@@ -298,6 +298,34 @@
 </script>
 <script>
     $(document).ready(function() {
+        $('#create_payment_goal').on('click', function () {
+            $("#hide_create_payment_goal").show();
+            $("#add_payment_goal").show();
+            $("#create_payment_goal").hide();
+        });
+        $('#hide_create_payment_goal').on('click', function () {
+            $("#add_payment_goal").hide();
+            $("#create_payment_goal").show();
+            $("#hide_create_payment_goal").hide();
+        });
+        $('#create_wallet').on('click', function () {
+            $("#hide_create_wallet").show();
+            $("#wallet_name").show();
+            $("#currency").show();
+            $("#responsible_users").show();
+            $("#create_wallet").hide();
+        });
+        $('#hide_create_wallet').on('click', function () {
+            $("#hide_create_wallet").hide();
+            $("#wallet_name").hide();
+            $("#currency").hide();
+            $("#responsible_users").hide();
+            $("#create_wallet").show();
+        });
+    });
+</script>
+<script>
+    $(document).ready(function() {
         var drop = JSON.parse('{{ dropdown_json | safe }}');
         $('#select_group').on('change', function () {
             var drop_new = drop.filter(element => element.group_id == $(this).find('option:selected').val());

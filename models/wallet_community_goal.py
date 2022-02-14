@@ -8,29 +8,12 @@ class CommunityWalletGoal:
     async def create_wallet_goal(community_id: str,
                                  data):
         conn = await asyncpg.connect(connection_url)
-        # wallet_id = await conn.fetch(f"""
-        #                 select max(wallet_id)
-        #                 from community_wallet
-        #                 """)
-        # if wallet_id is not None:
-        #     wallet_id = int(wallet_id) + 1
-        # else:
-        #     wallet_id = 0
-
-        # payment_goal_id = await conn.fetch(f"""
-        #                 select max(payment_goal_id)
-        #                 from community_payment_goals
-        #                 """)
-        # if payment_goal_id is not None:
-        #     payment_goal_id = int(payment_goal_id) + 1
-        # else:
-        #     payment_goal_id = 0
         await conn.execute(f"""
                            insert into community_payment_goals (
                                 goal_name, description, from_date, to_date, 
                                 community_id, wallet_id, is_nessesarity, user_must_send, target_value, is_active) values(
-                           '{data['name']}', '{data['description']}', {data['from_date']}, {data['to_date']}, 
-                           {community_id}, {data['wallet_id']}, {data['is_nessesarity']}, ARRAY[{data['user_must_send']}], {data['target_value']}, true)
+                           '{data['goal_name']}', '{data['description']}', {data['from_date']}, {data['to_date']}, 
+                           {community_id}, {data['wallet']}, true, ARRAY []::integer[], {data['target_value']}, true)
                            """)
 
     @staticmethod
@@ -78,6 +61,12 @@ class Wallet:
                            true, {community_id}, '{data['wallet_name']}')
                            
         """)
+        wallet_id = await conn.fetchrow(f"""
+                select max(wallet_id)
+                from community_wallet
+                where community_id = {community_id}
+                """)
+        return wallet_id['max']
 
     @staticmethod
     async def update_wallet_payment(wallet_id: str,
@@ -106,15 +95,12 @@ class Wallet:
         """)
 
     @staticmethod
-    # пересмотреть БД (таблицы community_payment_goals и community_wallet)
-    # может их пересмотреть и объединить в одну таблу
-    # или разделить по-другому!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     async def get_wallet(community_id: str):
         conn = await asyncpg.connect(connection_url)
         community_id = int(community_id)
 
         wallets = await conn.fetch(f"""
-            select wallet_name, wallet_id
+            select wallet_name, wallet_id, currency
             from community_wallet
             where community_id = {community_id}
         """)
