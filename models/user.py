@@ -52,6 +52,17 @@ class UserGetInfo:
         return user[value]
 
     @staticmethod
+    async def get_user_info(user_id: str):
+        conn = await asyncpg.connect(connection_url)
+        user = await conn.fetchrow(f"""
+                            select name, surname, c.country_name_native, c.country_id, age, bio
+                            from users_information as ui
+                            left join countries as c on c.country_id = ui.country_id
+                            where user_id = {user_id}
+                            """)
+        return user
+
+    @staticmethod
     async def get_user_info_by_count(user_id: str, value: str):
         conn = await asyncpg.connect(connection_url)
         course = await conn.fetchrow(f"""
@@ -99,19 +110,88 @@ class UserGetInfo:
 
 class UserCreate:
     @staticmethod
-    async def create_user_info(data):
+    async def create_user_info(user_id: str, data: dict):
         conn = await asyncpg.connect(connection_url)
-        result = await conn.execute(f"""
-                        UPDATE users_information
-                        SET 
-                            age = {data['age']},
-                            bio = '{data['bio']}',
-                            name = '{data['name']}',
-                            surname = '{data['surname']}'
-                        WHERE user_id = {data['id']}
-                        """)
+        for i in data.keys():
+            await conn.execute(f"""
+                                    update users_information
+                                    set 
+                                        {i} = '{data[i]}'
+                                    where user_id = {user_id}
+                            """)
 
-        return result
+    @staticmethod
+    async def get_user_info(user_id: str):
+        conn = await asyncpg.connect(connection_url)
+        user_info = await conn.fetchrow(f"""
+                                            select name, surname, bio, birthday
+                                            from users_information
+                                            where user_id = {user_id}
+                                        """)
+        return user_info
+
+    @staticmethod
+    async def create_user_info_conditions(user_id: str, data: dict):
+        conn = await asyncpg.connect(connection_url)
+        for i in range(len(data['condition_id'])):
+            condition_id = await conn.fetchrow("select max(condition_id) from conditions")
+            condition_id = dict(condition_id)['max']
+            if condition_id is not None:
+                condition_id += 1
+            else:
+                condition_id = 0
+            if data['task'][i] != 'null' and data['answers'][i] == 'null' and data['condition_value'][i] != 'null' \
+                    and data['images'][i] == 'null':
+                await conn.execute(f"""
+                                       insert into conditions (condition_id, task, answer, condition_value, image_id, 
+                                           generate_condition_id)
+                                           values ({condition_id}, '{data['task'][i]}', {data['answers'][i]},
+                                           '{data['condition_value'][i]}', null, {data['condition_id'][i]})
+                                    """)
+            elif data['task'][i] == 'null' and data['condition_value'][i] != 'null':
+                await conn.execute(f"""
+                                       insert into conditions (condition_id, task, answer, condition_value, image_id, 
+                                           generate_condition_id)
+                                           values ({condition_id}, {data['task'][i]}, {data['answers'][i]},
+                                           '{data['condition_value'][i]}', null, {data['condition_id'][i]})
+                                    """)
+            elif data['task'][i] == 'null' and data['condition_value'][i] == 'null':
+                await conn.execute(f"""
+                                       insert into conditions (condition_id, task, answer, condition_value, image_id, 
+                                           generate_condition_id)
+                                           values ({condition_id}, {data['task'][i]}, {data['answers'][i]},
+                                           {data['condition_value'][i]}, null, {data['condition_id'][i]})
+                                    """)
+            elif data['task'][i] != 'null' and data['answers'][i] != 'null' and data['condition_value'][i] != 'null' \
+                    and data['images'][i] == 'null':
+                await conn.execute(f"""
+                                       insert into conditions (condition_id, task, answer, condition_value, image_id, 
+                                           generate_condition_id)
+                                           values ({condition_id}, '{data['task'][i]}', '{data['answers'][i]}',
+                                           '{data['condition_value'][i]}', null, {data['condition_id'][i]})
+                                    """)
+            else:
+                image_id = await conn.fetchrow("select max(image_id) from images")
+                image_id = dict(image_id)['max']
+                if image_id is not None:
+                    image_id += 1
+                else:
+                    image_id = 0
+                await conn.execute(f"""
+                                        insert into images (image_id, href, image_type, create_date) 
+                                            values ({image_id}, '{data['images'][i]}', 1, statement_timestamp())
+                                    """)
+                await conn.execute(f"""
+                                        insert into conditions (condition_id, task, answer, condition_value, image_id, 
+                                            generate_condition_id)
+                                            values ({condition_id}, '{data['task'][i]}', {data['answers'][i]},
+                                            '{data['condition_value'][i]}', {image_id}, {data['condition_id'][i]})
+                                    """)
+            await conn.execute(f"""
+                                   update users_information
+                                        set communication_conditions = array_append(communication_conditions, {condition_id})
+                                    where user_id = {user_id}
+                                """)
 
     @staticmethod
     async def create_user(data, token):

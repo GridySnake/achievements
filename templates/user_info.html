@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% set title = "Signup" %}
+{% set title = "User info" %}
 <!--<script>-->
 <!--        function getSelectValue()-->
 <!--        {-->
@@ -32,7 +32,7 @@
             <div class="field">
                 <label class="label">Surname</label>
                 <div class="control has-icons-left has-icons-right">
-                    <input class="input" type="text" name="surname" placeholder="Suname" value="">
+                    <input class="input" type="text" name="surname" placeholder="Suname" value="{{ user.surname }}">
                     <span class="icon is-small is-left">
                         <i class="fas fa-signature"></i>
                     </span>
@@ -41,7 +41,7 @@
             <div class="field">
                 <label class="label">Name</label>
                 <p class="control has-icons-left has-icons-right">
-                    <input class="input" name="name" type="text" placeholder="Name">
+                    <input class="input" name="name" type="text" placeholder="Name" value="{{ user.name }}">
                     <span class="icon is-small is-left">
                         <i class="fas fa-signature"></i>
                     </span>
@@ -52,11 +52,12 @@
                 <span class="icon is-small is-left">
                     <i class="fas fa-flag"></i>
                 </span>
-                <select name="select_country" id="select_country">
-                    {% for i in range(countries|length) %}
-                    <option value="{{ countries[i].country_id }}">{{ countries[i].country_name }}</option>
-                    {% endfor %}
-                </select>
+<!--                <select name="select_country" id="select_country">-->
+<!--                    {% for i in range(countries|length) %}-->
+<!--                        <option value="{{ countries[i].country_id }}">{{ countries[i].country_name }}</option>-->
+<!--                    {% endfor %}-->
+<!--                    <option value="{{ user.country_id }}" selected>{{ user.country_name_native }}</option>-->
+<!--                </select>-->
             </div>
             <div class="field_city">
                 <label class="label">City</label>
@@ -70,9 +71,9 @@
 <!--                 </select>-->
             </div>
             <div class="field">
-                <label class="label">Age</label>
+                <label class="label">Birthday</label>
                 <p class="control has-icons-left has-icons-right">
-                    <input class="input" name="age" type="number" placeholder="Age">
+                    <input class="input" name="birthday" type="date" placeholder="Age" value="{{ user.age }}">
                     <span class="icon is-small is-left">
                         <i class="fas fa-bong"></i>
                     </span>
@@ -81,11 +82,36 @@
             <div class="field">
                 <label class="label">Bio</label>
                 <p class="control has-icons-left has-icons-right">
-                    <input class="input" name="bio" type="text" placeholder="Bio">
+                    <input class="input" name="bio" type="text" placeholder="Bio" value="{{ user.bio }}">
                     <span class="icon is-small is-left">
                         <i class="fas fa-bio"></i>
                     </span>
                 </p>
+            </div>
+            <div class="field">
+                <label class="label">Conditions</label>
+                <select name="select_condition0" id="select_condition0">
+                    {% for condition in conditions %}
+                        <option value="{{ condition.generate_condition_id }}">{{ condition.condition_name }}</option>
+                    {% endfor %}
+                </select>
+                <input name="task0" type="text" value="">
+                <input name="answers0" type="text" value="">
+                <input name="condition_value0" type="text" value="">
+                <input name="text_color0" type="color">
+                <input name="background_color0" type="color">
+                <br>
+                <br>
+                <select name="select_condition1" id="select_condition1">
+                     {% for condition in conditions %}
+                         <option value="{{ condition.generate_condition_id }}">{{ condition.condition_name }}</option>
+                     {% endfor %}
+                 </select>
+                 <input name="task1" type="text" value="">
+                 <input name="answers1" type="text" value="">
+                 <input name="condition_value1" type="text" value="">
+                <input name="text_color1" type="color">
+                <input name="background_color1" type="color">
             </div>
             <div class="field">
                 <p class="control">

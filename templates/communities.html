@@ -22,10 +22,32 @@
             <option value="{{ community_type }}">{{ community_type }}</option>
         {% endfor %}
     </select>
-    <p>Conditions</p>
-    <select name="community_condition" id="community_condition">
-        <option value="None">None</option>
-    </select>
+    <div class="field">
+                <label class="label">Conditions</label>
+                <select name="select_condition0" id="select_condition0">
+                    {% for condition in conditions_tj %}
+                        <option value="{{ condition.generate_condition_id }}">{{ condition.condition_name }}</option>
+                    {% endfor %}
+                </select>
+                <input name="task0" type="text" value="">
+                <input name="answers0" type="text" value="">
+                <input name="condition_value0" type="text" value="">
+                <input name="text_color0" type="color">
+                <input name="background_color0" type="color">
+                <br>
+                <br>
+                <select name="select_condition1" id="select_condition1">
+                     {% for condition in conditions_tj %}
+                         <option value="{{ condition.generate_condition_id }}">{{ condition.condition_name }}</option>
+                     {% endfor %}
+                 </select>
+                 <input name="task1" type="text" value="">
+                 <input name="answers1" type="text" value="">
+                 <input name="condition_value1" type="text" value="">
+                <input name="text_color1" type="color">
+                <input name="background_color1" type="color">
+            </div>
+    <br>
     <button type="submit">Send</button>
 </form>
 <br>

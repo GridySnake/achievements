@@ -43,6 +43,32 @@
             <p>Free</p>
             <input id="free" name="free" type="radio"/>
             <br>
+            <div class="field">
+                <label class="label">Conditions</label>
+                <select name="select_condition0" id="select_condition0">
+                    {% for condition in conditions %}
+                        <option value="{{ condition.generate_condition_id }}">{{ condition.condition_name }}</option>
+                    {% endfor %}
+                </select>
+                <input name="task0" type="text" value="">
+                <input name="answers0" type="text" value="">
+                <input name="condition_value0" type="text" value="">
+                <input name="text_color0" type="color">
+                <input name="background_color0" type="color">
+                <br>
+                <br>
+                <select name="select_condition1" id="select_condition1">
+                     {% for condition in conditions %}
+                         <option value="{{ condition.generate_condition_id }}">{{ condition.condition_name }}</option>
+                     {% endfor %}
+                 </select>
+                 <input name="task1" type="text" value="">
+                 <input name="answers1" type="text" value="">
+                 <input name="condition_value1" type="text" value="">
+                <input name="text_color1" type="color">
+                <input name="background_color1" type="color">
+            </div>
+            <br>
             <button type="submit">Send</button>
         </form>
     </div>

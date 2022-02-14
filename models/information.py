@@ -107,3 +107,13 @@ class InfoGet:
                                     where subsphere_id = {subsphere_id}
                                     """)
         return sphere['sphere_id']
+
+    @staticmethod
+    async def get_conditions(owner_type: int):
+        conn = await asyncpg.connect(connection_url)
+        conditions = await conn.fetch(f"""
+                                            select generate_condition_id, condition_name
+                                            from generate_conditions
+                                            where owner_type = {owner_type}
+                                        """)
+        return conditions

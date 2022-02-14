@@ -6,6 +6,7 @@ from models.community import CommunityGetInfo
 import os
 from models.subscribes import SubscribesGetInfo
 from models.goal import Goals
+from PIL import Image, ImageDraw
 
 
 class CoursesView(web.View):
@@ -23,7 +24,8 @@ class CoursesView(web.View):
         my_courses = await CoursesGetInfo.get_user_courses(user_id=user_id)
         requests = await CoursesGetInfo.user_requests(user_id=user_id)
         subspheres = await InfoGet.get_subspheres()
-        return dict(courses=courses, my_courses=my_courses, languages=languages, communities=communities, own_courses=own_courses, requests=requests, subspheres=subspheres)
+        conditions = await InfoGet.get_conditions(owner_type=2)
+        return dict(courses=courses, my_courses=my_courses, languages=languages, communities=communities, own_courses=own_courses, requests=requests, subspheres=subspheres, conditions=conditions)
 
     async def post(self):
         if 'user' not in self.session:
@@ -63,7 +65,43 @@ class CoursesView(web.View):
                     f.write(content)
                 data['avatar'] = avatar.filename
             data['sphere'] = await InfoGet.get_sphere_id_by_subsphere_id(data['select_subsphere'])
-            await CourseCreate.create_course(user_id=user_id, data=data, no_image=no_image)
+            course_id = await CourseCreate.create_course(user_id=user_id, data=data, no_image=no_image)
+            keys = [i for i in data.keys()]
+            keys_conditions = keys[keys.index('select_condition0') : keys.index('background_color1')+1]
+            data_new = {'condition_id': [], 'task': [], 'answers': [], 'condition_value': [], 'images': []}
+            for i in keys_conditions:
+                if 'select_condition' in i:
+                    data_new['condition_id'] += [data[i]]
+                    print(data[i])
+                if 'task' in i:
+                    if data[i] == '':
+                        data_new['task'] += ['null']
+                    else:
+                        data_new['task'] += [data[i]]
+                if 'answers' in i:
+                    if data[i] == '':
+                        data_new['answers'] += ['null']
+                    else:
+                        data_new['answers'] += [data[i]]
+                if 'condition_value' in i:
+                    if data[i] == '':
+                        data_new['condition_value'] += ['null']
+                    else:
+                        data_new['condition_value'] += [data[i]]
+                if 'text_color' in i:
+                    if data[i] != '#000000':
+                        num = i.replace('text_color', '')
+                        back = 'background_color' + num
+                        img = Image.new('RGB', (100, 30), color=data[back])
+                        text = 'task' + num
+                        d = ImageDraw.Draw(img)
+                        d.text((10, 10), data[text], fill=data[i])
+                        path = f'static/conditions/condition_course_{course_id}{data[text]}.png'
+                        img.save(path)
+                        data_new['images'] += [path.replace('static/conditions/', '')]
+                    else:
+                        data_new['images'] += ['null']
+            await CourseCreate.create_course_info_conditions(course_id=course_id, data=data_new)
         return web.HTTPFound(location='/courses')
 
 

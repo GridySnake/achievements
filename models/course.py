@@ -409,6 +409,70 @@ class CourseCreate:
                                     reach_achievements, steps_course, participants_in_progress_course) values(
                                     {course_id}, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0)
                             """)
+        return course_id
+
+    @staticmethod
+    async def create_course_info_conditions(course_id: str, data: dict):
+        conn = await asyncpg.connect(connection_url)
+        for i in range(len(data['condition_id'])):
+            condition_id = await conn.fetchrow("select max(condition_id) from conditions")
+            condition_id = dict(condition_id)['max']
+            if condition_id is not None:
+                condition_id += 1
+            else:
+                condition_id = 0
+            if data['task'][i] != 'null' and data['answers'][i] == 'null' and data['condition_value'][i] != 'null' \
+                    and data['images'][i] == 'null':
+                await conn.execute(f"""
+                                       insert into conditions (condition_id, task, answer, condition_value, image_id, 
+                                           generate_condition_id)
+                                           values ({condition_id}, '{data['task'][i]}', {data['answers'][i]},
+                                           '{data['condition_value'][i]}', null, {data['condition_id'][i]})
+                                    """)
+            elif data['task'][i] == 'null' and data['condition_value'][i] != 'null':
+                await conn.execute(f"""
+                                       insert into conditions (condition_id, task, answer, condition_value, image_id, 
+                                           generate_condition_id)
+                                           values ({condition_id}, {data['task'][i]}, {data['answers'][i]},
+                                           '{data['condition_value'][i]}', null, {data['condition_id'][i]})
+                                    """)
+            elif data['task'][i] == 'null' and data['condition_value'][i] == 'null':
+                await conn.execute(f"""
+                                       insert into conditions (condition_id, task, answer, condition_value, image_id, 
+                                           generate_condition_id)
+                                           values ({condition_id}, {data['task'][i]}, {data['answers'][i]},
+                                           {data['condition_value'][i]}, null, {data['condition_id'][i]})
+                                    """)
+            elif data['task'][i] != 'null' and data['answers'][i] != 'null' and data['condition_value'][i] != 'null' \
+                    and data['images'][i] == 'null':
+                await conn.execute(f"""
+                                       insert into conditions (condition_id, task, answer, condition_value, image_id, 
+                                           generate_condition_id)
+                                           values ({condition_id}, '{data['task'][i]}', '{data['answers'][i]}',
+                                           '{data['condition_value'][i]}', null, {data['condition_id'][i]})
+                                    """)
+            else:
+                image_id = await conn.fetchrow("select max(image_id) from images")
+                image_id = dict(image_id)['max']
+                if image_id is not None:
+                    image_id += 1
+                else:
+                    image_id = 0
+                await conn.execute(f"""
+                                       insert into images (image_id, href, image_type, create_date) 
+                                           values ({image_id}, '{data['images'][i]}', 1, statement_timestamp())
+                                    """)
+                await conn.execute(f"""
+                                       insert into conditions (condition_id, task, answer, condition_value, image_id, 
+                                           generate_condition_id)
+                                           values ({condition_id}, '{data['task'][i]}', {data['answers'][i]},
+                                           '{data['condition_value'][i]}', {image_id}, {data['condition_id'][i]})
+                                    """)
+            await conn.execute(f"""
+                                   update courses
+                                        set conditions = array_append(conditions, {condition_id})
+                                    where course_id = {course_id}
+                                """)
 
 
 class CourseContentModel:

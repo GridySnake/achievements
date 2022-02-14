@@ -76,7 +76,7 @@ class CommunityGetInfo:
         community = await conn.fetchrow(f"""
                                            select u.user_id, u.name, u.surname, c.community_id, c.community_name, c.community_type, c.community_bio, c.condition_id, c.created_date, i.href, c.community_owner_id
                                            from users_information as u
-                                           right join (select community_id, community_name, community_type, unnest(user_id) as user_id, community_bio, unnest(condition_id) as condition_id, created_date, image_id, unnest(community_owner_id) as community_owner_id
+                                           right join (select community_id, community_name, community_type, unnest(user_id) as user_id, community_bio, unnest(conditions) as condition_id, created_date, image_id, unnest(community_owner_id) as community_owner_id
                                                         from communities) as c on c.user_id = u.user_id
                                            left join images as i on i.image_id = c.image_id[array_upper(c.image_id, 1)] and i.image_type = 'community'
                                            where c.community_id = {community_id}
@@ -242,11 +242,11 @@ class CommunityCreate:
             chat_id = 0
         await conn.execute(f"""
                                insert into communities (community_id, community_type, community_name, community_bio, 
-                                    user_id, community_owner_id, created_date, image_id, condition_id, condition_value,
+                                    user_id, community_owner_id, created_date, image_id, conditions,
                                     sphere_id, subsphere_id)
                                values({id}, '{data['community_type']}', '{data['name']}', '{data['bio']}', 
                                     array[{user_id}], array[{user_id}], statement_timestamp(), ARRAY []::integer[], 
-                                    ARRAY []::integer[], ARRAY []::text[], array[{data['sphere']}],
+                                    ARRAY []::integer[], array[{data['sphere']}],
                                 array[{data['select_subsphere']}])
                            """)
         await conn.execute(f"""
@@ -264,3 +264,67 @@ class CommunityCreate:
                                     reach_achievements, create_achievements, create_courses) values(
                                     {id}, 1, 0, 0, 0, 0, 0, 0)
                             """)
+        return id
+
+    @staticmethod
+    async def create_community_info_conditions(community_id: str, data: dict):
+        conn = await asyncpg.connect(connection_url)
+        for i in range(len(data['condition_id'])):
+            condition_id = await conn.fetchrow("select max(condition_id) from conditions")
+            condition_id = dict(condition_id)['max']
+            if condition_id is not None:
+                condition_id += 1
+            else:
+                condition_id = 0
+            if data['task'][i] != 'null' and data['answers'][i] == 'null' and data['condition_value'][i] != 'null' \
+                    and data['images'][i] == 'null':
+                await conn.execute(f"""
+                                       insert into conditions (condition_id, task, answer, condition_value, image_id, 
+                                           generate_condition_id)
+                                           values ({condition_id}, '{data['task'][i]}', {data['answers'][i]},
+                                           '{data['condition_value'][i]}', null, {data['condition_id'][i]})
+                                    """)
+            elif data['task'][i] == 'null' and data['condition_value'][i] != 'null':
+                await conn.execute(f"""
+                                       insert into conditions (condition_id, task, answer, condition_value, image_id, 
+                                           generate_condition_id)
+                                           values ({condition_id}, {data['task'][i]}, {data['answers'][i]},
+                                           '{data['condition_value'][i]}', null, {data['condition_id'][i]})
+                                    """)
+            elif data['task'][i] == 'null' and data['condition_value'][i] == 'null':
+                await conn.execute(f"""
+                                       insert into conditions (condition_id, task, answer, condition_value, image_id, 
+                                           generate_condition_id)
+                                           values ({condition_id}, {data['task'][i]}, {data['answers'][i]},
+                                           {data['condition_value'][i]}, null, {data['condition_id'][i]})
+                                    """)
+            elif data['task'][i] != 'null' and data['answers'][i] != 'null' and data['condition_value'][i] != 'null' \
+                    and data['images'][i] == 'null':
+                await conn.execute(f"""
+                                       insert into conditions (condition_id, task, answer, condition_value, image_id, 
+                                           generate_condition_id)
+                                           values ({condition_id}, '{data['task'][i]}', '{data['answers'][i]}',
+                                           '{data['condition_value'][i]}', null, {data['condition_id'][i]})
+                                    """)
+            else:
+                image_id = await conn.fetchrow("select max(image_id) from images")
+                image_id = dict(image_id)['max']
+                if image_id is not None:
+                    image_id += 1
+                else:
+                    image_id = 0
+                await conn.execute(f"""
+                                       insert into images (image_id, href, image_type, create_date) 
+                                           values ({image_id}, '{data['images'][i]}', 1, statement_timestamp())
+                                    """)
+                await conn.execute(f"""
+                                       insert into conditions (condition_id, task, answer, condition_value, image_id, 
+                                           generate_condition_id)
+                                           values ({condition_id}, '{data['task'][i]}', {data['answers'][i]},
+                                           '{data['condition_value'][i]}', {image_id}, {data['condition_id'][i]})
+                                    """)
+            await conn.execute(f"""
+                                   update communities
+                                        set conditions = array_append(conditions, {condition_id})
+                                    where community_id = {community_id}
+                                """)
