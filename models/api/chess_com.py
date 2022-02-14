@@ -49,9 +49,9 @@ class Chesscom:
     def get_player_clubs(username, club_name=None, club_url=None, *args): #clubs=False, in_club=False, ):
         data = {}
         request = requests.get(f'https://api.chess.com/pub/player/{username}/clubs').json()['clubs']
-        if 'clubs' == args[0]:
+        if 'clubs' in args[0]:
             data['clubs'] = len(request)
-        if 'in_club' == args[0] and (club_name or club_url):
+        if 'in_club' in args[0] and (club_name or club_url):
             if club_name:
                 parameter = club_name.lower()
                 data['in_club'] = [i for i in request if i['name'].lower() == parameter]
@@ -77,13 +77,13 @@ class Chesscom:
         #             data[i] = [j[i.split('_')[1]] for j in request]
         #         except:
         #             print(f'error: {i}')
-        if 'highest_placement' == args[0]:
+        if 'highest_placement' in args[0]:
             data['highest_placement'] = min([j['placement'] for j in request])
-        elif 'lowest_placement' == args[0]:
+        elif 'lowest_placement' in args[0]:
             data['lowest_placement'] = max([j['placement'] for j in request])
-        elif 'tournaments' == args[0]:
+        elif 'tournaments' in args[0]:
             data['tournaments'] = len(request)
-        elif 'tournament_wins' == args[0]:
+        elif 'tournament_wins' in args[0]:
             data['tournament_wins'] = len([i for i in request if i['status'] == 'winner'])
         else:
             try:
@@ -96,7 +96,7 @@ class Chesscom:
     def get_titled_players(username, title=None, *args):#, is_titled=False):
 
         data = {}
-        if 'is_titled' == args[0] and title:
+        if 'is_titled' in args[0] and title:
             data['is_titled'] = False
             request = requests.get(f'https://api.chess.com/pub/titled/{title}').json()['players']
             if username in request:
@@ -107,10 +107,10 @@ class Chesscom:
     def get_leaderboards(username, *args):#in_daily_leaderboard=False, in_live_rapid_leaderboard=False):
         request = requests.get(f'https://api.chess.com/pub/leaderboards').json()
         data = {}
-        if 'in_daily_leaderboard' == args[0]:
+        if 'in_daily_leaderboard' in args[0]:
             data['in_daily_leaderboard'] = [True if i['username'].lower() == username.lower() else False for i in
                                             request['daily']]
-        if 'in_live_rapid_leaderboard' == args[0]:
+        if 'in_live_rapid_leaderboard' in args[0]:
             data['in_live_rapid_leaderboard'] = [True if i['username'].lower() == username.lower() else False for i in
                                                  request['live_rapid']]
         return data

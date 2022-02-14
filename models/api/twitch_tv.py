@@ -17,7 +17,7 @@ class Twitch:
         # if parameter:
         #     for j in parameter:
 
-        if 'account_views' == args[0]:
+        if 'account_views' in args[0]:
             data['account_views'] = user_data['view_count']
         else:
             data[args[0]] = user_data[args[0].replace('account_', '')]
@@ -33,7 +33,7 @@ class Twitch:
         # data = {str('video_' + i): [] for i in parameter}
         data = {}
         video_data = [i.data for i in helix.user(username).videos()]
-        if 'video_views' == args[0]:
+        if 'video_views' in args[0]:
             data['video_views'] = []
             for i in video_data:
                 # if parameter:
@@ -64,13 +64,13 @@ class Twitch:
             following_data = [following.data for following in helix.user(username).following()]
             if follow_user in [i['to_name'] for i in following_data]:
                 data['follow_user'] = True
-                if 'followed_at' == args[0]:
+                if 'followed_at' in args[0]:
                     data['followed_at'] = [i['followed_at'] for i in following_data if i['to_name'] == follow_user][0]
             else:
                 data['follow_user'] = False
             if 'followings' == args[0]:
                 data['followings'] = len(following_data)
-        elif 'followings' == args[0]:
+        elif 'followings' in args[0]:
             data['followings'] = len([following for following in helix.user(username).following()])
         return data
 
