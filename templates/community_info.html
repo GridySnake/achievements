@@ -27,6 +27,41 @@
         </form>
     {% endif %}
     <br>
+    {% if access %}
+        <button id="create_payment_goal">Create Payment Goal</button>
+        <button id="hide_create_payment_goal" hidden>Hide</button>
+        <div id="add_payment_goal" hidden>
+            <form action="{{ url('add_payment_goal') }}" method="post" accept-charset="utf-8" enctype="multipart/form-data">
+                <label for="goal_name">Payment Goal</label>
+                <input id="goal_name" name="goal_name" type="text" value=""/>
+                <label for="description">Description</label>
+                <input id="description" name="description" type="text" value=""/>
+                <label for="target_value">Target Value</label>
+                <input id="target_value" name="target_value" type="number" value=""/>
+                <label for="wallet_id">Wallet</label>
+                <select id="wallet_id" name="wallet">
+                    {% for i in wallets %}
+                        <option value="{{ i.wallet_id }}">{{ i.wallet_name }}({{ i.currency }}) </option>
+                    {% endfor %}
+                </select>
+                <button id="create_wallet" type="button">Create Wallet</button>
+                <button id="hide_create_wallet" hidden>Hide</button>
+                <label for="wallet_name">Wallet Name</label>
+                <input id="wallet_name" name="wallet_name" type="text" value="" hidden/>
+                <label for="currency">Currency</label>
+                <input id="currency" name="currency" type="text" value="" hidden/>
+                <label for="responsible_users">Responsible Users</label>
+                <select id="responsible_users" name="responsible_users" hidden>
+                    {% for i in participants %}
+                        <option value="{{ i.user_id }}">{{ i.name }} {{ i.surname }}</option>
+                    {% endfor %}
+                </select>
+                <br>
+                <button type="submit">Create</button>
+            </form>
+        </div>
+    {% endif %}
+    <br>
     {% if goals %}
         <p>{{ community.community_name }} desired achievements:</p>
         {% for goal in goals %}
@@ -56,6 +91,12 @@
         </form>
     {% endif %}
     {% if in_community %}
+        {% for i in payment_goals %}
+            <p>{{ i.goal_name }}: {{ i.current_value }}/{{ i.target_value }}</p>
+        {% endfor %}
+
+        <br>
+
         <form action="{{ url('leave_community') }}" method="post">
             <button id="leave_community" type="submit">Leave</button>
         </form>

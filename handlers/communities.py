@@ -4,9 +4,11 @@ from models.community import *
 import os
 from models.subscribes import SubscribesGetInfo
 from config.common import BaseConfig
+import numpy as np
 import json
 from models.information import InfoGet
 from models.goal import Goals
+from models.wallet_community_goal import *
 from PIL import Image, ImageDraw
 
 
@@ -103,6 +105,8 @@ class CommunitiesInfoView(web.View):
         participants_for_remove = None
         subscribers = None
         goals = await Goals.get_goals(user_id=community_id, user_type=1)
+        payment_goals = await CommunityWalletGoal.get_payment_goal(community_id=community_id)
+        wallets = await Wallet.get_wallet(community_id=community_id)
         if type(community['community_owner_id']) == int:
             if self.session['user']['id'] == community['community_owner_id']:
                 access = True
@@ -120,13 +124,15 @@ class CommunitiesInfoView(web.View):
         else:
             if self.session['user']['id'] in [i['user_id'] for i in community]:
                 is_in_community = True
-        return dict(community=community, access=access, in_community=is_in_community, subscribers=subscribers, participants=participants, participants_for_remove=participants_for_remove, goals=goals)
+        return dict(community=community, access=access, in_community=is_in_community, subscribers=subscribers, participants=participants, participants_for_remove=participants_for_remove,
+                    goals=goals, payment_goals=payment_goals, wallets=wallets)
 
     async def post(self):
         if 'user' not in self.session:
             return web.HTTPFound(location=self.app.router['login'].url_for())
 
         data = await self.post()
+        user_id = self.session['user']['id']
         community_id = str(self.__dict__['_message']).split('Referer')[-1].split(',')[1].split('/community/')[1][:-2]
         location = str(f"/community/{community_id}")
         if 'community_avatar' in data:
@@ -146,9 +152,30 @@ class CommunitiesInfoView(web.View):
             users = [int(i) for i in data.keys()]
             community = str(self.__dict__['_message']).split('Referer')[-1].split(',')[1].split('/community/')[-1][:-2]
             await CommunityAvatarAction.remove_member(community_id=community, users=users)
+        elif 'add_payment_goal' in str(self):
+            data = dict(data)
+            # todo: logic for multiple responsible_users
+            wallet_id = False
+            # data['type'] = ''
+            if data['wallet_name'] != '':
+                if data['responsible_users'] != user_id:
+                    data['responsible_users'] = [data['responsible_users']] + [user_id]
+                wallet_id = await Wallet.create_wallet(community_id=community_id, data=data)
+            if wallet_id:
+                data['wallet_id'] = wallet_id
+            if 'from_date' not in data.keys():
+                data['from_date'] = 'null'
+            if 'to_date' not in data.keys():
+                data['to_date'] = 'null'
+            if 'is_nessesarity' not in data.keys():
+                data['is_nessesarity'] = 'false'
+            if 'user_must_send' not in data.keys():
+                data['user_must_send'] = 'null'
+            print(data)
+                # data['type'] = 'ARRAY[]::integer[]'
+            await CommunityWalletGoal.create_wallet_goal(community_id=community_id, data=data)
         else:
             method = str(self).split('/')[1][:-2].split('_')[0]
-            user_id = self.session['user']['id']
             await CommunityAvatarAction.leave_join(community_id=community_id, user_id=user_id, method=method)
 
         return web.HTTPFound(location=location)
