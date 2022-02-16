@@ -96,7 +96,7 @@ class CoursesView(web.View):
                         text = 'task' + num
                         d = ImageDraw.Draw(img)
                         d.text((10, 10), data[text], fill=data[i])
-                        path = f'static/conditions/condition_course_{course_id}{data[text]}.png'
+                        path = f'static/conditions/condition_course_{course_id}{data[text]}.jpg'
                         img.save(path)
                         data_new['images'] += [path.replace('static/conditions/', '')]
                     else:

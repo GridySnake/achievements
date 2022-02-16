@@ -31,10 +31,12 @@ class UserGetInfo:
     async def get_user_by_id(user_id: str):
         conn = await asyncpg.connect(connection_url)
         user = await conn.fetchrow(f"""
-                SELECT *
-                FROM users_information
-                WHERE user_id = {user_id}
-                """)
+                                        select name, surname, bio, age, i.href, user_id
+                                        from users_information as ui
+                                        left join images as i on i.image_id = ui.image_id[array_upper(ui.image_id, 1)]
+                                            and image_type='user'
+                                        where user_id = {user_id}
+                                    """)
         if user:
             user = dict(user)
             return user
@@ -103,9 +105,24 @@ class UserGetInfo:
         conn = await asyncpg.connect(connection_url)
         username = await conn.fetchrow(f"""select services_username
                                         from users_information
-                                        where user_id = {user_id} and {service_id} in (select unnest(services_id) from users_information where user_id={user_id})
-        """)
+                                        where user_id = {user_id} and {service_id} in (select unnest(services_id) 
+                                            from users_information where user_id={user_id})
+                                        """)
         return username
+
+    @staticmethod
+    async def get_user_conditions(user_id: str):
+        conn = await asyncpg.connect(connection_url)
+        conditions = await conn.fetch(f"""select c.task, c.condition_value, gc.condition_name, i.href
+                                            from users_information as ui
+                                            left join conditions as c on
+                                                c.condition_id = any(ui.communication_conditions)
+                                            left join generate_conditions gc 
+                                                on c.generate_condition_id = gc.generate_condition_id
+                                            left join images as i on i.image_id = c.image_id
+                                            where ui.user_id = {user_id}
+                                    """)
+        return conditions
 
 
 class UserCreate:

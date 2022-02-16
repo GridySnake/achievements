@@ -58,7 +58,7 @@ class UserInfoView(web.View):
                     text = 'task' + num
                     d = ImageDraw.Draw(img)
                     d.text((10, 10), data[text], fill=data[i])
-                    path = f'static/conditions/condition_{user_id}{data[text]}.png'
+                    path = f'static/conditions/condition_{user_id}{data[text]}.jpg'
                     img.save(path)
                     data_new['images'] += [path.replace('static/conditions/', '')]
                 else:

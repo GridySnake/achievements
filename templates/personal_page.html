@@ -3,36 +3,18 @@
 {% set title = "Personal page" %}
 
 {% block content %}
-<h3>{{ title }}</h3>
-<script src="myscripts.js"></script>
-<link href="carousel.css" rel="stylesheet">
-{% if user %}
-    {% if user.name and user.surname and user.bio and user.age %}
-        <p>{{ user.name }} {{ user.surname }}</p>
-        <p>Age: {{ user.age }}</p>
-        <p>{{ user.bio }}</p>
-        <br>
-    {% endif %}
-    {% if avatar %}
-        {% for i in range(avatar|length) %}
-        <div class="slideshow-container fade">
-            <div class="Containers">
-                <div class="MessageInfo">{{ i+1 }} / {{ avatar|length }}</div>
-                <figure class="image is-128x128">
-                <img src="{{ url('static', filename='avatars/'+avatar[i].href) }}">
-                </figure>
-                <div class="Info">{{ i+1 }} caption</div>
-            </div>
-            <a class="Back" onclick="plusSlides(-1)">&#10094;</a>
-            <a class="forward" onclick="plusSlides(1)">&#10095;</a>
-        </div>
-        <div style="text-align:center">
-          <span class="dots" onclick="currentSlide(1)"></span>
-          <span class="dots" onclick="currentSlide(2)"></span>
-          <span class="dots" onclick="currentSlide(3)"></span>
-        </div>
-        {% endfor %}
-    {% endif %}
+    {% if user %}
+        {% if user.name and user.surname and user.bio and user.age %}
+            <p>{{ user.name }} {{ user.surname }}</p>
+            <p>Age: {{ user.age }}</p>
+            <p>{{ user.bio }}</p>
+            <br>
+        {% endif %}
+        {% if user.href %}
+            <figure class="image is-128x128">
+                <img src="{{ url('static', filename='avatars/'+ user.href) }}">
+            </figure>
+        {% endif %}
     <br><br><br><br>
     {% if me %}
         <form action="{{ url('save_avatar') }}" method="post" accept-charset="utf-8" enctype="multipart/form-data">
@@ -42,13 +24,32 @@
         </form>
     {% endif %}
     {% if block != 2 %}
-    {% if not me %}
-        <form action="{{ url('send_message') }}" method="post">
-                <label for="message_text">Send message</label>
-                <input id="message_text" name="message_text" type="text" value=""/>
-                <button type="submit">Send...</button>
-        </form>
-    {% endif %}
+        {% if not me and allow %}
+            <form action="{{ url('send_message') }}" method="post">
+                    <label for="message_text">Send message</label>
+                    <input id="message_text" name="message_text" type="text" value=""/>
+                    <button type="submit">Send...</button>
+            </form>
+        {% elif not me and not allow %}
+            <p>To chat U need to have conditions:</p>
+            {% for condition in condition_to_chat %}
+                {% if condition.href %}
+                    <p>{{ condition.condition_name }}: </p>
+                    <figure class="image is-128x128">
+                        <img src="{{ url('static', filename='conditions/'+ condition.href) }}">
+                    </figure>
+                    <p>Need count: {{ condition.condition_value }}</p>
+                {% elif condition.task %}
+                    <p>{{ condition.condition_name }}: {{ condition.task }}</p>
+                    <p>Need count: {{ condition.condition_value }}</p>
+                {% elif condition.condition_value %}
+                    <p>{{ condition.condition_name }}</p>
+                    <p>Need count: {{ condition.condition_value }}</p>
+                {% else %}
+                    <p>U should be {{ condition.condition_name }}</p>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
     <br>
     {% if me %}
         <form action="{{ url('add_post') }}" method="post" accept-charset="utf-8" enctype="multipart/form-data">
@@ -72,10 +73,10 @@
     </ul>
     <br>
     <br>
-    {% if me %}
-    <p>My friends:</p>
-    {% else %}
-    <p>{{ user.name }} friends:</p>
+    {% if me and friends %}
+        <p>My followers:</p>
+    {% elif not me and friends %}
+        <p>{{ user.name }} followers:</p>
     {% endif %}
     <br>
     <ul>
@@ -127,21 +128,20 @@
                     {{ user.name }} achievements to approve:
                 </p>
             {% endif %}
-        {% for achievement in achievements_approve %}
-            <br>
-            <a href="{{ '/achievement/%s'%achievement.achievement_id }}"> <p>{{ achievement.name }}</p></a>
-            {% if achievement.approve != 1  and not me %}
-                <form action="{{ url('approve') }}" method="post">
-                    <input id="achi_id" name="achi_id" type="text" value="{{ achievement.achievement_id }}" hidden>
-                    <button type="submit"> Approve </button>
-                </form>
-            {% endif %}
-        {% endfor %}
+            {% for achievement in achievements_approve %}
+                <br>
+                <a href="{{ '/achievement/%s'%achievement.achievement_id }}"> <p>{{ achievement.name }}</p></a>
+                {% if achievement.approve != 1  and not me %}
+                    <form action="{{ url('approve') }}" method="post">
+                        <input id="achi_id" name="achi_id" type="text" value="{{ achievement.achievement_id }}" hidden>
+                        <button type="submit"> Approve </button>
+                    </form>
+                {% endif %}
+            {% endfor %}
         {% endif %}
-    </div>
+        </div>
     {% else %}
-    <p>You was blocked by {{ user.name }} {{ user.surname }}</p>
+        <p>You was blocked by {{ user.name }} {{ user.surname }}</p>
     {% endif %}
-
-{% endif %}
+    {% endif %}
 {% endblock %}
