@@ -53,7 +53,7 @@ class CoursesGetInfo:
         conn = await asyncpg.connect(connection_url)
         course = await conn.fetchrow(f"""
                                       select {value} 
-                                      from courses_statistics
+                                      from course_statistics
                                       where course_id = {course_id}
                                     """)
         return course[value]
@@ -206,6 +206,28 @@ class CoursesGetInfo:
                                          and request_statuses[array_position(requests, {user_id})] = 1
                                     """)
         return requests
+
+    @staticmethod
+    async def get_course_conditions(user_id: str, course_id: str):
+        conn = await asyncpg.connect(connection_url)
+        conditions = await conn.fetch(f"""select c.task, c.condition_value, gc.condition_name, i.href, 
+                                            gc.generate_condition_id, case when {user_id} = any(c.users_approved)
+                                            then true else false end as approved, case when {user_id} = 
+                                                cl.user_id then true else false end as cl_send, case when {user_id} = 
+                                                int.user_id then true else false end as int_send
+                                            from courses as cor
+                                            left join conditions as c on
+                                                c.condition_id = any(cor.conditions)
+                                            left join generate_conditions gc 
+                                                on c.generate_condition_id = gc.generate_condition_id
+                                            left join images as i on i.image_id = c.image_id
+                                            left join cover_letters as cl on cl.cover_letter_id = any(cor.cover_letters)
+                                            left join interviews as int on int.interview_id = any(cor.interviews)
+                                            where cor.course_id = {course_id} and 
+                                                ({user_id} <> any(cor.conditions_approved) or 
+                                                cor.conditions_approved = array[]::integer[])
+                                    """)
+        return conditions
 
 
 class CoursesAction:
@@ -404,7 +426,7 @@ class CourseCreate:
                                where user_id = {user_id}
                             """)
         await conn.execute(f"""
-                               insert into courses_statistics (course_id, participants, rating, likes, 
+                               insert into course_statistics (course_id, participants, rating, likes, 
                                     participants_complete_course, comments, create_achievements, recommendation, 
                                     reach_achievements, steps_course, participants_in_progress_course) values(
                                     {course_id}, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0)

@@ -15,7 +15,34 @@
                 <img src="{{ url('static', filename='avatars/'+ user.href) }}">
             </figure>
         {% endif %}
-    <br><br><br><br>
+        <br><br><br><br>
+        {% if not me and not like and not dislike %}
+            <form id="like" method="post" action="{{ url('like') }}">
+                <button type="submit">Like</button>
+            </form>
+        {% elif not me and like and not dislike %}
+            <form id="unlike" method="post" action="{{ url('unlike') }}">
+                <button type="submit">Unlike</button>
+            </form>
+        {% endif %}
+        {% if not me and not recommend and not dislike %}
+            <form id="recommend" method="post" action="{{ url('recommend') }}">
+                <button type="submit">Recommend</button>
+            </form>
+        {% elif not me and recommend and not dislike %}
+            <form id="unrecommend" method="post" action="{{ url('unrecommend') }}">
+                <button type="submit">Unrecommend</button>
+            </form>
+        {% endif %}
+        {% if not me and not dislike and not like and not recommend %}
+            <form method="post" action="{{ url('dislike') }}">
+                <button type="submit">Dislike</button>
+            </form>
+        {% else %}
+            <form method="post" action="{{ url('undislike') }}">
+                <button type="submit">Undislike</button>
+            </form>
+        {% endif %}
     {% if me %}
         <form action="{{ url('save_avatar') }}" method="post" accept-charset="utf-8" enctype="multipart/form-data">
             <label for="avatar">Avatar</label>
@@ -32,23 +59,46 @@
             </form>
         {% elif not me and not allow %}
             <p>To chat U need to have conditions:</p>
-            {% for condition in condition_to_chat %}
-                {% if condition.href %}
-                    <p>{{ condition.condition_name }}: </p>
-                    <figure class="image is-128x128">
-                        <img src="{{ url('static', filename='conditions/'+ condition.href) }}">
-                    </figure>
-                    <p>Need count: {{ condition.condition_value }}</p>
-                {% elif condition.task %}
-                    <p>{{ condition.condition_name }}: {{ condition.task }}</p>
-                    <p>Need count: {{ condition.condition_value }}</p>
-                {% elif condition.condition_value %}
-                    <p>{{ condition.condition_name }}</p>
-                    <p>Need count: {{ condition.condition_value }}</p>
-                {% else %}
-                    <p>U should be {{ condition.condition_name }}</p>
-                {% endif %}
-            {% endfor %}
+            <form id="approve_conditions" method="post" action="{{ url('approve_conditions') }}">
+                {% for condition in condition_to_chat %}
+                    {% if condition.href %}
+                        {% if condition.approved %}
+                            <p style="color: #1ca64c">Done {{ condition.condition_name }}</p>
+                        {% else %}
+                            <p>{{ condition.condition_name }}: </p>
+                            <figure class="image is-128x128">
+                                <img src="{{ url('static', filename='conditions/'+ condition.href) }}">
+                            </figure>
+                            <input name="{{ condition.task }}_condition_value" type="text" placeholder="Answer">
+                        {% endif %}
+                    {% elif condition.task %}
+                        {% if condition.approved %}
+                            <p style="color: #1ca64c">Done {{ condition.condition_name }}</p>
+                        {% else %}
+                            <p>{{ condition.condition_name }}: {{ condition.task }}</p>
+                            {% if condition.generate_condition_id == 4 %}
+                                <p>Need count: {{ condition.condition_value }}</p>
+                            {% else %}
+                                <input name="{{ condition.task }}_condition_value" type="text" placeholder="Answer">
+                            {% endif %}
+                        {% endif %}
+                    {% elif condition.condition_value %}
+                        {% if condition.approved %}
+                            <p style="color: #1ca64c">Done {{ condition.condition_name }}</p>
+                        {% else %}
+                            <p>{{ condition.condition_name }}</p>
+                            <p>Need count: {{ condition.condition_value }}</p>
+                        {% endif %}
+                    {% else %}
+                        {% if condition.approved %}
+                            <p style="color: #1ca64c">Done {{ condition.condition_name }}</p>
+                        {% else %}
+                            <p>U should be in user's {{ condition.condition_name }}</p>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+                <button type="submit">Submit</button>
+            </form>
         {% endif %}
     <br>
     {% if me %}

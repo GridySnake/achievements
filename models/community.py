@@ -84,6 +84,17 @@ class CommunityGetInfo:
         return community
 
     @staticmethod
+    async def user_in_community(community_id: str, user_id: str):
+        conn = await asyncpg.connect(connection_url)
+        in_community = await conn.fetchrow(f"""
+                                            select case when {user_id} = any(c.user_id) then true else false end 
+                                                as in_community
+                                            from  communities as c
+                                            where c.community_id = {community_id}
+                                        """)
+        return in_community['in_community']
+
+    @staticmethod
     async def get_community_participants(community_id):
         conn = await asyncpg.connect(connection_url)
         community = await conn.fetch(f"""
@@ -112,6 +123,36 @@ class CommunityGetInfo:
                                         from communities
                                         where {user_id} = any(requests) 
                                         and request_statuses[array_position(requests, {user_id})] = 1
+                                    """)
+        return conditions
+
+    @staticmethod
+    async def is_owner(user_id: str, community_id: str):
+        conn = await asyncpg.connect(connection_url)
+        owner = await conn.fetch(f"""select case when count(*) > 0 then true else false end as owner
+                                     from communities as com
+                                     left join users_information ui on ui.user_id = any(com.community_owner_id)
+                                     where com.community_id = {community_id} and ui.user_id = {user_id}
+                                 """)
+        return owner['owner']
+
+    @staticmethod
+    async def get_community_conditions(user_id: str, community_id: str):
+        conn = await asyncpg.connect(connection_url)
+        conditions = await conn.fetch(f"""select c.task, c.condition_value, gc.condition_name, i.href, 
+                                            gc.generate_condition_id, case when {user_id} = any(c.users_approved)
+                                            then true else false end as approved, case when {user_id} = 
+                                                cl.user_id then true else false end as send
+                                            from communities as com
+                                            left join conditions as c on
+                                                c.condition_id = any(com.conditions)
+                                            left join generate_conditions gc 
+                                                on c.generate_condition_id = gc.generate_condition_id
+                                            left join images as i on i.image_id = c.image_id
+                                            left join cover_letters as cl on cl.cover_letter_id = any(com.cover_letters)
+                                            where com.community_id = {community_id} and 
+                                                ({user_id} <> any(com.conditions_approved) or 
+                                                com.conditions_approved = array[]::integer[])
                                     """)
         return conditions
 
@@ -280,31 +321,35 @@ class CommunityCreate:
                     and data['images'][i] == 'null':
                 await conn.execute(f"""
                                        insert into conditions (condition_id, task, answer, condition_value, image_id, 
-                                           generate_condition_id)
+                                           generate_condition_id, users_approved)
                                            values ({condition_id}, '{data['task'][i]}', {data['answers'][i]},
-                                           '{data['condition_value'][i]}', null, {data['condition_id'][i]})
+                                           '{data['condition_value'][i]}', null, {data['condition_id'][i]}, 
+                                           array[]::integer)
                                     """)
             elif data['task'][i] == 'null' and data['condition_value'][i] != 'null':
                 await conn.execute(f"""
                                        insert into conditions (condition_id, task, answer, condition_value, image_id, 
-                                           generate_condition_id)
+                                           generate_condition_id, users_approved)
                                            values ({condition_id}, {data['task'][i]}, {data['answers'][i]},
-                                           '{data['condition_value'][i]}', null, {data['condition_id'][i]})
+                                           '{data['condition_value'][i]}', null, {data['condition_id'][i]}, 
+                                           array[]::integer)
                                     """)
             elif data['task'][i] == 'null' and data['condition_value'][i] == 'null':
                 await conn.execute(f"""
                                        insert into conditions (condition_id, task, answer, condition_value, image_id, 
-                                           generate_condition_id)
+                                           generate_condition_id, users_approved)
                                            values ({condition_id}, {data['task'][i]}, {data['answers'][i]},
-                                           {data['condition_value'][i]}, null, {data['condition_id'][i]})
+                                           {data['condition_value'][i]}, null, {data['condition_id'][i]}, 
+                                           array[]::integer)
                                     """)
             elif data['task'][i] != 'null' and data['answers'][i] != 'null' and data['condition_value'][i] != 'null' \
                     and data['images'][i] == 'null':
                 await conn.execute(f"""
                                        insert into conditions (condition_id, task, answer, condition_value, image_id, 
-                                           generate_condition_id)
+                                           generate_condition_id, users_approved)
                                            values ({condition_id}, '{data['task'][i]}', '{data['answers'][i]}',
-                                           '{data['condition_value'][i]}', null, {data['condition_id'][i]})
+                                           '{data['condition_value'][i]}', null, {data['condition_id'][i]}, 
+                                           array[]::integer)
                                     """)
             else:
                 image_id = await conn.fetchrow("select max(image_id) from images")
@@ -319,9 +364,10 @@ class CommunityCreate:
                                     """)
                 await conn.execute(f"""
                                        insert into conditions (condition_id, task, answer, condition_value, image_id, 
-                                           generate_condition_id)
+                                           generate_condition_id, users_approved)
                                            values ({condition_id}, '{data['task'][i]}', {data['answers'][i]},
-                                           '{data['condition_value'][i]}', {image_id}, {data['condition_id'][i]})
+                                           '{data['condition_value'][i]}', {image_id}, {data['condition_id'][i]}, 
+                                           array[]::integer)
                                     """)
             await conn.execute(f"""
                                    update communities

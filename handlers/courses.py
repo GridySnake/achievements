@@ -7,6 +7,7 @@ import os
 from models.subscribes import SubscribesGetInfo
 from models.goal import Goals
 from PIL import Image, ImageDraw
+from models.conditions import ConditionsGetInfo
 
 
 class CoursesView(web.View):
@@ -111,19 +112,33 @@ class CourseInfoView(web.View):
     async def get(self):
         if 'user' not in self.session:
             return web.HTTPFound(location=self.app.router['login'].url_for())
+
         # todo : убрать из subscribers тех, кому уже отправлено приглашение
         course_id = str(self).split('/')[-1][:-2]
+        user_id = self.session['user']['id']
         goals = await Goals.get_goals(user_id=course_id, user_type=2)
         course = await CoursesGetInfo.get_course_info(course_id=course_id)
-        in_course = await CoursesGetInfo.is_user_in_course(course_id=course_id, user_id=self.session['user']['id'])
+        in_course = await CoursesGetInfo.is_user_in_course(course_id=course_id, user_id=user_id)
         participants = await CoursesGetInfo.get_course_participants(course_id=course_id)
         subscribers = None
         #spheres = await InfoGet.get_spheres_subspheres_by_id(subspheres_id=[i for i in course['subsphere_id']])
-        owner = await CoursesGetInfo.is_owner(course_id=course_id, user_id=self.session['user']['id'])
+        owner = await CoursesGetInfo.is_owner(course_id=course_id, user_id=user_id)
+        allow = True
+        conditions = False
+        if not in_course:
+            can_join = await ConditionsGetInfo.is_allowed_communicate_by_conditions(user_active_id=user_id,
+                                                                                    user_passive_id=course_id,
+                                                                                    owner_table=
+                                                                                    'courses',
+                                                                                    owner_column='course_id')
+            if not can_join:
+                conditions = await CoursesGetInfo.get_course_conditions(user_id=user_id, course_id=course_id)
+                allow = False
         if owner:
-            subscribers = await SubscribesGetInfo.get_user_subscribes_names(user_id=self.session['user']['id'])
+            subscribers = await SubscribesGetInfo.get_user_subscribes_names(user_id=user_id)
             subscribers = [i for i in subscribers if i['user_id'] not in [j['user_id'] for j in participants]]
-        return dict(course=course, in_course=in_course, owner=owner, subscribers=subscribers, participants=participants, goals=goals)
+        return dict(course=course, in_course=in_course, owner=owner, subscribers=subscribers, participants=participants,
+                    goals=goals, conditions=conditions, allow=allow)
 
     async def post(self):
         if 'user' not in self.session:

@@ -26,6 +26,7 @@ class UserInfoView(web.View):
         data = await self.post()
         session = await get_session(self)
         data = dict(data)
+        # todo: image, percentage
         user_id = session['user']['id']
         # data['birthday'] = [int(i) for i in data['birthday'].split('-')]
         # data['birthday'] = datetime.date(data['birthday'][0], data['birthday'][1], data['birthday'][2])

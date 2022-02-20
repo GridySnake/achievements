@@ -269,7 +269,7 @@ class AchievementsGiveVerify:
                                            select unnest(achievements_get) from courses where course_id = {user_id})
                                 """)
             await conn.execute(f"""
-                                   update courses_statistics
+                                   update course_statistics
                                    set reach_achievements = reach_achievements + 1
                                    where course_id = {user_id}
                                 """)
@@ -564,7 +564,7 @@ class AchievementsCreate:
                                        where course_id = {user_id}
                                 """)
             await conn.execute(f"""
-                                   update courses_statistics
+                                   update course_statistics
                                        set create_achievements = create_achievements + 1
                                        where course_id = {user_id}
                                 """)

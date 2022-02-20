@@ -67,12 +67,12 @@ class UserGetInfo:
     @staticmethod
     async def get_user_info_by_count(user_id: str, value: str):
         conn = await asyncpg.connect(connection_url)
-        course = await conn.fetchrow(f"""
+        count = await conn.fetchrow(f"""
                                       select {value} 
                                       from user_statistics
                                       where user_id = {user_id}
                                     """)
-        return course[value]
+        return count[value]
 
     @staticmethod
     async def get_avatar_by_user_id(user_id: str):
@@ -111,16 +111,20 @@ class UserGetInfo:
         return username
 
     @staticmethod
-    async def get_user_conditions(user_id: str):
+    async def get_user_conditions(user_active_id: str, user_passive_id: str):
         conn = await asyncpg.connect(connection_url)
-        conditions = await conn.fetch(f"""select c.task, c.condition_value, gc.condition_name, i.href
+        conditions = await conn.fetch(f"""select c.task, c.condition_value, gc.condition_name, i.href, 
+                                            gc.generate_condition_id, case when {user_active_id} = any(c.users_approved)
+                                            then true else false end as approved
                                             from users_information as ui
                                             left join conditions as c on
-                                                c.condition_id = any(ui.communication_conditions)
+                                                c.condition_id = any(ui.conditions)
                                             left join generate_conditions gc 
                                                 on c.generate_condition_id = gc.generate_condition_id
                                             left join images as i on i.image_id = c.image_id
-                                            where ui.user_id = {user_id}
+                                            where ui.user_id = {user_passive_id} and 
+                                                ({user_active_id} <> any(ui.conditions_approved) or 
+                                                ui.conditions_approved = array[]::integer[])
                                     """)
         return conditions
 
@@ -206,7 +210,7 @@ class UserCreate:
                                     """)
             await conn.execute(f"""
                                    update users_information
-                                        set communication_conditions = array_append(communication_conditions, {condition_id})
+                                        set conditions = array_append(conditions, {condition_id})
                                     where user_id = {user_id}
                                 """)
 
@@ -258,20 +262,20 @@ class UserCreate:
                                    """)
             await conn.execute(f"""
                                 insert INTO users_information (user_id, country_id, city_id, sex, date_born, age, bio, name, 
-                                    surname, relation_ship_id, language_id, wedding, communication_conditions, status_work, 
+                                    surname, language_id, wedding, conditions, status_work, 
                                     position, company_id, school_id, bachelor_id, master_id, image_id, achievements_id, 
                                     achievements_desired_id, services_id, services_username,
                                     community_id, community_owner_id) values(
                                     {id}, null, null, null, null, null, null, null, null,
-                                    ARRAY []::integer[], null, null, ARRAY []::text[], null, null, null, null, null, 
+                                    null, null, ARRAY []::integer[], null, null, null, null, null, 
                                     null, ARRAY []::integer[], ARRAY []::integer[], ARRAY []::integer[], 
                                     ARRAY []::integer[], ARRAY []::varchar[], ARRAY []::integer[], ARRAY []::integer[])
                                 """)
             await conn.execute(f"""
-                                    insert into user_statistics (user_id, subscribers, likes, comments, recommendations, 
+                                    insert into user_statistics (user_id, followers, likes, comments, recommendations, 
                                         create_achievements, create_courses, create_communities, reach_achievements, 
-                                        join_courses, join_communities, posts, completed_courses) values(
-                                        {id}, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                                        join_courses, join_communities, posts, completed_courses, followings) values(
+                                        {id}, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
                                     """)
             await conn.execute(f"""
                                     insert into user_calendar (user_id, from_date, to_date, free) values(

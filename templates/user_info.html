@@ -95,23 +95,37 @@
                         <option value="{{ condition.generate_condition_id }}">{{ condition.condition_name }}</option>
                     {% endfor %}
                 </select>
+                <p>Task</p>
                 <input name="task0" type="text" value="">
+                <p>Test answer url</p>
                 <input name="answers0" type="text" value="">
+                <p>Value</p>
                 <input name="condition_value0" type="text" value="">
                 <input name="text_color0" type="color">
                 <input name="background_color0" type="color">
+                <p>Percentage</p>
+                <input type="radio" name="percentage0">
+                <p>As image</p>
+                <input type="radio" name="image0">
                 <br>
                 <br>
                 <select name="select_condition1" id="select_condition1">
                      {% for condition in conditions %}
                          <option value="{{ condition.generate_condition_id }}">{{ condition.condition_name }}</option>
                      {% endfor %}
-                 </select>
-                 <input name="task1" type="text" value="">
-                 <input name="answers1" type="text" value="">
-                 <input name="condition_value1" type="text" value="">
+                </select>
+                <p>Task</p>
+                <input name="task1" type="text" value="">
+                <p>Test answer url</p>
+                <input name="answers1" type="text" value="">
+                <p>Value</p>
+                <input name="condition_value1" type="text" value="">
                 <input name="text_color1" type="color">
                 <input name="background_color1" type="color">
+                <p>Percentage</p>
+                <input type="radio" name="percentage1">
+                <p>As image</p>
+                <input type="radio" name="image1">
             </div>
             <div class="field">
                 <p class="control">

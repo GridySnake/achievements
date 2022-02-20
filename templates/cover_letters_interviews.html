@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% set title = "Cover letters and interviews" %}
+
+{% block content %}
+    {% for cl in cover_letters %}
+        <a href="{{ cl.user_id }}"><p>{{ cl.name }} {{ cl.surname }}</p></a>
+        {% if cl.letter_text and cl.letter_href %}
+            <p>{{ cl.letter_text }}</p>
+            <iframe src="{{ url('static', filename='cover_letter/' + cl.letter_href) }}" ></iframe>
+        {% elif cl.letter_href %}
+            <iframe src="{{ url('static', filename='cover_letter/' + cl.letter_href) }}" ></iframe>
+        {% elif cl.letter_text %}
+            <p>{{ cl.letter_text }}</p>
+        {% endif %}
+        <form method="post" action="{{ url('accept_cl') }}">
+            <input name="user_id" type="text" value="{{ cl.user_id }}" hidden>
+            <button type="submit">Accept</button>
+        </form>
+        <form method="post" action="{{ url('decline_cl') }}">
+            <input name="user_id" type="text" value="{{ cl.user_id }}" hidden>
+            <button type="submit">Decline</button>
+        </form>
+    {% endfor %}
+    <br>
+    {% for int in interviews_request %}
+        <a href="{{ int.user_id }}"><p>{{ int.name }} {{ int.surname }}</p></a>
+        <p>Was sent at {{ int.send_datetime }}</p>
+        <form method="post" action="{{ url('update_interview') }}">
+            <input name="user_id" type="text" value="{{ int.user_id }}" hidden>
+            <input name="datetime" type="datetime-local" placeholder="datetime interview">
+            <input name="link" type="text" placeholder="link for interview">
+            <button type="submit">Update</button>
+        </form>
+    {% endfor %}
+    <br>
+    {% for int in interviews_future %}
+        <a href="{{ int.user_id }}"><p>{{ int.name }} {{ int.surname }}</p></a>
+        <p>Was sent at {{ int.send_datetime }}</p>
+        <a href="{{ int.href }}">Interview link</a>
+        <p>Interview will/was at {{ int.interview_datetime }}</p>
+        <form method="post" action="{{ url('accept_int') }}">
+            <input name="user_id" type="text" value="{{ int.user_id }}" hidden>
+            <button type="submit">Accept</button>
+        </form>
+        <form method="post" action="{{ url('decline_int') }}">
+            <input name="user_id" type="text" value="{{ int.user_id }}" hidden>
+            <button type="submit">Decline</button>
+        </form>
+    {% endfor %}
+{% endblock %}

@@ -220,6 +220,9 @@ class AchievementsVerificationView(web.View):
                     percentage = True
                 result = test_result(email=data['email'], url=data['answers'], percentage=percentage)
                 if result:
+                    if 'percentage' in i['parameter_name']:
+                        # todo: не знаем сколько всего, не считаем percentage
+                        pass
                     if result >= float(i['value']):
                         reach.append(True)
                     else:
@@ -260,7 +263,6 @@ class AchievementInfoView(web.View):
 
         location = str(self).split('/achievement/')[-1][:-2]
         achievement = await AchievementsGetInfo.get_achievement_info(achievement_id=location)
-        print(achievement)
         if achievement['achi_condition_group_id'] == 7:
             desire = await AchievementsDesireApprove.is_desire(user_id=user_id, achievement_desire_id=location)
         else:

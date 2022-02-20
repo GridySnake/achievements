@@ -94,13 +94,83 @@
         {% for i in payment_goals %}
             <p>{{ i.goal_name }}: {{ i.current_value }}/{{ i.target_value }}</p>
         {% endfor %}
-
+        {% if not access %}
+            {% if not like and not dislike  %}
+                <form method="post" action="{{ url('like') }}">
+                    <button type="submit">Like</button>
+                </form>
+            {% elif like and not dislike %}
+                <form method="post" action="{{ url('unlike') }}">
+                    <button type="submit">Unlike</button>
+                </form>
+            {% endif %}
+            {% if not recommend and not dislike %}
+                <form method="post" action="{{ url('recommend') }}">
+                    <button type="submit">Recommend</button>
+                </form>
+            {% elif recommend and not dislike %}
+                <form method="post" action="{{ url('unrecommend') }}">
+                    <button type="submit">Unrecommend</button>
+                </form>
+            {% endif %}
+            {% if not dislike and not like and not recommend %}
+                <form method="post" action="{{ url('dislike') }}">
+                    <button type="submit">Dislike</button>
+                </form>
+            {% else %}
+                <form method="post" action="{{ url('undislike') }}">
+                    <button type="submit">Undislike</button>
+                </form>
+            {% endif %}
+        {% endif %}
         <br>
 
         <form action="{{ url('leave_community') }}" method="post">
             <button id="leave_community" type="submit">Leave</button>
         </form>
-    {% else %}
+    {% elif not in_community and not allow %}
+        <p>To join U need to have conditions:</p>
+        <form id="approve_conditions" method="post" action="{{ url('approve_conditions') }}">
+            {% for condition in conditions %}
+                {% if condition.href %}
+                    {% if condition.approved %}
+                        <p style="color: #1ca64c">Done {{ condition.condition_name }}</p>
+                    {% else %}
+                        <p>{{ condition.condition_name }}: </p>
+                        <figure class="image is-128x128">
+                            <img src="{{ url('static', filename='conditions/'+ condition.href) }}">
+                        </figure>
+                        <input name="{{ condition.task }}_condition_value" type="text" placeholder="Answer">
+                    {% endif %}
+                {% elif condition.task %}
+                    {% if condition.approved %}
+                        <p style="color: #1ca64c">Done {{ condition.condition_name }}</p>
+                    {% else %}
+                        <p>{{ condition.condition_name }}: {{ condition.task }}</p>
+                        {% if condition.generate_condition_id == 4 %}
+                            <p>Need count: {{ condition.condition_value }}</p>
+                        {% else %}
+                            <input name="{{ condition.task }}_condition_value" type="text" placeholder="Answer">
+                        {% endif %}
+                    {% endif %}
+                {% elif condition.condition_value %}
+                    {% if condition.approved %}
+                        <p style="color: #1ca64c">Done {{ condition.condition_name }}</p>
+                    {% else %}
+                        <p>{{ condition.condition_name }}</p>
+                        <p>Need count: {{ condition.condition_value }}</p>
+                    {% endif %}
+                {% else %}
+                    {% if condition.approved %}
+                        <p style="color: #1ca64c">Done {{ condition.condition_name }}</p>
+                    {% else %}
+                        <p>U should be in user's {{ condition.condition_name }}</p>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+            <button type="submit">Submit</button>
+        </form>
+    {% elif not in_community and allow %}
         <form action="{{ url('join_community') }}" method="post">
             <button id="join_community" type="submit">Join</button>
         </form>

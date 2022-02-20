@@ -11,9 +11,10 @@ class CommunityWalletGoal:
         await conn.execute(f"""
                            insert into community_payment_goals (
                                 goal_name, description, from_date, to_date, 
-                                community_id, wallet_id, is_nessesarity, user_must_send, target_value, is_active) values(
+                                community_id, wallet_id, is_nessesarity, user_must_send, current_value, target_value, 
+                                is_active) values(
                            '{data['goal_name']}', '{data['description']}', {data['from_date']}, {data['to_date']}, 
-                           {community_id}, {data['wallet']}, true, ARRAY []::integer[], {data['target_value']}, true)
+                           {community_id}, {data['wallet']}, true, ARRAY []::integer[], 0, {data['target_value']}, true)
                            """)
 
     @staticmethod

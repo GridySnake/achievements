@@ -62,12 +62,63 @@
                     {% endfor %}
                     <button type="submit">Add</button>
                 </form>
+                <a href="/course/{{ course.course_id }}/cover_letter_interview" class="button">CL & I</a>
             {% else %}
                 {% if in_course %}
                     <a href="/course/{{ course.course_id }}/course_content/0" class="button">Go to course</a>
                     <form action="{{ url('course_action') }}" method="post">
                          <input type="hidden" name="leave" value=False>
                          <button type="submit">Leave</button>
+                    </form>
+                {% elif not in_course and not allow %}
+                    <p>To join U need to have conditions:</p>
+                    <form id="approve_conditions" method="post" action="{{ url('approve_conditions') }}" enctype="multipart/form-data">
+                        {% for condition in conditions %}
+                            {% if condition.href %}
+                                {% if condition.approved %}
+                                    <p style="color: #1ca64c">Done {{ condition.condition_name }}</p>
+                                {% else %}
+                                    <p>{{ condition.condition_name }}: </p>
+                                    <figure class="image is-128x128">
+                                        <img src="{{ url('static', filename='conditions/'+ condition.href) }}">
+                                    </figure>
+                                    <input name="{{ condition.task }}_condition_value" type="text" placeholder="Answer">
+                                {% endif %}
+                            {% elif condition.task %}
+                                {% if condition.approved %}
+                                    <p style="color: #1ca64c">Done {{ condition.condition_name }}</p>
+                                {% else %}
+                                    <p>{{ condition.condition_name }}: {{ condition.task }}</p>
+                                    {% if condition.generate_condition_id == 4 %}
+                                        <p>Need count: {{ condition.condition_value }}</p>
+                                    {% else %}
+                                        <input name="{{ condition.task }}_condition_value" type="text" placeholder="Answer">
+                                    {% endif %}
+                                {% endif %}
+                            {% elif condition.condition_value %}
+                                {% if condition.approved %}
+                                    <p style="color: #1ca64c">Done {{ condition.condition_name }}</p>
+                                {% else %}
+                                    <p>{{ condition.condition_name }}</p>
+                                    <p>Need count: {{ condition.condition_value }}</p>
+                                {% endif %}
+                            {% else %}
+                                {% if condition.approved %}
+                                    <p style="color: #1ca64c">Done {{ condition.condition_name }}</p>
+                                {% else %}
+                                    <p>U should pass {{ condition.condition_name }}</p>
+                                    {% if condition.condition_name == "cover letter" and not condition.cl_send %}
+                                        <input type="text" name="cover_letter" placeholder="Cover letter">
+                                        <input type="file" name="cover_letter_file" accept=".txt, .rtf, .pdf">
+                                    {% elif condition.condition_name == "cover letter" and condition.cl_send %}
+                                        <p>U was sent a cover letter) Wait answer from owner...</p>
+                                    {% elif condition.condition_name == "interview" and condition.int_send %}
+                                        <p>Request was sent to owner. Wait link and datetime.</p>
+                                    {% endif %}
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+                        <button type="submit">Submit</button>
                     </form>
                 {% else %}
                     <form action="{{ url('course_action') }}" method="post">

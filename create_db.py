@@ -43,7 +43,7 @@ CREATE TABLE "users_information" (
 	"relation_ship_id" integer[],
 	"language_id" integer NOT NULL,
 	"wedding" BOOLEAN,
-	"communication_conditions" TEXT[],
+	"conditions" integer[],
 	"status_work" varchar(50),
 	"position" varchar(50),
 	"company_id" integer,
@@ -324,7 +324,7 @@ CREATE TABLE "final_exam" (
 
 
 
-CREATE TABLE "courses_statistics" (
+CREATE TABLE "course_statistics" (
 	"course_id" integer NOT NULL,
 	"participants" integer NOT NULL,
 	"rating" integer NOT NULL,
@@ -333,7 +333,7 @@ CREATE TABLE "courses_statistics" (
 	"comments" integer NOT NULL,
 	"achivements" integer NOT NULL,
 	"recommendation" integer NOT NULL,
-	CONSTRAINT "courses_statistics_pk" PRIMARY KEY ("course_id")
+	CONSTRAINT "course_statistics_pk" PRIMARY KEY ("course_id")
 ) WITH (
   OIDS=FALSE
 );
@@ -651,7 +651,7 @@ ALTER TABLE "courses" ADD CONSTRAINT "courses_fk1" FOREIGN KEY ("warning_id") RE
 
 ALTER TABLE "final_exam" ADD CONSTRAINT "final_exam_fk0" FOREIGN KEY ("course_id") REFERENCES "courses"("course_id");
 
-ALTER TABLE "courses_statistics" ADD CONSTRAINT "courses_statistics_fk0" FOREIGN KEY ("course_id") REFERENCES "courses"("course_id");
+ALTER TABLE "course_statistics" ADD CONSTRAINT "course_statistics_fk0" FOREIGN KEY ("course_id") REFERENCES "courses"("course_id");
 
 ALTER TABLE "course_calendar" ADD CONSTRAINT "course_calendar_fk0" FOREIGN KEY ("course_id") REFERENCES "courses"("course_id");
 

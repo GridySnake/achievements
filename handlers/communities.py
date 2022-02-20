@@ -4,12 +4,13 @@ from models.community import *
 import os
 from models.subscribes import SubscribesGetInfo
 from config.common import BaseConfig
-import numpy as np
 import json
 from models.information import InfoGet
 from models.goal import Goals
 from models.wallet_community_goal import *
 from PIL import Image, ImageDraw
+from models.likes_recommendations import LikesRecommendationsGetInfo
+from models.conditions import ConditionsGetInfo
 
 
 class CommunitiesView(web.View):
@@ -99,6 +100,7 @@ class CommunitiesInfoView(web.View):
             return web.HTTPFound(location=self.app.router['login'].url_for())
 
         community_id = str(self).split('/community/')[-1][:-2]
+        user_id = self.session['user']['id']
         community = await CommunityGetInfo.get_community_info(community_id=community_id)
         access = False
         participants = await CommunityGetInfo.get_community_participants(community_id=community_id)
@@ -107,25 +109,35 @@ class CommunitiesInfoView(web.View):
         goals = await Goals.get_goals(user_id=community_id, user_type=1)
         payment_goals = await CommunityWalletGoal.get_payment_goal(community_id=community_id)
         wallets = await Wallet.get_wallet(community_id=community_id)
-        if type(community['community_owner_id']) == int:
-            if self.session['user']['id'] == community['community_owner_id']:
-                access = True
-                subscribers = await SubscribesGetInfo.get_user_subscribes_names(user_id=self.session['user']['id'])
-                participants_for_remove = [i for i in participants if i['user_id'] != self.session['user']['id']]
+        owner = await CommunityGetInfo.is_owner(user_id=user_id, community_id=community_id)
+        if owner:
+            access = True
+            conditions = False
+            is_in_community = True
+            allow = True
+            subscribers = await SubscribesGetInfo.get_user_subscribes_names(user_id=user_id)
+            participants_for_remove = [i for i in participants if i['user_id'] != user_id]
         else:
-            if self.session['user']['id'] in community['community_owner_id']:
-                access = True
-                subscribers = await SubscribesGetInfo.get_user_subscribes_names(user_id=self.session['user']['id'])
-                participants_for_remove = [i for i in participants if i['user_id'] != self.session['user']['id']]
-        is_in_community = False
-        if type(community['user_id']) == int:
-            if self.session['user']['id'] ==  community['user_id']:
-                is_in_community = True
-        else:
-            if self.session['user']['id'] in [i['user_id'] for i in community]:
-                is_in_community = True
-        return dict(community=community, access=access, in_community=is_in_community, subscribers=subscribers, participants=participants, participants_for_remove=participants_for_remove,
-                    goals=goals, payment_goals=payment_goals, wallets=wallets)
+            is_in_community = await CommunityGetInfo.user_in_community(community_id=community_id, user_id=user_id)
+            allow = True
+            conditions = False
+            if not is_in_community:
+                can_join = await ConditionsGetInfo.is_allowed_communicate_by_conditions(user_active_id=user_id,
+                                                                                        user_passive_id=community_id,
+                                                                                        owner_table=
+                                                                                        'communities',
+                                                                                        owner_column='community_id')
+                if not can_join:
+                    conditions = await CommunityGetInfo.get_community_conditions(user_id=user_id,
+                                                                                 community_id=community_id)
+                    allow = False
+        like, recommend, dislike = await LikesRecommendationsGetInfo.is_like_recommend(user_id=user_id, user_type=0,
+                                                                                       owner_id=community_id,
+                                                                                       owner_type=1)
+        return dict(community=community, access=access, in_community=is_in_community, subscribers=subscribers,
+                    participants=participants, participants_for_remove=participants_for_remove, dislike=dislike,
+                    goals=goals, payment_goals=payment_goals, wallets=wallets, like=like, recommend=recommend,
+                    conditions=conditions, allow=allow)
 
     async def post(self):
         if 'user' not in self.session:

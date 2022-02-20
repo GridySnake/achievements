@@ -85,38 +85,19 @@ class SubscribesGetInfo:
         """
         conn = await asyncpg.connect(connection_url)
         follows = await conn.fetchrow(f"""
-                                            select case when count(distinct status_id) = 1 then true
-                                            else false
-                                            end as follows
-                                            from
-                                            (select user_id, unnest(users_id) as users_id, unnest(status_id) as 
-                                                status_id from subscribes) as f
-                                            inner join users_information as u on u.user_id = f.users_id
-                                            where (f.user_id = {user_active_id} or f.user_id = {user_passive_id}) 
-                                                and (u.user_id = {user_active_id} or u.user_id = {user_passive_id})
+                                          select case when count(distinct status_id) = 1 then true
+                                          else false
+                                          end as follows
+                                          from
+                                          (select user_id, unnest(users_id) as users_id, unnest(status_id) as 
+                                              status_id from subscribes) as f
+                                          inner join users_information as u on u.user_id = f.users_id
+                                          where (f.user_id = {user_active_id} or f.user_id = {user_passive_id}) 
+                                              and (u.user_id = {user_active_id} or u.user_id = {user_passive_id}) and
+                                              status_id = 1
                                         """)
         follows = follows['follows']
         return follows
-
-    @staticmethod
-    async def allow_chat_by_conditions(user_active_id: str, user_passive_id: str):
-        """
-        :param user_active_id: str
-        :param user_passive_id: str
-        :return: allow: bool
-        """
-        conn = await asyncpg.connect(connection_url)
-        allow = await conn.fetchrow(f"""
-                                        select case when count(user_id) = 1 then true
-                                        else false
-                                        end as allow
-                                        from
-                                        (select user_id, unnest(conditions_approve) as
-                                            conditions_approve from subscribes) as f
-                                        where f.user_id = {user_passive_id} and f.conditions_approve = {user_active_id}
-                                    """)
-        allow = allow['allow']
-        return allow
 
     @staticmethod
     async def is_block(user_active_id: str, user_passive_id: str):
