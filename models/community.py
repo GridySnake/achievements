@@ -142,7 +142,8 @@ class CommunityGetInfo:
         conditions = await conn.fetch(f"""select c.task, c.condition_value, gc.condition_name, i.href, 
                                             gc.generate_condition_id, case when {user_id} = any(c.users_approved)
                                             then true else false end as approved, case when {user_id} = 
-                                                cl.user_id then true else false end as send
+                                                cl.user_id then true else false end as cl_send, case when {user_id} = 
+                                                int.user_id then true else false end as int_send
                                             from communities as com
                                             left join conditions as c on
                                                 c.condition_id = any(com.conditions)
@@ -150,6 +151,7 @@ class CommunityGetInfo:
                                                 on c.generate_condition_id = gc.generate_condition_id
                                             left join images as i on i.image_id = c.image_id
                                             left join cover_letters as cl on cl.cover_letter_id = any(com.cover_letters)
+                                            left join interviews as int on int.interview_id = any(com.interviews)
                                             where com.community_id = {community_id} and 
                                                 ({user_id} <> any(com.conditions_approved) or 
                                                 com.conditions_approved = array[]::integer[])
