@@ -431,6 +431,21 @@ class CourseCreate:
                                     reach_achievements, steps_course, participants_in_progress_course) values(
                                     {course_id}, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0)
                             """)
+        await conn.execute(f"""
+                                insert into likes (owner_id, owner_type, users_liked_id, users_liked_type, 
+                                    action_datetime) values({course_id}, 2, array[]::integer[], array[]::integer[],
+                                    array[]::timestamptz[])
+                            """)
+        await conn.execute(f"""
+                               insert into dislikes (owner_id, owner_type, users_disliked_id, users_disliked_type, 
+                                   action_datetime) values({course_id}, 2, array[]::integer[], array[]::integer[],
+                                   array[]::timestamptz[])
+                            """)
+        await conn.execute(f"""
+                               insert into recommendations (owner_id, owner_type, users_recommend_id, 
+                                    users_recommend_type, action_datetime) values({course_id}, 2, array[]::integer[], 
+                                    array[]::integer[], array[]::timestamptz[])
+                            """)
         return course_id
 
     @staticmethod

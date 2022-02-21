@@ -307,6 +307,21 @@ class CommunityCreate:
                                     reach_achievements, create_achievements, create_courses) values(
                                     {id}, 1, 0, 0, 0, 0, 0, 0)
                             """)
+        await conn.execute(f"""
+                               insert into likes (owner_id, owner_type, users_liked_id, users_liked_type, 
+                                   action_datetime) values({id}, 1, array[]::integer[], array[]::integer[],
+                                   array[]::timestamptz[])
+                            """)
+        await conn.execute(f"""
+                               insert into dislikes (owner_id, owner_type, users_disliked_id, users_disliked_type, 
+                                   action_datetime) values({id}, 1, array[]::integer[], array[]::integer[],
+                                   array[]::timestamptz[])
+                            """)
+        await conn.execute(f"""
+                               insert into recommendations (owner_id, owner_type, users_recommend_id, 
+                                    users_recommend_type, action_datetime) values({id}, 1, array[]::integer[], 
+                                    array[]::integer[], array[]::timestamptz[])
+                            """)
         return id
 
     @staticmethod

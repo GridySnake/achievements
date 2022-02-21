@@ -241,7 +241,7 @@ class UserCreate:
             data['password'] = hashlib.sha256(data['password'].encode('utf8')).hexdigest()
             id = await conn.fetchrow(f"""SELECT MAX(user_id) FROM users_main""")
             try:
-                id = int(dict(id)['max']) + 1
+                id = dict(id)['max'] + 1
             except:
                 id = 0
             if data['email'] and data['phone']:
@@ -281,13 +281,27 @@ class UserCreate:
                                     insert into user_calendar (user_id, from_date, to_date, free) values(
                                     {id}, null, null, null)
                                     """)
+            await conn.execute(f"""
+                                   insert into likes (owner_id, owner_type, users_liked_id, users_liked_type, 
+                                       action_datetime) values({id}, 0, array[]::integer[], array[]::integer[],
+                                       array[]::timestamptz[])
+                                """)
+            await conn.execute(f"""
+                                   insert into dislikes (owner_id, owner_type, users_disliked_id, users_disliked_type, 
+                                       action_datetime) values({id}, 0, array[]::integer[], array[]::integer[],
+                                       array[]::timestamptz[])
+                                """)
+            await conn.execute(f"""
+                                   insert into recommendations (owner_id, owner_type, users_recommend_id, 
+                                        users_recommend_type, action_datetime) values({id}, 0, array[]::integer[], 
+                                        array[]::integer[], array[]::timestamptz[])
+                                """)
 
             result = await conn.execute(f"""
                                             insert into subscribes (relationship_id, user_id, users_id, status_id, 
                                                 last_update) 
-                                            values(
-                                            {id}, {id}, ARRAY []::integer[], ARRAY []::integer[], null)
-                                            """)
+                                            values({id}, {id}, ARRAY []::integer[], ARRAY []::integer[], null)
+                                        """)
 
             return result
         else:
