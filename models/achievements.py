@@ -568,6 +568,21 @@ class AchievementsCreate:
                                        set create_achievements = create_achievements + 1
                                        where course_id = {user_id}
                                 """)
+        await conn.execute(f"""
+                               insert into likes (owner_id, owner_type, users_liked_id, users_liked_type, 
+                                   action_datetime) values({id_achi}, 3, array[]::integer[], array[]::integer[],
+                                   array[]::timestamptz[])
+                            """)
+        await conn.execute(f"""
+                               insert into dislikes (owner_id, owner_type, users_disliked_id, users_disliked_type, 
+                                   action_datetime) values({id_achi}, 3, array[]::integer[], array[]::integer[],
+                                   array[]::timestamptz[])
+                            """)
+        await conn.execute(f"""
+                               insert into recommendations (owner_id, owner_type, users_recommend_id, 
+                                    users_recommend_type, action_datetime) values({id_achi}, 3, array[]::integer[], 
+                                    array[]::integer[], array[]::timestamptz[])
+                            """)
         # elif int(data['select_group']) == 31 and data['name'] != '' and data['description'] != '' and data['value'] != '' and data['select_service'] == '0':
         #     parameter = str(data['select_service'] + '-' + data['chess_parameter_global'] + '-' + data['chess_parameter_local_profile'] + '-' + data['chess_parameter_local_last'] + '-' + data['chess_parameter_local_chess'] + '-' + data['chess_parameter_local_equal'])
         #     await conn.execute(f"""
