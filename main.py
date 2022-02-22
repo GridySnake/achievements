@@ -1,9 +1,11 @@
 import base64
 import logging
+from consts import ORIGINS
 import aiohttp_jinja2
 import jinja2
 from aiohttp import web
 import asyncpgsa
+import aiohttp_cors
 # from swagger_ui import aiohttp_api_doc
 from aiohttp_swagger import *
 # from aiohttp_swaggerify import swaggerify
@@ -48,8 +50,18 @@ def main():
         app,
         loader=jinja2.PackageLoader(package_name='main', package_path='templates'),
         context_processors=[current_user_ctx_processor])
-
+    cors_accept = aiohttp_cors.ResourceOptions(
+        allow_credentials=True,
+        expose_headers="*",
+        allow_methods="*",
+        allow_headers="*",
+    )
+    # defaults = {origin: cors_accept for origin in ORIGINS.split(",")}
+    cors = aiohttp_cors.setup(app, defaults={'http://127.0.0.1:8080': cors_accept})
+    print({'http://127.0.0.1:8080': cors_accept})
     setup_routes(app)
+    for route in list(app.router.routes()):
+        cors.add(route)
     setup_static_routes(app)
 
     # async def ping(request):

@@ -29,4 +29,5 @@ myfitnesspal==1.16.6
 runkeeper==0.1.2
 tiktokapi~=4.0.4
 huepy==1.2.1
+aiohttp-cors==0.7.0
 instabot

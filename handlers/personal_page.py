@@ -1,3 +1,5 @@
+import json
+
 import aiohttp_jinja2
 from aiohttp import web
 from aiohttp_session import get_session
@@ -7,17 +9,19 @@ from models.subscribes import SubscribesGetInfo
 from models.achievements import AchievementsGetInfo
 from models.conditions import ConditionsGetInfo
 from models.likes_recommendations import LikesRecommendationsGetInfo
+from aiohttp.web import json_response
 
 
 class PersonalPageView(web.View):
 
-    @aiohttp_jinja2.template('personal_page.html')
+    # @aiohttp_jinja2.template('personal_page.html')
     async def get(self):
-        if 'user' not in self.session:
-            return web.HTTPFound(location=self.app.router['login'].url_for())
+        # if 'user' not in self.session:
+        #     return web.HTTPFound(location=self.app.router['login'].url_for())
 
         location = str(self).split('/user/')[-1][:-2]
-        session = await get_session(self)
+        print(location)
+        # session = await get_session(self)
         my_page = False
         user = await UserGetInfo.get_user_by_id(user_id=location)
         # avatar = await UserGetInfo.get_avatar_by_user_id(user_id=location)
@@ -28,7 +32,7 @@ class PersonalPageView(web.View):
         block = False
         condition_to_chat = False
         allow = True
-        user_id = str(session['user']['id'])
+        user_id = location#str(session['user']['id'])
         if user_id == location:
             like = False
             recommend = False
@@ -55,7 +59,12 @@ class PersonalPageView(web.View):
                         allow = False
         else:
             achievements_approve = await AchievementsGetInfo.get_users_approve_achievements(user_id=location)
-        return dict(user=user, friends=friends, posts=posts, me=my_page, block=block, recommend=recommend,
-                    achievements_user=achievements_user, achievements_approve=achievements_approve, like=like,
-                    achievements_desired=achievements_desired, condition_to_chat=condition_to_chat, allow=allow,
-                    dislike=dislike)
+        values = [dict(record) for record in friends]
+        friends = json.dumps(values).replace("</", "<\\/")
+        print(friends)
+        # friends = json.dumps(friends)
+        return json_response(friends)
+        # posts=posts, me=my_page, block=block, recommend=recommend,
+        #             achievements_user=achievements_user, achievements_approve=achievements_approve, like=like,
+        #             achievements_desired=achievements_desired, condition_to_chat=condition_to_chat, allow=allow,
+        #             dislike=dislike)

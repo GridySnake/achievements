@@ -137,7 +137,7 @@ def setup_routes(app):
     app.router.add_route('POST', '/update_interview', ApproveConditionsView.post, name='update_interview')
     app.router.add_route('POST', '/accept_int', ApproveConditionsView.post, name='accept_int')
     app.router.add_route('POST', '/decline_int', ApproveConditionsView.post, name='decline_int')
-    app.router.add_route('GET', r'/user/{i}', PersonalPageView.get, name='personal_page')
+    app.router.add_route('GET', r'/user/{i}', PersonalPageView.get, name='personal_page', )
     app.router.add_route('GET', r'/user/{i}/cover_letter_interview', ApproveConditionsView.get,
                          name='cover_letter_interview_user')
     setup_swagger(app)
