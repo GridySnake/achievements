@@ -4,23 +4,7 @@ import {useState, useEffect} from "react";
 const FormSignUp = () => {
 
     const [EmailPhone, setEmailPhone] = useState('email')
-    // const EmailPhoneCheck = (check) => {
-    //     useEffect(() => {
-    //         setEmailPhone(check)
-    //     }
-    //     )
-    // }
-    // const [CheckEmailPhone, setCheck] = useState({
-    //     'email': true,
-    //     'phone': false})
-    // const EmailPhoneCheck = (Check) => {
-    //     if (Check === 'phone') {
-    //         setCheck({'email': false, 'phone': true})
-    //     } else {
-    //         setCheck({'email': true, 'phone': false})
-    //         }
-    // }
-    // const CheckEmailPhone = EmailPhoneCheck(Check)
+
     const onFinish = (values) => {
     console.log('Success:', values);
   };

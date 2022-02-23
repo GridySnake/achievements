@@ -31,11 +31,13 @@ class UserGetInfo:
     async def get_user_by_id(user_id: str):
         conn = await asyncpg.connect(connection_url)
         user = await conn.fetchrow(f"""
-                                        select name, surname, bio, age, i.href, user_id
+                                        select name, surname, bio, birthday::varchar, array_agg(i.href) as href
                                         from users_information as ui
-                                        left join images as i on i.image_id = ui.image_id[array_upper(ui.image_id, 1)]
+                                        left join (select image_id, image_type, href from images order by create_date 
+                                            desc) as i on i.image_id = any(ui.image_id)
                                             and image_type='user'
                                         where user_id = {user_id}
+                                        group by user_id
                                     """)
         if user:
             user = dict(user)

@@ -59,11 +59,13 @@ class PersonalPageView(web.View):
                         allow = False
         else:
             achievements_approve = await AchievementsGetInfo.get_users_approve_achievements(user_id=location)
-        values = [dict(record) for record in friends]
+        friends = [dict(record) for record in friends]
+        # print(posts)
         # friends = json.dumps(values).replace("</", "<\\/")
-        print(values)
+        # print(values)
         # friends = json.dumps(friends)
-        return json_response(values)
+        print(user)
+        return json_response(user)
         # posts=posts, me=my_page, block=block, recommend=recommend,
         #             achievements_user=achievements_user, achievements_approve=achievements_approve, like=like,
         #             achievements_desired=achievements_desired, condition_to_chat=condition_to_chat, allow=allow,

@@ -1,45 +1,39 @@
 import React, {useState, useEffect} from "react";
-// import {Typography} from "antd";
-import GetSubscribers from "../api/Api";
-// import axiosInstance from "../api/APIClient";
+import { Image } from "antd";
+import GetPersonalPageInfo from "../api/Api";
+import StaticAvatars from "./StaticRoutes";
 
 // const {Title} = Typography;
-const PersonalPage = () => {
+const PersonalPageContainer = () => {
 
-    const [subscribers, setSubscribers] = useState(null)
+    const [PersonalPage, setPersonalPage] = useState(null);
+    const [visible, setVisible] = useState(false);
 
     useEffect(() => {
-        GetSubscribers(setSubscribers)
-        // console.log(presubscribers)
-        // setSubscribers(presubscribers)
-    }, [setSubscribers])
+        GetPersonalPageInfo(setPersonalPage)
+    }, [setPersonalPage])
 
     return (
-        subscribers ?
-        <div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>user_id</th>
-                        <th>name</th>
-                        <th>surname</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {
-                        subscribers.map((subscriber) =>
-                            <tr key={subscriber.user_id}>
-                                <td>{subscriber.user_id}</td>
-                                <td>{subscriber.name}</td>
-                                <td>{subscriber.surname}</td>
-                            </tr>
-                        )
+        PersonalPage ?
+            <div>
+                <Image
+                    preview={{visible: false}}
+                    width={200}
+                    src={StaticAvatars.StaticAvatars + PersonalPage.href[0]}
+                    onClick={() => setVisible(true)}
+                />
+                <div style={{ display: 'none' }}>
+                    <Image.PreviewGroup preview={{ visible, onVisibleChange: vis => setVisible(vis) }}>
+                    {PersonalPage.href.map((avatar) => {
+                        return <Image src={StaticAvatars.StaticAvatars + avatar}/>
+                    })
                     }
-                </tbody>
-            </table>
-      </div>:
+                    </Image.PreviewGroup>
+                </div>
+        </div>
+         :
             <></>
     )
 }
 
-export default PersonalPage
+export default PersonalPageContainer

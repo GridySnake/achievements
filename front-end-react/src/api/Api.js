@@ -4,11 +4,11 @@ import {useState, useEffect} from "react";
 // async function GetSubscribers() {
 //     return await axiosInstance.get('/user/0');
 // }
-const GetSubscribers = async (setSubscribers) => {
+const GetPersonalPageInfo = async (setPersonalPage) => {
     try {
         const resp = await axiosInstance.get('/user/0');
-        console.log(typeof resp.data);
-        setSubscribers(resp.data)
+        console.log(resp.data);
+        setPersonalPage(resp.data)
     } catch (err) {
         console.error(err);
     }
@@ -30,4 +30,4 @@ const GetSubscribers = async (setSubscribers) => {
 
 // }
 
-export default GetSubscribers
+export default GetPersonalPageInfo

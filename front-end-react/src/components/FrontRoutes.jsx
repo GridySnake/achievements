@@ -1,7 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import FormLogin from "./FormLogin";
 import FormSignUp from "./FormSignUp";
-import PersonalPage from "./PersonalPage";
+import PersonalPageContainer from "./PersonalPage";
+
 
 const FrontRoutes = () => {
     return (
@@ -17,9 +18,9 @@ const FrontRoutes = () => {
                 </Route>
                 <Route exact path="/subscribes">
                 </Route>
-                <Route exact path="/chats" element={PersonalPage()}>
+                <Route exact path="/chats" element={PersonalPageContainer()}>
                 </Route>
-                <Route exact path="/chat/{i}">
+                <Route path="/chat/">
                 </Route>
                 <Route exact path="/achievements">
                 </Route>
