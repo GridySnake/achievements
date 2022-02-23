@@ -1,11 +1,18 @@
 import axiosInstance from "./APIClient";
 import {useState, useEffect} from "react";
 
-async function GetSubscribers() {
-
-    const response = await axiosInstance.get('/user/0');
-    console.log(response);
-
+// async function GetSubscribers() {
+//     return await axiosInstance.get('/user/0');
+// }
+const GetSubscribers = async (setSubscribers) => {
+    try {
+        const resp = await axiosInstance.get('/user/0');
+        console.log(typeof resp.data);
+        setSubscribers(resp.data)
+    } catch (err) {
+        console.error(err);
+    }
+};
   //   const [appState, setAppState] = useState(
   //       {
   //           subscribers: null
@@ -19,13 +26,8 @@ async function GetSubscribers() {
  //       });
  //    });
  //  }, [appState]);
-    // const [State, setState] = useState();
-    // useEffect(() => {
-    //     axiosInstance.get(apiUrl).then((response) => {
-    //         const Subscribers = response.data;
-    //         setState(Subscribers);
-    //     });
-    // }, [setState]);
-    // return State
-}
+ //        axiosInstance.get(apiUrl).then((response) =>
+
+// }
+
 export default GetSubscribers

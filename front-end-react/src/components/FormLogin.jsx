@@ -1,4 +1,5 @@
 import { Form, Input, Button, Checkbox } from 'antd';
+import {Link} from "react-router-dom";
 // import {useState} from "react";
 
 const FormLogin = () => {
@@ -86,6 +87,11 @@ const FormLogin = () => {
           Submit
         </Button>
       </Form.Item>
+        <Link to='/signup'>
+            <Button type="primary" htmlType="button">
+                Sign up
+            </Button>
+        </Link>
     </Form>
   )
 }

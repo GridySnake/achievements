@@ -1,11 +1,13 @@
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import FormLogin from "./FormLogin";
+import FormSignUp from "./FormSignUp";
+import PersonalPage from "./PersonalPage";
 
 const FrontRoutes = () => {
     return (
         <Router>
             <Routes>
-                <Route exact path="/signup">
+                <Route exact path="/signup" element={FormSignUp()}>
                 </Route>
                 <Route exact path="/login" element={FormLogin()}>
                 </Route>
@@ -15,7 +17,7 @@ const FrontRoutes = () => {
                 </Route>
                 <Route exact path="/subscribes">
                 </Route>
-                <Route exact path="/chats">
+                <Route exact path="/chats" element={PersonalPage()}>
                 </Route>
                 <Route exact path="/chat/{i}">
                 </Route>

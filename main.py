@@ -57,7 +57,7 @@ def main():
         allow_headers="*",
     )
     # defaults = {origin: cors_accept for origin in ORIGINS.split(",")}
-    cors = aiohttp_cors.setup(app, defaults={'http://127.0.0.1:8080': cors_accept})
+    cors = aiohttp_cors.setup(app, defaults={'http://localhost:3000': cors_accept})
     print({'http://127.0.0.1:8080': cors_accept})
     setup_routes(app)
     for route in list(app.router.routes()):

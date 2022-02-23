@@ -1,17 +1,21 @@
-// import React, {useState, useEffect} from "react";
+import React, {useState, useEffect} from "react";
 // import {Typography} from "antd";
 import GetSubscribers from "../api/Api";
 // import axiosInstance from "../api/APIClient";
 
 // const {Title} = Typography;
-
 const PersonalPage = () => {
-    // console.log(1)
-    const { subscribers } = GetSubscribers('/user/0')
-    console.log(subscribers)
+
+    const [subscribers, setSubscribers] = useState(null)
+
+    useEffect(() => {
+        GetSubscribers(setSubscribers)
+        // console.log(presubscribers)
+        // setSubscribers(presubscribers)
+    }, [setSubscribers])
 
     return (
-        subscribers &&
+        subscribers ?
         <div>
             <table>
                 <thead>
@@ -33,7 +37,8 @@ const PersonalPage = () => {
                     }
                 </tbody>
             </table>
-      </div>
+      </div>:
+            <></>
     )
 }
 
