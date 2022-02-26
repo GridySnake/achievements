@@ -2,7 +2,7 @@ import React from "react";
 import MainTitle from "./components/MainTitle";
 import MainContainer from "./components/MainContainer";
 import "./index.css";
-import PersonalPage from "./components/PersonalPage";
+import PersonalPage from "./components/Personal Page/PersonalPageContainer";
 import FrontRoutes from "./components/FrontRoutes";
 import { BrowserRouter } from "react-router-dom";
 

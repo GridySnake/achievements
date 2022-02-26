@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import FormLogin from "./FormLogin";
 import FormSignUp from "./FormSignUp";
-import PersonalPageContainer from "./PersonalPage";
+import PersonalPageContainer from "./Personal Page/PersonalPageContainer";
 
 
 const FrontRoutes = () => {
