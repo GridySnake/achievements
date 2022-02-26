@@ -25,14 +25,15 @@ class PersonalPageView(web.View):
         my_page = False
         user = await UserGetInfo.get_user_by_id(user_id=location)
         # avatar = await UserGetInfo.get_avatar_by_user_id(user_id=location)
-        friends = await SubscribesGetInfo.get_user_subscribes_names(user_id=location)
+        # friends = await SubscribesGetInfo.get_user_subscribes_names(user_id=location)
         posts = await Post.get_posts_by_user(user_id=location)
-        achievements_user = await AchievementsGetInfo.get_users_achievements(user_id=location)
-        achievements_desired = await AchievementsGetInfo.get_users_desire_achievements(user_id=location)
+        # achievements_user = await AchievementsGetInfo.get_users_achievements(user_id=location)
+        # achievements_desired = await AchievementsGetInfo.get_users_desire_achievements(user_id=location)
         block = False
         condition_to_chat = False
         allow = True
         user_id = location#str(session['user']['id'])
+        statistics = await LikesRecommendationsGetInfo.get_statistics(owner_id=location, owner_type='user')
         if user_id == location:
             like = False
             recommend = False
@@ -59,13 +60,12 @@ class PersonalPageView(web.View):
                         allow = False
         else:
             achievements_approve = await AchievementsGetInfo.get_users_approve_achievements(user_id=location)
-        friends = [dict(record) for record in friends]
-        # print(posts)
-        # friends = json.dumps(values).replace("</", "<\\/")
-        # print(values)
-        # friends = json.dumps(friends)
-        print(user)
-        return json_response(user)
+        # posts = [dict(record) for record in posts]
+        print(posts)
+        # print(user)
+        # print(statistics)
+        # statistics = 1
+        return json_response({'user': user, 'statistics': statistics, 'posts': posts})
         # posts=posts, me=my_page, block=block, recommend=recommend,
         #             achievements_user=achievements_user, achievements_approve=achievements_approve, like=like,
         #             achievements_desired=achievements_desired, condition_to_chat=condition_to_chat, allow=allow,

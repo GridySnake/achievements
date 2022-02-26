@@ -6,25 +6,30 @@ import StaticAvatars from "./StaticRoutes";
 // const {Title} = Typography;
 const PersonalPageContainer = () => {
 
-    const [PersonalPage, setPersonalPage] = useState(null);
+    const [User, setUser] = useState(null);
+    const [Statistics, setStatistics] = useState(null);
+    const [Posts, setPosts] = useState(null);
     const [visible, setVisible] = useState(false);
 
     useEffect(() => {
-        GetPersonalPageInfo(setPersonalPage)
-    }, [setPersonalPage])
+        GetPersonalPageInfo(setUser, setStatistics, setPosts)
+    }, [setUser, setStatistics, setPosts])
 
+    // const
+// const User = PersonalPageInfo[0]
     return (
-        PersonalPage ?
+        User ?
+
             <div>
                 <Image
                     preview={{visible: false}}
                     width={200}
-                    src={StaticAvatars.StaticAvatars + PersonalPage.href[0]}
+                    src={StaticAvatars.StaticAvatars + User.href[0]}
                     onClick={() => setVisible(true)}
                 />
                 <div style={{ display: 'none' }}>
                     <Image.PreviewGroup preview={{ visible, onVisibleChange: vis => setVisible(vis) }}>
-                    {PersonalPage.href.map((avatar) => {
+                    {User.href.map((avatar) => {
                         return <Image src={StaticAvatars.StaticAvatars + avatar}/>
                     })
                     }

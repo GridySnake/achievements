@@ -81,7 +81,7 @@ class Post:
         if user_id is not None:
             posts = await conn.fetch(f"""
                 select p.user_id, p.message, img1.href as avatar,
-                        u.name, u.surname, img.href, p.date_created
+                        u.name, u.surname, img.href, p.date_created::varchar
                 from posts as p
                 inner join users_information as u 
                     on u.user_id = p.user_id and p.user_id = {user_id}
@@ -93,7 +93,7 @@ class Post:
         elif community_id is not None:
             posts = await conn.fetch(f"""
                 select p.community_id, p.message,
-                    com.community_name, im.href
+                    com.community_name, im.href, p.date_created::varchar
                 from posts as p
                 inner join communities as com
                     on com.community_id = p.community_id
@@ -104,7 +104,7 @@ class Post:
         elif course_id is not None:
             posts = await conn.fetch(f"""
                 select p.course_id, p.message,
-                    cour.course_name, im.href
+                    cour.course_name, im.href, p.date_created::varchar
                 from posts as p
                 inner join courses as cour
                     on cour.course_id = p.course_id
@@ -112,4 +112,4 @@ class Post:
                     on im.image_id = p.image_id
                 WHERE p.user_id = {course_id}
             """)
-        return posts
+        return [dict(i) for i in posts]

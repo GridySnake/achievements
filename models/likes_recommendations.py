@@ -29,6 +29,16 @@ class LikesRecommendationsGetInfo:
                                         """)
         return like_rec['likes'], like_rec['recommend'], like_rec['dislikes']
 
+    @staticmethod
+    async def get_statistics(owner_id: str, owner_type: str):
+        conn = await asyncpg.connect(connection_url)
+        statistics = await conn.fetchrow(f"""
+                                             select *
+                                             from {owner_type}_statistics
+                                             where {owner_type}_id = {owner_id}
+                                          """)
+        return dict(statistics)
+
 
 class LikesRecommendationsAction:
 

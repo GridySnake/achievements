@@ -4,11 +4,13 @@ import {useState, useEffect} from "react";
 // async function GetSubscribers() {
 //     return await axiosInstance.get('/user/0');
 // }
-const GetPersonalPageInfo = async (setPersonalPage) => {
+const GetPersonalPageInfo = async (setUser, setStatistics, setPosts) => {
     try {
         const resp = await axiosInstance.get('/user/0');
         console.log(resp.data);
-        setPersonalPage(resp.data)
+        setUser(resp.data['user'])
+        setStatistics(resp.data['statistics'])
+        setPosts(resp.data['posts'])
     } catch (err) {
         console.error(err);
     }

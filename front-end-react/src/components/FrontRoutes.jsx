@@ -18,7 +18,7 @@ const FrontRoutes = () => {
                 </Route>
                 <Route exact path="/subscribes">
                 </Route>
-                <Route exact path="/chats" element={PersonalPageContainer()}>
+                <Route exact path="/chats" key='chats' element={PersonalPageContainer()}>
                 </Route>
                 <Route path="/chat/">
                 </Route>
