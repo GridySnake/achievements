@@ -1,29 +1,40 @@
 import { Form, Input, Button, Checkbox } from 'antd';
 import {Link} from "react-router-dom";
-// import {useState} from "react";
+import {useNavigate} from "react-router";
+import {useAuth} from "../hooks/AuthHooks";
+import {login} from "../api/Auth";
+import React, {useState} from "react";
 
 const FormLogin = () => {
-    // const [username, setUsername] = useState("");
-    // const [validationError, setValidationError] = useState(false);
-    // const {setUser, setAuthLoading} = useAuth();
-    //
-    // const loginApp = () => {
-    //     if (username === "") {
-    //         setValidationError(true);
-    //         return
-    //     }
-    //     setAuthLoading(true);
-    //     login({user_name: username}, setUser, () => {
-    //         setAuthLoading(false);
-    //     })
-    // }
-    const onFinish = (values) => {
-    console.log('Success:', values);
-  };
+    // const navigate = useNavigate();
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
+    const [validationError, setValidationError] = useState(false);
+    const {setUser, setAuthLoading} = useAuth();
 
-  const onFinishFailed = (errorInfo) => {
-    console.log('Failed:', errorInfo);
-  };
+    const loginApp = () => {
+        if (username === "") {
+            setValidationError(true);
+            return
+        }
+        setAuthLoading(true);
+        login({email: username, password: password}, (data) => {
+            if (data === null) {
+                return
+            }
+            setUser(data);
+            setAuthLoading(false);
+            // navigate(`user/${data["user_id"]}`)
+            // navigate('chats');
+        })
+    }
+
+    const onPressSend = e => {
+        if (e.key === "Enter" && username !== "") {
+            loginApp();
+        }
+
+    }
   return (
     <Form
       name="basic"
@@ -36,8 +47,6 @@ const FormLogin = () => {
       initialValues={{
         remember: false,
       }}
-      onFinish={onFinish}
-      onFinishFailed={onFinishFailed}
       autoComplete="off"
     >
       <Form.Item
@@ -49,6 +58,7 @@ const FormLogin = () => {
             message: 'Username is required',
           },
         ]}
+        onChange={e => setUsername(e.target.value)}
       >
         <Input />
       </Form.Item>
@@ -62,6 +72,8 @@ const FormLogin = () => {
             message: 'Password is required',
           },
         ]}
+        onChange={e => setPassword(e.target.value)}
+        onKeyPress={e => onPressSend(e)}
       >
         <Input.Password />
       </Form.Item>
@@ -83,15 +95,15 @@ const FormLogin = () => {
           span: 8,
         }}
       >
-        <Button type="primary" htmlType="submit">
-          Submit
+        <Button type="primary" htmlType="button" onClick={() => loginApp()}>
+                Sign In
         </Button>
       </Form.Item>
-        <Link to='/signup'>
-            <Button type="primary" htmlType="button">
-                Sign up
+        {/*<Link to='/signup'>*/}
+            <Button type="primary" htmlType="button" onClick={<Link to='/signup'/>}>
+                Sign In
             </Button>
-        </Link>
+        {/*</Link>*/}
     </Form>
   )
 }

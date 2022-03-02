@@ -7,7 +7,47 @@ from config.common import BaseConfig
 from smtplib import SMTP_SSL
 from email.parser import Parser
 from email.policy import default
+import json
+from aiohttp.web import json_response
 
+
+async def auth(request):
+    print(request.cookies)
+    user = request.cookies["user"]
+    payload = json.loads(user)
+    return json_response(payload)
+
+
+async def login_kek(request):
+    data = await request.json()
+    if '@' in data['email']:
+        type = 'email'
+    else:
+        type = 'phone'
+    user = await UserGetInfo.get_user_by_email_phone(email=data['email'], type=type)
+    # if user == 'verify':
+    #     return web.HTTPFound(location=self.app.router['verify'].url_for())
+    # if user.get('error'):
+    #     return web.HTTPNotFound()
+    if user and user['password'] == hashlib.sha256(data['password'].encode('utf8')).hexdigest():
+        # session = await get_session(self)
+        # session['user'] = user
+        # location = str(f"/user/{session['user']['id']}")
+        del user["password"]
+        # payload = json.dumps(user)
+        resp = json_response(user)
+        resp.set_cookie(
+            name="user",
+            value=user,
+            httponly=True,
+            domain='http://localhost:3000',
+            max_age=3600
+        )
+        # return web.HTTPFound(location=location)
+        print(resp.cookies)
+        return resp
+    else:
+        return json_response({"error": "User is not found"})
 
 class Login(web.View):
 
@@ -16,7 +56,7 @@ class Login(web.View):
         return dict()
 
     async def post(self):
-        data = await self.post()
+        data = await self.json()
         if '@' in data['email']:
             type = 'email'
         else:
@@ -27,16 +67,21 @@ class Login(web.View):
         elif user.get('error'):
             return web.HTTPNotFound()
         elif user and user['password'] == hashlib.sha256(data['password'].encode('utf8')).hexdigest():
-            session = await get_session(self)
-            session['user'] = user
-            # if 'http://127.0.0.1:8080/' in str(self.__dict__['_message']):
-            #     print(str(self.__dict__['_message']).split('Referer'))
-            #     location = str(self.__dict__['_message']).split('Referer')[-1].split(',')[1][:-2]
-            # else:
-            location = str(f"/user/{session['user']['id']}")
-            return web.HTTPFound(location=location)
+            # session = await get_session(self)
+            # session['user'] = user
+            # location = str(f"/user/{session['user']['id']}")
+            payload = json.dumps(user)
+            resp = json_response(user)
+            resp.set_cookie(
+                name="user",
+                value=payload,
+                httponly=True,
+                domain='http://localhost:3000',
+                max_age=3600
+            )
+            # return web.HTTPFound(location=location)
 
-        return web.HTTPNotFound()
+        return resp
 
 
 class Signup(web.View):

@@ -11,6 +11,7 @@ from aiohttp_swagger import *
 # from aiohttp_swaggerify import swaggerify
 from aiohttp_session import setup, get_session, session_middleware
 from aiohttp_session.cookie_storage import EncryptedCookieStorage
+from middleware import auth_middleware
 from routes.base import setup_routes, setup_static_routes
 from config.common import BaseConfig
 from models.user import UserGetInfo
@@ -38,6 +39,7 @@ async def user_session_middleware(request, handler):
 
 def setup_middlewares(app):
     app.middlewares.append(user_session_middleware)
+    app.middlewares.append(auth_middleware)
 
 
 def main():
@@ -58,7 +60,6 @@ def main():
     )
     # defaults = {origin: cors_accept for origin in ORIGINS.split(",")}
     cors = aiohttp_cors.setup(app, defaults={'http://localhost:3000': cors_accept})
-    print({'http://127.0.0.1:8080': cors_accept})
     setup_routes(app)
     for route in list(app.router.routes()):
         cors.add(route)

@@ -12,14 +12,16 @@ const PersonalPageContainer = () => {
     const [PersonalPage, setPersonalPage] = useState(null);
     const [visible, setVisible] = useState(false);
     // const [Avatar, setAvatar] = useState(null);
+
+    console.log(PersonalPage)
     useEffect(() => {
         GetPersonalPageInfo(setPersonalPage)
     }, [setPersonalPage])
 
-    //  useEffect(() => {
-    //     AvatarsContainer(PersonalPage.user, setVisible, visible, setAvatar)
-    //      console.log(Avatar)
-    // }, [PersonalPage.user, setVisible, visible, setAvatar])
+     // useEffect(() => {
+     //     console.log(Avatar)
+     //     AvatarsContainer({'User': PersonalPage.user, 'visible': visible}, setVisible, setAvatar)
+     // }, [setVisible, setAvatar])
 
     const CardReturn = (post) => {
         if (post.href) {
@@ -38,20 +40,21 @@ const PersonalPageContainer = () => {
                 </Col>
                 <Row>
                     <Col span={12}>
+                        <AvatarsContainer user={PersonalPage.user} visible={visible} setVisible={setVisible} />
                         {/*{Avatar}*/}
-                        <Image
-                            preview={{visible: false}}
-                            width={200}
-                            src={StaticAvatars.StaticAvatars + PersonalPage.user.href[0]}
-                            onClick={() => setVisible(true)}
-                        />
-                        <div style={{ display: 'none' }}>
-                            <Image.PreviewGroup preview={{ visible, onVisibleChange: vis => setVisible(vis) }}>
-                            {PersonalPage.user.href.map((avatar) => {
-                                return <Image src={StaticAvatars.StaticAvatars + avatar}/>
-                            })}
-                            </Image.PreviewGroup>
-                        </div>
+                        {/*<Image*/}
+                        {/*    preview={{visible: false}}*/}
+                        {/*    width={200}*/}
+                        {/*    src={StaticAvatars.StaticAvatars + PersonalPage.user.href[0]}*/}
+                        {/*    onClick={() => setVisible(true)}*/}
+                        {/*/>*/}
+                        {/*<div style={{ display: 'none' }}>*/}
+                        {/*    <Image.PreviewGroup preview={{ visible, onVisibleChange: vis => setVisible(vis) }}>*/}
+                        {/*    {PersonalPage.user.href.map((avatar) => {*/}
+                        {/*        return <Image src={StaticAvatars.StaticAvatars + avatar}/>*/}
+                        {/*    })}*/}
+                        {/*    </Image.PreviewGroup>*/}
+                        {/*</div>*/}
                     </Col>
                     <Col span={12}>
                         <Row>

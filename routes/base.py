@@ -65,7 +65,7 @@ from aiohttp_swagger import *
 
 def setup_routes(app):
     app.router.add_route('GET', '/login', Login.get, name='login')
-    app.router.add_route('POST', '/login', Login.post)
+    app.router.add_route('POST', '/login', login_kek)
     app.router.add_route('GET', '/signup', Signup.get, name='signup')
     app.router.add_route('POST', '/signup', Signup.post)
     app.router.add_route('GET', '/logout', Logout.get, name='logout')
@@ -140,6 +140,7 @@ def setup_routes(app):
     app.router.add_route('GET', r'/user/{i}', PersonalPageView.get, name='personal_page', )
     app.router.add_route('GET', r'/user/{i}/cover_letter_interview', ApproveConditionsView.get,
                          name='cover_letter_interview_user')
+    app.router.add_route('GET', '/auth', auth)
     setup_swagger(app)
 
 

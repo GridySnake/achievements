@@ -9,18 +9,17 @@ class UserGetInfo:
     async def get_user_by_email_phone(email: str, type: str):
         conn = await asyncpg.connect(connection_url)
         user = await conn.fetchrow(f"""
-        SELECT * 
+        SELECT user_id, user_name, password
         FROM authentication
         WHERE {type} = '{email}' and verified = True
         """)
         user1 = await conn.fetchrow(f"""
-                SELECT * 
+                SELECT user_id
                 FROM authentication
                 WHERE {type} = '{email}' and verified = False
                 """)
         if user:
             user = dict(user)
-            user['id'] = int(user['user_id'])
             return user
         elif user1:
             return 'verify'
