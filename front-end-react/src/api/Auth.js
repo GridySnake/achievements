@@ -3,7 +3,7 @@ import axios from "axios";
 
 let cancel;
 
-const auth = (setUser, callback) => {
+const auth = (callback) => {
     axiosInstance.get("/auth",
     {
         cancelToken: new axios.CancelToken(function executor(c) {
@@ -11,12 +11,12 @@ const auth = (setUser, callback) => {
         })
     })
     .then(({data}) => {
-        setUser(data);
-        callback();
+        // setUser(data);
+        callback(data);
     })
     .catch(({response}) => {
         console.log(response);
-        callback();
+        callback(null);
     })
 };
 

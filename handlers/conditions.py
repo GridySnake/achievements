@@ -62,12 +62,12 @@ class ApproveConditionsView:
                 break
         if 'update_interview' in str(self):
             location = str(self.__dict__['_message']).split('Referer')[-1].split(',')[1].split(
-                'http://127.0.0.1:8080/')[-1][:-2]
+                'http://localhost:8080/')[-1][:-2]
             data['datetime'] = ' '.join(data['datetime'].split('T')) + ':00.123456 +00:00'
             await ConditionsInsertCheck.update_interview_info(sender_id=owner_id, sender_type=owner_type, data=data)
         elif '_cl' in str(self) or '_int' in str(self):
             location = str(self.__dict__['_message']).split('Referer')[-1].split(',')[1].split(
-                'http://127.0.0.1:8080/')[-1][:-2]
+                'http://localhost:8080/')[-1][:-2]
             if 'accept' in str(self):
                 status = 1
             else:

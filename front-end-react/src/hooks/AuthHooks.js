@@ -17,10 +17,10 @@ const useProvideAuth = () => {
     const [user, setUser] = useState(null);
     const [authLoading, setAuthLoading] = useState(true);
 
-    useEffect(() => {
+    useEffect((data) => {
         setAuthLoading(true);
-        auth(setUser, () => {setAuthLoading(false)});
-
+        auth((data) => {setAuthLoading(false)});
+        setUser(data)
         return () => {
             cancel && cancel();
         }

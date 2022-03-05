@@ -40,7 +40,8 @@ async def login_kek(request):
             name="user",
             value=user,
             httponly=True,
-            domain='http://localhost:3000',
+            domain='localhost',
+            # path='/chats',
             max_age=3600
         )
         # return web.HTTPFound(location=location)
@@ -110,7 +111,7 @@ class Signup(web.View):
             f'To: <{data["email"]}>\n'
             'Subject: Activation account\n'
             '\n'
-            f"http://127.0.0.1:8080/verify/{token}\n")
+            f"http://localhost:8080/verify/{token}\n")
         smtp_server = SMTP_SSL(BaseConfig.smtp_server, port=BaseConfig.email_port)
         smtp_server.login(BaseConfig.email_mail, BaseConfig.email_password)
         smtp_server.sendmail(BaseConfig.email_mail, data['email'], message.as_string())

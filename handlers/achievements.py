@@ -61,7 +61,7 @@ class AchievementsView(web.View):
         data['answers_url'] = 'null'
         if data['select_group'] == '1':
             token = hashlib.sha256(data['name'].replace(' ', '_').lower().encode('utf8')).hexdigest()
-            img = qrcode.make(f"http://127.0.0.1:8080/verify_achievement/{token}")
+            img = qrcode.make(f"http://localhost:8080/verify_achievement/{token}")
             img.save(f'{str(BaseConfig.STATIC_DIR) + "/QR/" + str(token)}.png')
             data['achievement_qr'] = str(token)
         elif data['select_group'] == '2':
