@@ -6,11 +6,11 @@ import {login} from "../api/Auth";
 import React, {useState} from "react";
 
 const FormLogin = () => {
-    // const navigate = useNavigate();
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [validationError, setValidationError] = useState(false);
     const {setUser, setAuthLoading} = useAuth();
+    const navigate = useNavigate();
 
     const loginApp = () => {
         if (username === "") {
@@ -24,8 +24,7 @@ const FormLogin = () => {
             }
             setUser(data);
             setAuthLoading(false);
-            // navigate(`user/${data["user_id"]}`)
-            // navigate('chats');
+            navigate(`/user/${data["user_id"]}`)
         })
     }
 

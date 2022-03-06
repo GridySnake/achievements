@@ -6,7 +6,7 @@ from handlers.messages import *
 from handlers.achievements import *
 from handlers.communities import *
 from handlers.courses import *
-from handlers.personal_page import PersonalPageView
+from handlers.personal_page import personal_page
 from handlers.chat import ChatView
 from handlers.user_info import UserInfoView
 from handlers.goal import GoalView
@@ -64,8 +64,7 @@ from aiohttp_swagger import *
 
 
 def setup_routes(app):
-    app.router.add_route('GET', '/login', Login.get, name='login')
-    app.router.add_route('POST', '/login', login_kek)
+    app.router.add_route('POST', '/login', login)
     app.router.add_route('GET', '/signup', Signup.get, name='signup')
     app.router.add_route('POST', '/signup', Signup.post)
     app.router.add_route('GET', '/logout', Logout.get, name='logout')
@@ -73,8 +72,8 @@ def setup_routes(app):
     app.router.add_route('POST', '/add_post', PostView.post, name='add_post')
     app.router.add_route('GET', '/subscribes', SubscribesView.get, name='subscribes')
     app.router.add_route('POST', '/subscribe', SubscribesView.post, name='subscribe')
-    app.router.add_route('GET', '/messages', MessageView.get, name='messages')
-    app.router.add_route('POST', '/send_message', MessageView.post, name='send_message')
+    app.router.add_route('GET', '/messages', messages, name='messages')
+    app.router.add_route('POST', '/send_message', send_message, name='send_message')
     app.router.add_route('GET', '/my_subscribes', MySubscribesView.get, name='my_subscribes')
     app.router.add_route('GET', '/achievements', AchievementsView.get, name='achievements')
     app.router.add_route('POST', '/add_achievement', AchievementsView.post, name='add_achievement')
@@ -94,9 +93,9 @@ def setup_routes(app):
     app.router.add_route('GET', '/my_posts', PostView.get, name='my_posts')
     app.router.add_route('GET', '/goals', GoalView.get, name='goals')
     app.router.add_route('POST', '/add_content', CourseContentCreate.post, name='add_content')
-    app.router.add_route('POST', '/add_member', MessageView.post, name='add_member')
-    app.router.add_route('POST', '/remove_member', MessageView.post, name='remove_member')
-    app.router.add_route('POST', '/create_group_chat', MessageView.post, name='create_group_chat')
+    app.router.add_route('POST', '/add_member', send_message, name='add_member')
+    app.router.add_route('POST', '/remove_member', send_message, name='remove_member')
+    app.router.add_route('POST', '/create_group_chat', send_message, name='create_group_chat')
     app.router.add_route('POST', '/add_community_member', CommunitiesInfoView.post, name='add_community_member')
     app.router.add_route('POST', '/remove_community_member', CommunitiesInfoView.post, name='remove_community_member')
     app.router.add_route('GET', '/courses', CoursesView.get, name='courses')
@@ -137,7 +136,7 @@ def setup_routes(app):
     app.router.add_route('POST', '/update_interview', ApproveConditionsView.post, name='update_interview')
     app.router.add_route('POST', '/accept_int', ApproveConditionsView.post, name='accept_int')
     app.router.add_route('POST', '/decline_int', ApproveConditionsView.post, name='decline_int')
-    app.router.add_route('GET', r'/user/{i}', PersonalPageView.get, name='personal_page', )
+    app.router.add_route('GET', r'/user/{i}', personal_page, name='personal_page', )
     app.router.add_route('GET', r'/user/{i}/cover_letter_interview', ApproveConditionsView.get,
                          name='cover_letter_interview_user')
     app.router.add_route('GET', '/auth', auth)

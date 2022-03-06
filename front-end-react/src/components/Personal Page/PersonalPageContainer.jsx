@@ -4,6 +4,7 @@ import { LikeOutlined, DislikeOutlined, CheckCircleOutlined, TeamOutlined, UserO
 import GetPersonalPageInfo from "../../api/Api";
 import StaticAvatars from "../StaticRoutes";
 import AvatarsContainer from "./AvatarsContainer";
+import { useParams } from 'react-router-dom'
 
 const {Title} = Typography;
 
@@ -11,17 +12,17 @@ const PersonalPageContainer = () => {
 
     const [PersonalPage, setPersonalPage] = useState(null);
     const [visible, setVisible] = useState(false);
-    // const [Avatar, setAvatar] = useState(null);
+    const [likeColor, setLikeColor] = useState("#ee004b");
+    const [dislikeColor, setDislikeColor] = useState("#ee004b");
+    const [recommendColor, setRecommendColor] = useState("#ee004b");
+    const {id} = useParams();
+
+
 
     console.log(PersonalPage)
     useEffect(() => {
-        GetPersonalPageInfo(setPersonalPage)
-    }, [setPersonalPage])
-
-     // useEffect(() => {
-     //     console.log(Avatar)
-     //     AvatarsContainer({'User': PersonalPage.user, 'visible': visible}, setVisible, setAvatar)
-     // }, [setVisible, setAvatar])
+        GetPersonalPageInfo(setPersonalPage, id)
+    }, [setPersonalPage, id])
 
     const CardReturn = (post) => {
         if (post.href) {
@@ -29,6 +30,31 @@ const PersonalPageContainer = () => {
         } else {
             return <></>;
         }}
+
+    const Actions = (title, values, icon, action, color) => {
+        console.log(action)
+    try {
+        if (PersonalPage.actions[0]) {
+            setLikeColor("#00ee00")
+        }
+        if (PersonalPage.actions[1]) {
+            setDislikeColor("#00ee00")
+        }
+        if (PersonalPage.actions[1]) {
+            setRecommendColor("#00ee00")
+        }
+    } catch (e) {
+            console.log(e)
+    }
+    return (
+        <div>
+        <Tooltip title={title}>
+            <Statistic value={values} prefix={icon}
+                       style={{background: color}} />
+        </Tooltip>
+            </div>
+    )
+    }
 
 
     return (
@@ -41,31 +67,22 @@ const PersonalPageContainer = () => {
                 <Row>
                     <Col span={12}>
                         <AvatarsContainer user={PersonalPage.user} visible={visible} setVisible={setVisible} />
-                        {/*{Avatar}*/}
-                        {/*<Image*/}
-                        {/*    preview={{visible: false}}*/}
-                        {/*    width={200}*/}
-                        {/*    src={StaticAvatars.StaticAvatars + PersonalPage.user.href[0]}*/}
-                        {/*    onClick={() => setVisible(true)}*/}
-                        {/*/>*/}
-                        {/*<div style={{ display: 'none' }}>*/}
-                        {/*    <Image.PreviewGroup preview={{ visible, onVisibleChange: vis => setVisible(vis) }}>*/}
-                        {/*    {PersonalPage.user.href.map((avatar) => {*/}
-                        {/*        return <Image src={StaticAvatars.StaticAvatars + avatar}/>*/}
-                        {/*    })}*/}
-                        {/*    </Image.PreviewGroup>*/}
-                        {/*</div>*/}
                     </Col>
                     <Col span={12}>
                         <Row>
+                            <Actions title='Likes' values={PersonalPage.statistics.likes} icon={<LikeOutlined />}
+                                     action={PersonalPage.actions} color={likeColor} />
                             <Tooltip title='Likes'>
-                                <Statistic value={PersonalPage.statistics.likes} prefix={<LikeOutlined />} />
+                                <Statistic value={PersonalPage.statistics.likes} prefix={<LikeOutlined />}
+                                           style={{background: likeColor}} />
                             </Tooltip>
                             <Tooltip title='Dislikes'>
-                                <Statistic value={PersonalPage.statistics.dislikes} prefix={<DislikeOutlined />} />
+                                <Statistic value={PersonalPage.statistics.dislikes} prefix={<DislikeOutlined />}
+                                           style={{background: dislikeColor}} />
                             </Tooltip>
                             <Tooltip title='Recommendations'>
-                                <Statistic value={PersonalPage.statistics.recommendations} prefix={<CheckCircleOutlined />} />
+                                <Statistic value={PersonalPage.statistics.recommendations} prefix={<CheckCircleOutlined />}
+                                           style={{background: recommendColor}} />
                             </Tooltip>
                             <Tooltip title='Followers'>
                                 <Statistic value={PersonalPage.statistics.followers} prefix={<TeamOutlined />} />

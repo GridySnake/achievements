@@ -6,15 +6,13 @@ from models.api.tests import test_result
 from config.common import BaseConfig
 from models.course import CoursesGetInfo
 from models.community import CommunityGetInfo
+import json
 
 
 class ApproveConditionsView:
 
     @aiohttp_jinja2.template('cover_letters_interviews.html')
     async def get(self):
-        if 'user' not in self.session:
-            return web.HTTPFound(location=self.app.router['login'].url_for())
-
         session = await get_session(self)
         user_id = str(session['user']['id'])
         owner = {'user': 0, 'community': 1,
@@ -42,13 +40,9 @@ class ApproveConditionsView:
             return dict(cover_letters=cover_letters, interviews_request=interviews_request,
                         interviews_future=interviews_future)
 
-    async def post(self):
-        if 'user' not in self.session:
-            return web.HTTPFound(location=self.app.router['login'].url_for())
-
-        session = await get_session(self)
-        user_id = session['user']['id']
-        data = await self.post()
+    async def post(request):
+        user_id = ''
+        data = await request.json()
         data = dict(data)
         owner = {'user': ['users_information', 'user_id', 0], 'community': ['communities', 'community_id', 1],
                  'course': ['courses', 'course_id', 2]}

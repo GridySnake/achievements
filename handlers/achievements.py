@@ -13,16 +13,15 @@ from models.community import CommunityGetInfo
 from models.course import CoursesGetInfo
 from config.services_our_api import ServicesConfig
 from models.api.tests import test_result
+import json
 
 
 class AchievementsView(web.View):
 
     @aiohttp_jinja2.template('achievements.html')
     async def get(self):
-        if 'user' not in self.session:
-            return web.HTTPFound(location=self.app.router['login'].url_for())
 
-        user_id = self.session['user']['id']
+        user_id = json.loads(request.cookies['user'])['user_id']
         #await Achievements.update_user_info_achievements(user_id=user_id)
         # await AchievementsGiveVerify.desired_to_reached_achievement(user_id=user_id)
         achievements_created = await AchievementsGetInfo.get_created_achievements(user_id=user_id)
@@ -40,8 +39,6 @@ class AchievementsView(web.View):
         return dict(achievements_my=achievements_created, achievements_sug=achievements_sug, achievements_get=achievements_get, services=services, group=group, communities=communities, courses=courses, subspheres=subspheres, groups=groups)
 
     async def post(self):
-        if 'user' not in self.session:
-            return web.HTTPFound(location=self.app.router['login'].url_for())
 
         data = await self.post()
         data = dict(data)
@@ -96,8 +93,6 @@ class AchievementsVerificationView(web.View):
 
     @aiohttp_jinja2.template('achievements_verify.html')
     async def post(self):
-        if 'user' not in self.session:
-            return web.HTTPFound(location=self.app.router['login'].url_for())
 
         session = await get_session(self)
         if str(self).split('/')[-1][:-2] == 'verify_achievement':
@@ -253,8 +248,6 @@ class AchievementsVerificationView(web.View):
 class AchievementInfoView(web.View):
     @aiohttp_jinja2.template('achievement_info.html')
     async def get(self):
-        if 'user' not in self.session:
-            return web.HTTPFound(location=self.app.router['login'].url_for())
 
         session = await get_session(self)
         user_id = session['user']['id']
@@ -271,8 +264,6 @@ class AchievementInfoView(web.View):
 
     @aiohttp_jinja2.template('achievements_verify.html')
     async def post(self):
-        if 'user' not in self.session:
-            return web.HTTPFound(location=self.app.router['login'].url_for())
 
         data = await self.post()
         session = await get_session(self)
@@ -289,8 +280,6 @@ class AchievementInfoView(web.View):
 
 class AchievementDesireView(web.View):
     async def post(self):
-        if 'user' not in self.session:
-            return web.HTTPFound(location=self.app.router['login'].url_for())
 
         data = await self.post()
         session = await get_session(self)

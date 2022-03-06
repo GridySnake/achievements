@@ -1,8 +1,8 @@
 import axiosInstance from "./APIClient";
 
-const GetPersonalPageInfo = async (setPersonalPage) => {
+const GetPersonalPageInfo = async (setPersonalPage, id) => {
     try {
-        const resp = await axiosInstance.get('/user/0');
+        const resp = await axiosInstance.get(`user/${id}`);
         console.log(resp.data);
         setPersonalPage(resp.data)
     } catch (err) {

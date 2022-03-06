@@ -27,7 +27,7 @@ class LikesRecommendationsGetInfo:
                                                 = {user_type}) as d on ui.user_id = d.owner_id
                                              where ui.user_id = {owner_id}
                                         """)
-        return like_rec['likes'], like_rec['recommend'], like_rec['dislikes']
+        return [like_rec['likes'], like_rec['recommend'], like_rec['dislikes']]
 
     @staticmethod
     async def get_statistics(owner_id: str, owner_type: str):

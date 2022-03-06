@@ -8,16 +8,14 @@ from models.subscribes import SubscribesGetInfo
 from models.goal import Goals
 from PIL import Image, ImageDraw
 from models.conditions import ConditionsGetInfo
+import json
 
 
 class CoursesView(web.View):
 
     @aiohttp_jinja2.template('courses.html')
     async def get(self):
-        if 'user' not in self.session:
-            return web.HTTPFound(location=self.app.router['login'].url_for())
-
-        user_id = self.session['user']['id']
+        user_id = ''
         own_courses = await CoursesGetInfo.get_own_courses(user_id=user_id)
         communities = await CommunityGetInfo.get_user_owner_communities(user_id=user_id)
         languages = await InfoGet.get_languages()
@@ -29,10 +27,8 @@ class CoursesView(web.View):
         return dict(courses=courses, my_courses=my_courses, languages=languages, communities=communities, own_courses=own_courses, requests=requests, subspheres=subspheres, conditions=conditions)
 
     async def post(self):
-        if 'user' not in self.session:
-            return web.HTTPFound(location=self.app.router['login'].url_for())
 
-        user_id = self.session['user']['id']
+        user_id = json.loads(request.cookies['user'])['user_id']
         data = await self.post()
         if 'invitation_course' in str(self):
             course_id = str(self).split('/')[-1][:-2]
@@ -56,7 +52,7 @@ class CoursesView(web.View):
                 user_id = data['community']
             else:
                 data['type'] = 0
-                user_id = self.session['user']['id']
+                user_id = json.loads(request.cookies['user'])['user_id']
             no_image = False
             if data['avatar'] == bytearray(b''):
                 no_image = True
@@ -110,12 +106,10 @@ class CourseInfoView(web.View):
 
     @aiohttp_jinja2.template('course_info.html')
     async def get(self):
-        if 'user' not in self.session:
-            return web.HTTPFound(location=self.app.router['login'].url_for())
 
         # todo : убрать из subscribers тех, кому уже отправлено приглашение
         course_id = str(self).split('/')[-1][:-2]
-        user_id = self.session['user']['id']
+        user_id = json.loads(request.cookies['user'])['user_id']
         goals = await Goals.get_goals(user_id=course_id, user_type=2)
         course = await CoursesGetInfo.get_course_info(course_id=course_id)
         in_course = await CoursesGetInfo.is_user_in_course(course_id=course_id, user_id=user_id)
@@ -141,12 +135,10 @@ class CourseInfoView(web.View):
                     goals=goals, conditions=conditions, allow=allow)
 
     async def post(self):
-        if 'user' not in self.session:
-            return web.HTTPFound(location=self.app.router['login'].url_for())
 
         course_id = str(self.__dict__['_message']).split('Referer')[-1].split(',')[1].split('course/')[1][:-2]
 
-        user_id = self.session['user']['id']
+        user_id = json.loads(request.cookies['user'])['user_id']
         data = await self.post()
         if 'join' in data.keys():
             await CoursesAction.join_course(course_id=course_id, user_id=user_id)
@@ -162,8 +154,6 @@ class CourseInfoView(web.View):
 class CourseContent(web.View):
     @aiohttp_jinja2.template('course_content.html')
     async def get(self):
-        if 'user' not in self.session:
-            return web.HTTPFound(location=self.app.router['login'].url_for())
 
         course_id = str(self).split('/')[2]
         page = str(self).split('/course_content/')[-1][:-2]
@@ -176,14 +166,10 @@ class CourseContent(web.View):
 class CourseContentCreate(web.View):
     @aiohttp_jinja2.template('course_create_content.html')
     async def get(self):
-        if 'user' not in self.session:
-            return web.HTTPFound(location=self.app.router['login'].url_for())
 
         return dict()
 
     async def post(self):
-        if 'user' not in self.session:
-            return web.HTTPFound(location=self.app.router['login'].url_for())
 
         data = await self.post()
         course_id = str(self.__dict__['_message']).split('Referer')[-1].split(',')[1].split('/')[-1][:-2]

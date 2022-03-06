@@ -64,7 +64,7 @@ class AchievementsGetInfo:
                                                 from users_information where user_id = {user_id}) as u 
                                                 on u.achievements_id = a.achievement_id
                                         """)
-        return achievement
+        return [dict(i) for i in achievement]
 
     @staticmethod
     async def get_users_desire_achievements(user_id: str):
@@ -79,7 +79,7 @@ class AchievementsGetInfo:
                                                  where user_id = {user_id}
                                              ) as u on u.achievements_desired_id = a.achievement_id
                                             """)
-        return achievements
+        return [dict(i) for i in achievements]
 
     @staticmethod
     async def get_users_approve_achievements(user_id: str, user_active: str = None):
@@ -117,6 +117,10 @@ class AchievementsGetInfo:
                                                    on agc.parameter_id = ac.parameter_id and agc.condition_group_id = 7
                                                 where a.achievement_id is not null
                 """)
+        if len(achievement) > 0:
+            achievement = [dict(i) for i in achievement]
+        else:
+            achievement = None
         return achievement
 
     @staticmethod

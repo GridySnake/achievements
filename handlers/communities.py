@@ -16,14 +16,11 @@ from models.conditions import ConditionsGetInfo
 class CommunitiesView(web.View):
     @aiohttp_jinja2.template('communities.html')
     async def get(self):
-        if 'user' not in self.session:
-            return web.HTTPFound(location=self.app.router['login'].url_for())
-
         conditions = await CommunityGetInfo.get_generate_conditions()
         community_types = set([i['community_type'] for i in conditions])
         values = [dict(record) for record in conditions]
         dropdown_community = json.dumps(values).replace("</", "<\\/")
-        user_id = self.session['user']['id']
+        user_id = json.loads(request.cookies['user'])['user_id']
         owner_communities = await CommunityGetInfo.get_user_owner_communities(user_id=user_id)
         communities = await CommunityGetInfo.get_user_communities(user_id=user_id)
         requests = await CommunityGetInfo.user_requests(user_id=user_id)
@@ -39,10 +36,8 @@ class CommunitiesView(web.View):
                     communities_recommend=communities_recommend, conditions_tj=conditions_to_join)
 
     async def post(self):
-        if 'user' not in self.session:
-            return web.HTTPFound(location=self.app.router['login'].url_for())
 
-        user_id = self.session['user']['id']
+        user_id = json.loads(request.cookies['user'])['user_id']
         if 'invitation_community' in str(self):
             community_id = str(self).split('/')[-1][:-2]
             action = 0
@@ -96,11 +91,9 @@ class CommunitiesView(web.View):
 class CommunitiesInfoView(web.View):
     @aiohttp_jinja2.template('community_info.html')
     async def get(self):
-        if 'user' not in self.session:
-            return web.HTTPFound(location=self.app.router['login'].url_for())
 
         community_id = str(self).split('/community/')[-1][:-2]
-        user_id = self.session['user']['id']
+        user_id = json.loads(request.cookies['user'])['user_id']
         community = await CommunityGetInfo.get_community_info(community_id=community_id)
         access = False
         participants = await CommunityGetInfo.get_community_participants(community_id=community_id)
@@ -140,11 +133,9 @@ class CommunitiesInfoView(web.View):
                     conditions=conditions, allow=allow)
 
     async def post(self):
-        if 'user' not in self.session:
-            return web.HTTPFound(location=self.app.router['login'].url_for())
 
         data = await self.post()
-        user_id = self.session['user']['id']
+        user_id = json.loads(request.cookies['user'])['user_id']
         community_id = str(self.__dict__['_message']).split('Referer')[-1].split(',')[1].split('/community/')[1][:-2]
         location = str(f"/community/{community_id}")
         if 'community_avatar' in data:

@@ -55,7 +55,7 @@ class SubscribesGetInfo:
                                     from subscribes as f
                                     where f.user_id = {user_id})
             """)
-        return users
+        return [dict(i) for i in users]
 
     @staticmethod
     async def get_subscribers(user_id: str):
@@ -65,13 +65,18 @@ class SubscribesGetInfo:
         """
         conn = await asyncpg.connect(connection_url)
         subscribes = await conn.fetch(f"""
-                                          select distinct(u.user_id), u.name, u.surname, f.status_id as status_active, f1.status_id as status_passive, img.href
+                                          select distinct(u.user_id), u.name, u.surname, f.status_id as status_active, 
+                                            f1.status_id as status_passive, img.href
                                           from
-                                          (select user_id, unnest(users_id) as users_id, unnest(status_id) as status_id from subscribes) as f
+                                          (select user_id, unnest(users_id) as users_id, unnest(status_id) as status_id 
+                                            from subscribes) as f
                                           inner join
-                                              (select user_id, unnest(users_id) as users_id, unnest(status_id) as status_id from subscribes) as f1 on f1.user_id = f.users_id and f1.users_id = {user_id}
+                                              (select user_id, unnest(users_id) as users_id, unnest(status_id) 
+                                                as status_id from subscribes) as f1 on f1.user_id = f.users_id and 
+                                                f1.users_id = {user_id}
                                           inner join users_information as u on u.user_id = f.users_id
-                                          left join images as img on img.image_id = u.image_id[array_upper(u.image_id, 1)]
+                                          left join images as img 
+                                            on img.image_id = u.image_id[array_upper(u.image_id, 1)]
                                           where f.user_id = {user_id}
             """)
         return subscribes

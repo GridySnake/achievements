@@ -12,13 +12,11 @@ class UserInfoView(web.View):
 
     @aiohttp_jinja2.template('user_info.html')
     async def get(self):
-        if 'user' not in self.session:
-            return web.HTTPFound(location=self.app.router['login'].url_for())
         countries = await InfoGet.get_countries()
         cities = await InfoGet.get_cities()
         # values = [dict(record) for record in cities]
         # cities = json.dumps(values).replace("</", "<\\/")
-        user = await UserGetInfo.get_user_info(self.session['user']['id'])
+        user = await UserGetInfo.get_user_info(json.loads(request.cookies['user'])['user_id'])
         conditions = await InfoGet.get_conditions(owner_type=0)
         return dict(countries=countries, cities=cities, user=user, conditions=conditions)
 

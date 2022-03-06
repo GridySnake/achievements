@@ -97,7 +97,7 @@ def main():
     )
 
     logging.basicConfig(level=logging.DEBUG)
-    web.run_app(app, host="localhost")
+    web.run_app(app, host="localhost", port=8082)
 
 
 if __name__ == '__main__':

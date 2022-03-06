@@ -10,9 +10,6 @@ class PostView(web.View):
 
     async def post(self):
         data = await self.post()
-        session = await get_session(self)
-        if 'user' not in self.session:
-            return web.HTTPFound(location=self.app.router['login'].url_for())
         location = str(f"/{session['user']['id']}")
         if 'user' in session and data['message'] and not data['file']:
             await Post.create_post(user_id=session['user']['id'], message=data['message'])
@@ -26,11 +23,9 @@ class PostView(web.View):
 
     @aiohttp_jinja2.template('posts.html')
     async def get(self):
-        if 'user' not in self.session:
-            return web.HTTPFound(location=self.app.router['login'].url_for())
         location = str(self).split('/')[-1][:-2]
         if location == 'posts':
-            posts = await Post.get_posts_subscribes_me(user_id=self.session['user']['id'])
+            posts = await Post.get_posts_subscribes_me(user_id=json.loads(request.cookies['user'])['user_id'])
         elif location == 'my_posts':
-            posts = await Post.get_posts_by_user(user_id=self.session['user']['id'])
+            posts = await Post.get_posts_by_user(user_id=json.loads(request.cookies['user'])['user_id'])
         return dict(posts=posts)

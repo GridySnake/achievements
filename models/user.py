@@ -9,7 +9,7 @@ class UserGetInfo:
     async def get_user_by_email_phone(email: str, type: str):
         conn = await asyncpg.connect(connection_url)
         user = await conn.fetchrow(f"""
-        SELECT user_id, user_name, password
+        SELECT user_id::varchar, user_name, password
         FROM authentication
         WHERE {type} = '{email}' and verified = True
         """)
@@ -127,7 +127,7 @@ class UserGetInfo:
                                                 ({user_active_id} <> any(ui.conditions_approved) or 
                                                 ui.conditions_approved = array[]::integer[])
                                     """)
-        return conditions
+        return [dict(i) for i in conditions]
 
 
 class UserCreate:

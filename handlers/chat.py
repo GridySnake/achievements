@@ -9,9 +9,6 @@ class ChatView(web.View):
 
     @aiohttp_jinja2.template('chat.html')
     async def get(self):
-        if 'user' not in self.session:
-            return web.HTTPFound(location=self.app.router['login'].url_for())
-
         chat_id = str(self).split('/chat/')[-1][:-2]
         session = await get_session(self)
         messages = await MessageGetInfo.get_messages(chat_id=chat_id)
