@@ -9,9 +9,10 @@ class LikesRecommendationsGetInfo:
     async def is_like_recommend(user_id: str, user_type: int, owner_id: str, owner_type: int):
         conn = await asyncpg.connect(connection_url)
         like_rec = await conn.fetchrow(f"""select case when l.owner_id = {owner_id} then true else false end as likes, 
+                                                  case when d.owner_id = {owner_id} then true else false 
+                                                  end as dislikes,
                                                   case when r.owner_id = {owner_id} then true else false end 
-                                                  as recommend, case when d.owner_id = {owner_id} then true else false 
-                                                  end as dislikes
+                                                  as recommend
                                              from users_information as ui
                                              left join (select owner_id from likes where owner_type = {owner_type} 
                                                 and {user_id} = any(users_liked_id)
@@ -27,7 +28,7 @@ class LikesRecommendationsGetInfo:
                                                 = {user_type}) as d on ui.user_id = d.owner_id
                                              where ui.user_id = {owner_id}
                                         """)
-        return [like_rec['likes'], like_rec['recommend'], like_rec['dislikes']]
+        return [like_rec['likes'], like_rec['dislikes'], like_rec['recommend']]
 
     @staticmethod
     async def get_statistics(owner_id: str, owner_type: str):
@@ -59,7 +60,7 @@ class LikesRecommendationsAction:
                             """)
 
     @staticmethod
-    async def unlike_unrecommend(user_id: str, user_type: str, owner_id: str, owner_type: list,
+    async def unlike_unrecommend(user_id: str, user_type: int, owner_id: str, owner_type: list,
                                  like_recommendations: list):
         conn = await asyncpg.connect(connection_url)
         await conn.execute(f"""
