@@ -69,20 +69,6 @@ const PersonalPageContainer = () => {
     useEffect(() => {
         GetPersonalPageInfo(setPersonalPage, id)
     }, [setPersonalPage, id])
-    // const generate = (action) => {
-    //     if (action !== null) {
-    //         console.log(1)
-    //         return PersonalPage.actions
-    //     } else {
-    // const action = (action) => {
-    //     if (action !== null) {
-    //         console.log(1)
-    //         return PersonalPage.actions
-    //     } else {
-    //         console.log(0)
-    //         return null
-    //     }
-    // }}}
 
     // const valuesTooltips = [
     //     {

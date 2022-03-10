@@ -3,3 +3,5 @@ react-router-dom
 axios
 antd
 mui
+react-slick
+slick-carousel

@@ -15,7 +15,7 @@ function App() {
     // const {user, authLoading} = useAuth();
 
   return (
-    <div>
+    <div style={{background: "#F1EDFE"}}>
         {/*{user ?*/}
         <AuthWrapper>
             <FrontRoutes/>
