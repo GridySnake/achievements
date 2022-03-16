@@ -1,11 +1,10 @@
 import React from "react";
 import StaticAvatars from "../StaticRoutes";
-import {Image} from "antd";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
-const AvatarsContainer = ({user, visible, setVisible}) => {
+const AvatarsContainer = ({user}) => {
     const settings = {
     infinite: true,
     dots: true,

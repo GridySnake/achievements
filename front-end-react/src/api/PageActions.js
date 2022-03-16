@@ -11,4 +11,4 @@ const makeAction = (url, owner) => {
     })
 };
 
-export {makeAction};
+export default makeAction;
