@@ -7,10 +7,10 @@ const FrontRoutes = () => {
     return (
         <Router>
             <Routes>
-                <Route path="/signup" element={<FormSignUp/>}/>
-                <Route path="/login" element={<FormLogin/>}/>
-                <Route path="/logout"/>
-                <Route path="/user/:id" element={<PersonalPageContainer/>}/>
+                <Route path="/signup" key="signup" element={<FormSignUp/>}/>
+                <Route path="/login" key="login" element={<FormLogin/>}/>
+                <Route path="/logout" key="logout" />
+                <Route path="/user/:id" key="user:id" element={<PersonalPageContainer/>}/>
                 <Route path="/subscribes"/>
                 <Route path="/chats"/>
                 <Route path="/chat/"/>

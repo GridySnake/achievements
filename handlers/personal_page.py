@@ -1,8 +1,4 @@
 import json
-from aiohttp.cookiejar import SimpleCookie
-import aiohttp_jinja2
-from aiohttp import web
-from aiohttp_session import get_session
 from models.user import UserGetInfo
 from models.post import Post
 from models.subscribes import SubscribesGetInfo
@@ -27,6 +23,7 @@ async def personal_page(request):
     actions = None
     block = None
     if user_id == location:
+        my_page = True
         approve = await AchievementsGetInfo.get_users_approve_achievements(user_id=location)
     else:
         friend = await SubscribesGetInfo.subscribe_each_other(user_active_id=user_id,
@@ -49,7 +46,7 @@ async def personal_page(request):
                                                                               user_passive_id=location)
             else:
                 block = True
-    return json_response({'user': user, 'statistics': statistics, 'posts': posts, 'my_page': my_page,
+    return json_response({'user': user, 'statistics': statistics, 'posts': posts, 'myPage': my_page,
                           'subscribes': subscribes, 'achievements': achievements, 'goals': goals,
                           'conditions': condition_to_chat, 'allow': allow, 'block': block, 'actions': actions,
                           'approve': approve})

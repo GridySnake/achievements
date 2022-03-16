@@ -12,7 +12,7 @@ from handlers.user_info import UserInfoView
 from handlers.goal import GoalView
 from config.common import BaseConfig
 from handlers.conditions import *
-from handlers.likes_recommendations import LikesRecommendationsView
+from handlers.likes_recommendations import likes_recommendations
 # from sqlalchemy import create_engine
 from aiohttp_swagger import *
 #todo: изменить ссылки на страницы, а то из подтврждения ачивок не падаем на нужные страницы
@@ -125,12 +125,12 @@ def setup_routes(app):
     app.router.add_route('POST', '/remove_course_member', CourseInfoView.post, name='remove_course_member')
     app.router.add_route('POST', '/add_payment_goal', CommunitiesInfoView.post, name='add_payment_goal')
     app.router.add_route('POST', '/approve_conditions', ApproveConditionsView.post, name='approve_conditions')
-    app.router.add_route('POST', '/like', LikesRecommendationsView.post, name='like')
-    app.router.add_route('POST', '/unlike', LikesRecommendationsView.post, name='unlike')
-    app.router.add_route('POST', '/dislike', LikesRecommendationsView.post, name='dislike')
-    app.router.add_route('POST', '/undislike', LikesRecommendationsView.post, name='undislike')
-    app.router.add_route('POST', '/recommend', LikesRecommendationsView.post, name='recommend')
-    app.router.add_route('POST', '/unrecommend', LikesRecommendationsView.post, name='unrecommend')
+    app.router.add_route('POST', '/like', likes_recommendations, name='like')
+    app.router.add_route('POST', '/unlike', likes_recommendations, name='unlike')
+    app.router.add_route('POST', '/dislike', likes_recommendations, name='dislike')
+    app.router.add_route('POST', '/undislike', likes_recommendations, name='undislike')
+    app.router.add_route('POST', '/recommend', likes_recommendations, name='recommend')
+    app.router.add_route('POST', '/unrecommend', likes_recommendations, name='unrecommend')
     app.router.add_route('POST', '/accept_cl', ApproveConditionsView.post, name='accept_cl')
     app.router.add_route('POST', '/decline_cl', ApproveConditionsView.post, name='decline_cl')
     app.router.add_route('POST', '/update_interview', ApproveConditionsView.post, name='update_interview')
