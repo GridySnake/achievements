@@ -11,7 +11,6 @@ const auth = (callback) => {
         })
     })
     .then(({data}) => {
-        // setUser(data);
         callback(data);
     })
     .catch(({response}) => {

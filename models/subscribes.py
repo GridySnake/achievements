@@ -37,7 +37,7 @@ class SubscribesGetInfo:
                                                        where user_id = {user_id})
                                      and u.user_id <> {user_id}
         """)
-        return users
+        return [dict(i) for i in users]
 
     @staticmethod
     async def get_user_subscribes_names(user_id: str):

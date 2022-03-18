@@ -1,14 +1,22 @@
 import aiohttp_jinja2
 from aiohttp import web
 from models.subscribes import *
+import json
+from aiohttp.web import json_response
+
+
+async def get_subscribes(request):
+    user_id = json.loads(request.cookies['user'])['user_id']
+    users = await SubscribesGetInfo.get_user_subscribes_suggestions(user_id=user_id)
+    return json_response(users)
 
 
 class SubscribesView(web.View):
 
-    @aiohttp_jinja2.template('subscribes.html')
-    async def get(self):
-        users = await SubscribesGetInfo.get_user_subscribes_suggestions(user_id=json.loads(request.cookies['user'])['user_id'])
-        return dict(users=users)
+    # @aiohttp_jinja2.template('subscribes.html')
+    # async def get(self):
+    #     users = await SubscribesGetInfo.get_user_subscribes_suggestions(user_id=json.loads(request.cookies['user'])['user_id'])
+    #     return dict(users=users)
 
     async def post(self):
         data = await self.post()

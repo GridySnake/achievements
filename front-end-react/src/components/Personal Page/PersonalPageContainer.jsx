@@ -6,14 +6,13 @@ import StaticAvatars from "../StaticRoutes";
 import AvatarsContainer from "./AvatarsContainer";
 import { useParams, useLocation } from 'react-router-dom'
 import StatisticContainer from "./StatisticContainer";
-import {makeAction} from "../../api/PageActions";
+import makeAction from "../../api/PageActions";
 
 const {Title} = Typography;
 
 const PersonalPageContainer = () => {
 
     const [PersonalPage, setPersonalPage] = useState(null);
-    const [visible, setVisible] = useState(false);
     const [likeColor, setLikeColor] = useState("#ee004b");
     const [like, setLike] = useState(true);
     const [dislike, setDislike] = useState(true);
@@ -23,9 +22,6 @@ const PersonalPageContainer = () => {
     const {id} = useParams();
     const {pathname} = useLocation();
 
-
-
-    console.log(PersonalPage)
     useEffect(() => {
         GetPersonalPageInfo(setPersonalPage, id)
     }, [setPersonalPage, id])
@@ -131,7 +127,7 @@ const PersonalPageContainer = () => {
                 </Col>
                 <Row>
                     <Col span={12}>
-                        <AvatarsContainer user={PersonalPage.user} visible={visible} setVisible={setVisible} />
+                        <AvatarsContainer user={PersonalPage.user} />
                     </Col>
                     <Col span={12}>
                         <Row>
