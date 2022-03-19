@@ -71,6 +71,7 @@ def setup_routes(app):
     app.router.add_route('POST', '/save_avatar', Avatar.post, name='save_avatar')
     app.router.add_route('POST', '/add_post', PostView.post, name='add_post')
     app.router.add_route('GET', '/subscribes', get_subscribes, name='subscribes')
+    app.router.add_route('GET', '/subscribes_suggestions', get_subscribes_suggestions, name='get_subscribes_suggestions')
     app.router.add_route('POST', '/subscribe', SubscribesView.post, name='subscribe')
     app.router.add_route('GET', '/messages', messages, name='messages')
     app.router.add_route('POST', '/send_message', send_message, name='send_message')

@@ -14,31 +14,31 @@ from aiohttp_session.cookie_storage import EncryptedCookieStorage
 from middleware import auth_middleware
 from routes.base import setup_routes, setup_static_routes
 from config.common import BaseConfig
-from models.user import UserGetInfo
+# from models.user import UserGetInfo
 
 
-async def current_user_ctx_processor(request):
-    session = await get_session(request)
-    user = None
-    is_anonymous = True
-    user_id = None
-    if 'user' in session:
-        user_id = session['user']['id']
-        user = await UserGetInfo.get_user_by_id(user_id=user_id)
-        if user:
-            is_anonymous = not bool(user)
-    return dict(current_user=user, is_anonymous=is_anonymous, user_id=user_id)
+# async def current_user_ctx_processor(request):
+#     session = await get_session(request)
+#     user = None
+#     is_anonymous = True
+#     user_id = None
+#     if 'user' in session:
+#         user_id = session['user']['id']
+#         user = await UserGetInfo.get_user_by_id(user_id=user_id)
+#         if user:
+#             is_anonymous = not bool(user)
+#     return dict(current_user=user, is_anonymous=is_anonymous, user_id=user_id)
 
 
-@web.middleware
-async def user_session_middleware(request, handler):
-    request.session = await get_session(request)
-    response = await handler(request)
-    return response
+# @web.middleware
+# async def user_session_middleware(request, handler):
+#     request.session = await get_session(request)
+#     response = await handler(request)
+#     return response
 
 
 def setup_middlewares(app):
-    app.middlewares.append(user_session_middleware)
+    # app.middlewares.append(user_session_middleware)
     app.middlewares.append(auth_middleware)
 
 
@@ -50,8 +50,8 @@ def main():
 
     aiohttp_jinja2.setup(
         app,
-        loader=jinja2.PackageLoader(package_name='main', package_path='templates'),
-        context_processors=[current_user_ctx_processor])
+        loader=jinja2.PackageLoader(package_name='main', package_path='templates'))
+        # context_processors=[current_user_ctx_processor])
     cors_accept = aiohttp_cors.ResourceOptions(
         allow_credentials=True,
         expose_headers="*",
