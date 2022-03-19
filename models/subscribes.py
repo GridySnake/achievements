@@ -102,7 +102,7 @@ class SubscribesGetInfo:
                                               status_id = 1
                                         """)
         follows = follows['follows']
-        return [dict(i) for i in follows]
+        return follows
 
     @staticmethod
     async def is_block(user_active_id: str, user_passive_id: str):
