@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import FormLogin from "./FormLogin";
 import FormSignUp from "./FormSignUp";
 import PersonalPageContainer from "./Personal Page/PersonalPageContainer";
-import SubscribesContainer from "./SubscribesContainer";
+import SubscribesContainer from "./Subscribes/SubscribesContainer";
 
 // auth? <navbar + all> : <login + signup>
 const FrontRoutes = () => {

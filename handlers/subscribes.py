@@ -5,10 +5,21 @@ import json
 from aiohttp.web import json_response
 
 
-async def get_subscribes(request):
+async def get_subscribes_suggestions(request):
     user_id = json.loads(request.cookies['user'])['user_id']
     users = await SubscribesGetInfo.get_user_subscribes_suggestions(user_id=user_id)
     return json_response(users)
+
+
+async def get_subscribes(request):
+    user_id = json.loads(request.cookies['user'])['user_id']
+    subscribers = await SubscribesGetInfo.get_subscribers(user_id=user_id)
+    friends = [i for i in subscribers if i['status_active'] == 1 and i['status_passive'] == 1]
+    subscribers_active = [i for i in subscribers if i['status_passive'] == 1 and i['status_active'] == 0]
+    subscribers_passive = [i for i in subscribers if i['status_active'] == 1 and i['status_passive'] == 0]
+    blocked = [i for i in subscribers if i['status_active'] == -1]
+    return json_response({'friends': friends, 'followers': subscribers_active, 'followings': subscribers_passive,
+                          'blocked': blocked})
 
 
 class SubscribesView(web.View):

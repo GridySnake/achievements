@@ -65,7 +65,7 @@ class SubscribesGetInfo:
         """
         conn = await asyncpg.connect(connection_url)
         subscribes = await conn.fetch(f"""
-                                          select distinct(u.user_id), u.name, u.surname, f.status_id as status_active, 
+                                          select distinct(u.user_id), u.name, u.surname, u.bio, f.status_id as status_active, 
                                             f1.status_id as status_passive, img.href
                                           from
                                           (select user_id, unnest(users_id) as users_id, unnest(status_id) as status_id 
@@ -79,7 +79,7 @@ class SubscribesGetInfo:
                                             on img.image_id = u.image_id[array_upper(u.image_id, 1)]
                                           where f.user_id = {user_id}
             """)
-        return subscribes
+        return [dict(i) for i in subscribes]
 
     @staticmethod
     async def subscribe_each_other(user_active_id: str, user_passive_id: str):
@@ -102,7 +102,7 @@ class SubscribesGetInfo:
                                               status_id = 1
                                         """)
         follows = follows['follows']
-        return follows
+        return [dict(i) for i in follows]
 
     @staticmethod
     async def is_block(user_active_id: str, user_passive_id: str):

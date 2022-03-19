@@ -35,7 +35,7 @@ async def login(request):
             value=payload,
             httponly=True,
             domain='localhost',
-            max_age=3600000
+            max_age=36000000
         )
         return resp
     else:
