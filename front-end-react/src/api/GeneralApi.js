@@ -1,6 +1,5 @@
 import axiosInstance from "./APIClient";
 
-
 const GetAnyUserInfo = async (set, url) => {
     try {
         const resp = await axiosInstance.get(url);

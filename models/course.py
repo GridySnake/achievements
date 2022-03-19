@@ -1,8 +1,3 @@
-import asyncpg
-from config.common import BaseConfig
-connection_url = BaseConfig.database_url
-
-
 class CoursesGetInfo:
     """
         Class for getting information for subscribes
@@ -19,13 +14,12 @@ class CoursesGetInfo:
             Give information about course
     """
     @staticmethod
-    async def get_user_course_suggestions(user_id: str):
+    async def get_user_course_suggestions(user_id: str, conn):
         """
         :param user_id: str
         :return: list of asyncpg records: course_id, course_name, description, course_owner_id, sphere, online, free,
         new, course_owner_type, name, surname, community_name
         """
-        conn = await asyncpg.connect(connection_url)
         courses = await conn.fetch(f"""
                                         select c.course_id, c.course_name, c.description, c.course_owner_id, c.sphere_id,
                                             c.online, c.free, c.country_id, c.city_id, c.new, c.course_owner_type,
@@ -49,8 +43,7 @@ class CoursesGetInfo:
         return courses
 
     @staticmethod
-    async def get_course_info_by_value(course_id: str, value: str):
-        conn = await asyncpg.connect(connection_url)
+    async def get_course_info_by_value(course_id: str, value: str, conn):
         course = await conn.fetchrow(f"""
                                       select {value} 
                                       from course_statistics
@@ -59,13 +52,12 @@ class CoursesGetInfo:
         return course[value]
 
     @staticmethod
-    async def get_course_info(course_id: str):
+    async def get_course_info(course_id: str, conn):
         """
         :param course_id: str
         :return: asyncpg record: course_id, course_name, description, course_owner_id, sphere, online, free,
         new, course_owner_type, name, surname, community_name, language
         """
-        conn = await asyncpg.connect(connection_url)
         course = await conn.fetchrow(f"""
                                         select c.course_id, c.course_name, c.description, c.course_owner_id, 
                                             c.online, c.free, c.country_id, c.city_id, c.new, c.course_owner_type,
@@ -88,13 +80,12 @@ class CoursesGetInfo:
         return course
 
     @staticmethod
-    async def get_user_courses(user_id: str):
+    async def get_user_courses(user_id: str, conn):
         """
         :param user_id: str
         :return: asyncpg records: course_id, course_name, description, course_owner_id, sphere, online, free,
         new, course_owner_type, name, surname, community_name, language
         """
-        conn = await asyncpg.connect(connection_url)
         courses = await conn.fetch(f"""
                                        select c.course_id, c.course_name, c.description, c.course_owner_id,
                                            c.online, c.free, c.country_id, c.city_id, c.new, c.course_owner_type,
@@ -117,13 +108,12 @@ class CoursesGetInfo:
         return courses
 
     @staticmethod
-    async def get_own_courses(user_id: str):
+    async def get_own_courses(user_id: str, conn):
         """
         :param user_id: str
         :return: asyncpg records: course_id, course_name, description, course_owner_id, sphere, online, free,
         new, course_owner_type, name, surname, community_name, language
         """
-        conn = await asyncpg.connect(connection_url)
         courses = await conn.fetch(f"""
                                        select c.course_id, c.course_name, c.description, c.course_owner_id, c.sphere_id,
                                           c.online, c.free, c.country_id, c.city_id, c.new, c.course_owner_type,
@@ -146,13 +136,12 @@ class CoursesGetInfo:
         return courses
 
     @staticmethod
-    async def is_user_in_course(course_id: str, user_id: str):
+    async def is_user_in_course(course_id: str, user_id: str, conn):
         """
         :param course_id: str
         :param user_id: str
         :return: bool
         """
-        conn = await asyncpg.connect(connection_url)
         result = await conn.fetchrow(f"""
                                         select
                                         case
@@ -165,8 +154,7 @@ class CoursesGetInfo:
         return result['result']
 
     @staticmethod
-    async def is_owner(course_id: str, user_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def is_owner(course_id: str, user_id: str, conn):
         owner = await conn.fetchrow(f"""
                                         select 
                                             case when u.user_id is not null then true
@@ -186,8 +174,7 @@ class CoursesGetInfo:
         return owner['is_owner']
 
     @staticmethod
-    async def get_course_participants(course_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def get_course_participants(course_id: str, conn):
         participants = await conn.fetch(f"""
                                                select u.user_id, u.name, u.surname
                                                from (select course_id, unnest(users) as users from courses) as c
@@ -197,8 +184,7 @@ class CoursesGetInfo:
         return participants
 
     @staticmethod
-    async def user_requests(user_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def user_requests(user_id: str, conn):
         requests = await conn.fetch(f"""
                                         select c.course_id, c.course_name
                                         from courses as c
@@ -208,8 +194,7 @@ class CoursesGetInfo:
         return requests
 
     @staticmethod
-    async def get_course_conditions(user_id: str, course_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def get_course_conditions(user_id: str, course_id: str, conn):
         conditions = await conn.fetch(f"""select c.task, c.condition_value, gc.condition_name, i.href, 
                                             gc.generate_condition_id, case when {user_id} = any(c.users_approved)
                                             then true else false end as approved, case when {user_id} = 
@@ -246,13 +231,12 @@ class CoursesAction:
         Drop user from course
     """
     @staticmethod
-    async def join_course(course_id: str, user_id: str):
+    async def join_course(course_id: str, user_id: str, conn):
         """
         :param course_id: str
         :param user_id: str
         :return: None
         """
-        conn = await asyncpg.connect(connection_url)
         await conn.execute(f"""
                                 update users_information
                                     set course_id = array_append(course_id, {course_id})
@@ -276,13 +260,12 @@ class CoursesAction:
 
 
     @staticmethod
-    async def leave_course(course_id: str, user_id: str):
+    async def leave_course(course_id: str, user_id: str, conn):
         """
         :param course_id: str
         :param user_id: str
         :return: None
         """
-        conn = await asyncpg.connect(connection_url)
         await conn.execute(f"""
                                update users_information
                                    set course_id = course_id[:(select array_position(course_id, {course_id}) 
@@ -320,18 +303,16 @@ class CoursesAction:
                             """)
 
     @staticmethod
-    async def add_member(course_id: str, users: list, status: list):
-        conn = await asyncpg.connect(connection_url)
+    async def add_member(course_id: str, users: list, status: list, conn):
         await conn.execute(f"""
                                 update courses
-                                    set requests = array_cat(requests, array{users}),
-                                        request_statuses = array_cat(request_statuses, array{status})
+                                    set requests = array_cat(requests, array[{users}]),
+                                        request_statuses = array_cat(request_statuses, array[{status}])
                                 where course_id = {course_id}
                             """)
 
     @staticmethod
-    async def accept_decline_request(user_id: str, action: int, course_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def accept_decline_request(user_id: str, action: int, course_id: str, conn):
         if action == 0:
             await conn.execute(f"""
                                     update courses
@@ -374,14 +355,13 @@ class CourseCreate:
     """
 
     @staticmethod
-    async def create_course(user_id: str, data: dict, no_image: bool):
+    async def create_course(user_id: str, data: dict, no_image: bool, conn):
         """
         :param user_id: str
         :param data: dict: course_name, description, language, level, online, free, image_id
         :param no_image: bool
         :return: None
         """
-        conn = await asyncpg.connect(connection_url)
         if no_image:
             image_id = 'null'
         else:
@@ -449,8 +429,7 @@ class CourseCreate:
         return course_id
 
     @staticmethod
-    async def create_course_info_conditions(course_id: str, data: dict):
-        conn = await asyncpg.connect(connection_url)
+    async def create_course_info_conditions(course_id: str, data: dict, conn):
         for i in range(len(data['condition_id'])):
             condition_id = await conn.fetchrow("select max(condition_id) from conditions")
             condition_id = dict(condition_id)['max']
@@ -514,8 +493,7 @@ class CourseCreate:
 
 class CourseContentModel:
     @staticmethod
-    async def count_course_content(course_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def count_course_content(course_id: str, conn):
         content = await conn.fetchrow(f"""
                                         select count(content_id)
                                         from courses_content
@@ -524,8 +502,7 @@ class CourseContentModel:
         return content['count']
 
     @staticmethod
-    async def course_content_page(course_id: str, page: str):
-        conn = await asyncpg.connect(connection_url)
+    async def course_content_page(course_id: str, page: str, conn):
         content = await conn.fetchrow(f"""
                                        select content_type, content_name, content_description, content_path
                                        from courses_content
@@ -534,8 +511,7 @@ class CourseContentModel:
         return content
 
     @staticmethod
-    async def course_content_navigation(course_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def course_content_navigation(course_id: str, conn):
         content = await conn.fetch(f"""
                                         select content_name, is_title, is_subtitle, content_page
                                         from courses_content
@@ -545,8 +521,7 @@ class CourseContentModel:
         return content
 
     @staticmethod
-    async def course_create_content(course_id: str, content: dict):
-        conn = await asyncpg.connect(connection_url)
+    async def course_create_content(course_id: str, content: dict, conn):
         content_id = await conn.fetchrow("""select max(content_id) from courses_content""")
         content_type_dict = {'document': 0, 'photo': 1, 'video': 2, 'PDF': 3, 'test': 4}
         if content_id['max'] is None:

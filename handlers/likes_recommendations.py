@@ -1,9 +1,10 @@
-from models.likes_recommendations import LikesRecommendationsAction
+from models.likes_recommendations import LikesRecommendationsAction, LikesRecommendationsGetInfo
 import json
 from aiohttp.web import json_response
 
 
 async def likes_recommendations(request):
+    pool = request.app['pool']
     data = await request.json()
     user_type = 0
     user_id = json.loads(request.cookies['user'])['user_id']
@@ -15,11 +16,18 @@ async def likes_recommendations(request):
     like_recommend = like_recommend_dict[location.replace('un', '')]
     owner_type = owner[data['owner_type']]
     owner_id = data['owner_id']
-    if 'un' in location:
-        await LikesRecommendationsAction.unlike_unrecommend(user_id=user_id, user_type=user_type, owner_id=owner_id,
-                                                            owner_type=owner_type,
-                                                            like_recommendations=like_recommend)
-    else:
-        await LikesRecommendationsAction.like_recommend(user_id=user_id, user_type=user_type, owner_id=owner_id,
-                                                        owner_type=owner_type, like_recommendations=like_recommend)
-    return json_response({'status': '200'})
+    owner_type_new = {0: 'user', 1: 'community', 2: 'course', 3: 'achievement'}
+    async with pool.acquire() as conn:
+        if 'un' in location:
+            await LikesRecommendationsAction.unlike_unrecommend(user_id=user_id, user_type=user_type, owner_id=owner_id,
+                                                                owner_type=owner_type,
+                                                                like_recommendations=like_recommend, conn=conn)
+        else:
+            await LikesRecommendationsAction.like_recommend(user_id=user_id, user_type=user_type, owner_id=owner_id,
+                                                            owner_type=owner_type, like_recommendations=like_recommend,
+                                                            conn=conn)
+        value = await LikesRecommendationsGetInfo.get_one_statistic(owner_id=user_id,
+                                                                    owner_type=owner_type_new[owner_type],
+                                                                    statistic=like_recommend[0], conn=conn)
+
+    return json_response({'value': value})

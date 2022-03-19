@@ -1,13 +1,6 @@
-import asyncpg
-from config.common import BaseConfig
-connection_url = BaseConfig.database_url
-
-
 class Goals:
     @staticmethod
-    async def get_goals(user_id: str,
-                        user_type: int):
-        conn = await asyncpg.connect(connection_url)
+    async def get_goals(user_id: str, user_type: int, conn):
         if user_type == 0:
             table = 'users_information'
             column = 'user_id'

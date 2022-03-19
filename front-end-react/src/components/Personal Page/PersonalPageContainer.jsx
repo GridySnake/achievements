@@ -5,7 +5,7 @@ import GetPersonalPageInfo from "../../api/Api";
 import StaticAvatars from "../StaticRoutes";
 import AvatarsContainer from "./AvatarsContainer";
 import { useParams, useLocation } from 'react-router-dom'
-import StatisticContainer from "./StatisticContainer";
+import GetAnyUserInfo from "../../api/GeneralApi";
 import makeAction from "../../api/PageActions";
 
 const {Title} = Typography;
@@ -13,18 +13,40 @@ const {Title} = Typography;
 const PersonalPageContainer = () => {
 
     const [PersonalPage, setPersonalPage] = useState(null);
-    const [likeColor, setLikeColor] = useState("#ee004b");
-    const [like, setLike] = useState(true);
-    const [dislike, setDislike] = useState(true);
-    const [recommend, setRecommend] = useState(true);
-    const [dislikeColor, setDislikeColor] = useState("#ee004b");
-    const [recommendColor, setRecommendColor] = useState("#ee004b");
+    const [likeColor, setLikeColor] = useState(null);
+    const [like, setLike] = useState(null);
+    const [dislike, setDislike] = useState(null);
+    const [recommend, setRecommend] = useState(null);
+    const [dislikeColor, setDislikeColor] = useState(null);
+    const [recommendColor, setRecommendColor] = useState(null);
+    const [likes, setLikes] = useState(null);
+    const [dislikes, setDislikes] = useState(null);
+    const [recommends, setRecommends] = useState(null);
+    const [followers, setFollowers] = useState(null);
+    const [followings, setFollowings] = useState(null);
     const {id} = useParams();
     const {pathname} = useLocation();
 
+    const fillUserInfo = (PersonalPage) => {
+        if (PersonalPage !== null) {
+            setPersonalPage(PersonalPage)
+            setLike(PersonalPage.actions[0])
+            setDislike(PersonalPage.actions[1])
+            setRecommend(PersonalPage.actions[2])
+            setLikeColor(color(PersonalPage.actions[0]))
+            setDislikeColor(color(PersonalPage.actions[1]))
+            setRecommendColor(color(PersonalPage.actions[2]))
+            setLikes(PersonalPage.statistics.likes)
+            setDislikes(PersonalPage.statistics.dislikes)
+            setRecommends(PersonalPage.statistics.recommendations)
+            setFollowers(PersonalPage.statistics.followers)
+            setFollowings(PersonalPage.statistics.followings)
+        }
+    }
+
     useEffect(() => {
-        GetPersonalPageInfo(setPersonalPage, id)
-    }, [setPersonalPage, id])
+        GetPersonalPageInfo(fillUserInfo, id)
+    }, [fillUserInfo, id])
 
     const CardReturn = (post) => {
         if (post.href) {
@@ -33,12 +55,26 @@ const PersonalPageContainer = () => {
             return <></>;
         }}
 
+    const color = (bool) => {
+        if (bool) {
+            return "#ee004b"
+        } else {
+            return "#00ee00"
+        }
+    }
+
     const MakeLike = () => {
         if (!PersonalPage.myPage) {
             if (like) {
                 makeAction('/unlike', {owner_id: id, owner_type: pathname.split('/')[1]})
+                setLike(false)
+                setLikeColor("#00ee00")
+                GetAnyUserInfo(setLikes, '/get_likes')
             } else {
                 makeAction('/like', {owner_id: id, owner_type: pathname.split('/')[1]})
+                setLike(true)
+                setLikeColor("#ee004b")
+                GetAnyUserInfo(setLikes, '/get_likes')
             }
         }
     }
@@ -46,8 +82,14 @@ const PersonalPageContainer = () => {
         if (!PersonalPage.myPage) {
             if (dislike) {
                 makeAction('/undislike', {owner_id: id, owner_type: pathname.split('/')[1]})
+                setDislike(false)
+                setDislikeColor("#00ee00")
+                GetAnyUserInfo(setDislikes, '/get_dislikes')
             } else {
                 makeAction('/dislike', {owner_id: id, owner_type: pathname.split('/')[1]})
+                setDislike(true)
+                setDislikeColor("#ee004b")
+                GetAnyUserInfo(setDislikes, '/get_dislikes')
             }
         }
     }
@@ -56,8 +98,14 @@ const PersonalPageContainer = () => {
         if (!PersonalPage.myPage) {
             if (recommend) {
                 makeAction('/unrecommend', {owner_id: id, owner_type: pathname.split('/')[1]})
+                setRecommend(false)
+                setRecommendColor("#00ee00")
+                GetAnyUserInfo(setRecommends, '/get_recommendations')
             } else {
-                makeAction('/recommend', {owner_id: id, owner_type: pathname.split('/')[1]})
+                setRecommends(makeAction('/recommend', {owner_id: id, owner_type: pathname.split('/')[1]}).value)
+                setRecommend(true)
+                setRecommendColor("#ee004b")
+                GetAnyUserInfo(setRecommends, '/get_recommendations')
             }
         }
     }
@@ -131,46 +179,40 @@ const PersonalPageContainer = () => {
                     </Col>
                     <Col span={12}>
                         <Row>
-                            {/*{valuesTooltips.map((tooltip, inx) => {*/}
-                            <Button type="primary" htmlType="button" onClick={MakeLike}>
-                                <StatisticContainer title='Likes' values={PersonalPage.statistics.likes}
-                                                icon={<LikeOutlined />} action={PersonalPage.actions}
-                                                color={likeColor} setLikeColor={setLikeColor} setLike={setLike} />
+                            <Button type="primary" htmlType="button" onClick={MakeLike} style={{background: likeColor}}
+                                    icon={<LikeOutlined />} title="Likes">
+                                {likes}
                             </Button>
-                            <Button type="primary" htmlType="button" onClick={MakeDislike}>
-                                <StatisticContainer title='Dislikes' values={PersonalPage.statistics.dislikes}
-                                                icon={<DislikeOutlined />} action={PersonalPage.actions}
-                                                color={dislikeColor} setDislikeColor={setDislikeColor}
-                                                setDislike={setDislike} />
+                            <Button type="primary" htmlType="button" onClick={MakeDislike} title="Dislikes"
+                                    style={{background: dislikeColor}} icon={<DislikeOutlined />}>
+                                {dislikes}
                             </Button>
-                            <Button type="primary" htmlType="button" onClick={MakeRecommend}>
-                                <StatisticContainer title='Recommendations'  setRecommend={setRecommend}
-                                                values={PersonalPage.statistics.recommendations}
-                                                icon={<CheckCircleOutlined />} action={PersonalPage.actions}
-                                                color={recommendColor} setRecommendColor={setRecommendColor}/>
+                            <Button type="primary" htmlType="button" onClick={MakeRecommend} title="Recommendations"
+                                    style={{background: recommendColor}} icon={<CheckCircleOutlined />}>
+                                {recommends}
                             </Button>
-                            <StatisticContainer title='Followers' values={PersonalPage.statistics.followers}
-                                                icon={<TeamOutlined />} />
-                            <StatisticContainer title='Followings' values={PersonalPage.statistics.followings}
-                                                icon={<UserOutlined />} />
-                            {/*<Tooltip title='Likes'>*/}
-                            {/*    <Statistic value={PersonalPage.statistics.likes} prefix={<LikeOutlined />}*/}
-                            {/*               style={{background: likeColor}} />*/}
-                            {/*</Tooltip>*/}
-                            {/*<Tooltip title='Dislikes'>*/}
-                            {/*    <Statistic value={PersonalPage.statistics.dislikes} prefix={<DislikeOutlined />}*/}
-                            {/*               style={{background: dislikeColor}} />*/}
-                            {/*</Tooltip>*/}
-                            {/*<Tooltip title='Recommendations'>*/}
-                            {/*    <Statistic value={PersonalPage.statistics.recommendations} prefix={<CheckCircleOutlined />}*/}
-                            {/*               style={{background: recommendColor}} />*/}
-                            {/*</Tooltip>*/}
-                            {/*<Tooltip title='Followers'>*/}
-                            {/*    <Statistic value={PersonalPage.statistics.followers} prefix={<TeamOutlined />} />*/}
-                            {/*</Tooltip>*/}
-                            {/*<Tooltip title='Followings'>*/}
-                            {/*    <Statistic value={PersonalPage.statistics.followings} prefix={<UserOutlined />} />*/}
-                            {/*</Tooltip>*/}
+                            <Button type="primary" htmlType="button" title="Followers" icon={<TeamOutlined />}>
+                                {followers}
+                            </Button>
+                            <Button type="primary" title="Followings" icon={<UserOutlined />}>
+                                {followings}
+                            </Button>
+                            {/*<Button type="primary" htmlType="button" onClick={MakeDislike}>*/}
+                            {/*    <StatisticContainer title='Dislikes' values={PersonalPage.statistics.dislikes}*/}
+                            {/*                    icon={<DislikeOutlined />} action={PersonalPage.actions}*/}
+                            {/*                    color={dislikeColor} setDislikeColor={setDislikeColor}*/}
+                            {/*                    setDislike={setDislike} />*/}
+                            {/*</Button>*/}
+                            {/*<Button type="primary" htmlType="button" onClick={MakeRecommend}>*/}
+                            {/*    <StatisticContainer title='Recommendations'  setRecommend={setRecommend}*/}
+                            {/*                    values={PersonalPage.statistics.recommendations}*/}
+                            {/*                    icon={<CheckCircleOutlined />} action={PersonalPage.actions}*/}
+                            {/*                    color={recommendColor} setRecommendColor={setRecommendColor}/>*/}
+                            {/*</Button>*/}
+                            {/*<StatisticContainer title='Followers' values={PersonalPage.statistics.followers}*/}
+                            {/*                    icon={<TeamOutlined />} />*/}
+                            {/*<StatisticContainer title='Followings' values={PersonalPage.statistics.followings}*/}
+                            {/*                    icon={<UserOutlined />} />*/}
                         </Row>
                     </Col>
                 </Row>

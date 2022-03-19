@@ -1,13 +1,9 @@
 import hashlib
-import asyncpg
-from config.common import BaseConfig
-connection_url = BaseConfig.database_url
 
 
 class UserGetInfo:
     @staticmethod
-    async def get_user_by_email_phone(email: str, type: str):
-        conn = await asyncpg.connect(connection_url)
+    async def get_user_by_email_phone(email: str, type: str, conn):
         user = await conn.fetchrow(f"""
         SELECT user_id::varchar, user_name, password
         FROM authentication
@@ -27,8 +23,7 @@ class UserGetInfo:
             return dict(error='User with {} {} not found'.format(type, email))
 
     @staticmethod
-    async def get_user_by_id(user_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def get_user_by_id(user_id: str, conn):
         user = await conn.fetchrow(f"""
                                         select name, surname, bio, birthday::varchar, array_agg(i.href) as href
                                         from users_information as ui
@@ -45,8 +40,7 @@ class UserGetInfo:
             return None
 
     @staticmethod
-    async def get_user_info_by_value(user_id: str, value: str):
-        conn = await asyncpg.connect(connection_url)
+    async def get_user_info_by_value(user_id: str, value: str, conn):
         user = await conn.fetchrow(f"""
                     select {value}
                     from users_information
@@ -55,8 +49,7 @@ class UserGetInfo:
         return user[value]
 
     @staticmethod
-    async def get_user_info(user_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def get_user_info(user_id: str, conn):
         user = await conn.fetchrow(f"""
                             select name, surname, c.country_name_native, c.country_id, age, bio
                             from users_information as ui
@@ -66,8 +59,7 @@ class UserGetInfo:
         return user
 
     @staticmethod
-    async def get_user_info_by_count(user_id: str, value: str):
-        conn = await asyncpg.connect(connection_url)
+    async def get_user_info_by_count(user_id: str, value: str, conn):
         count = await conn.fetchrow(f"""
                                       select {value} 
                                       from user_statistics
@@ -76,8 +68,7 @@ class UserGetInfo:
         return count[value]
 
     @staticmethod
-    async def get_avatar_by_user_id(user_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def get_avatar_by_user_id(user_id: str, conn):
         avatar = await conn.fetch(f"""
                 SELECT images.href
                 FROM images
@@ -90,8 +81,7 @@ class UserGetInfo:
             return None
 
     @staticmethod
-    async def check_connect(user_id: str, service_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def check_connect(user_id: str, service_id: str, conn):
         count = await conn.fetchrow(f"""select count(services_id)
                                     from users_information
                                     where user_id = {user_id} and {service_id} in (select unnest(services_id) from users_information where user_id={user_id})
@@ -102,8 +92,7 @@ class UserGetInfo:
             return False
 
     @staticmethod
-    async def get_user_name_by_service(user_id: str, service_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def get_user_name_by_service(user_id: str, service_id: str, conn):
         username = await conn.fetchrow(f"""select services_username
                                         from users_information
                                         where user_id = {user_id} and {service_id} in (select unnest(services_id) 
@@ -112,8 +101,7 @@ class UserGetInfo:
         return username
 
     @staticmethod
-    async def get_user_conditions(user_active_id: str, user_passive_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def get_user_conditions(user_active_id: str, user_passive_id: str, conn):
         conditions = await conn.fetch(f"""select c.task, c.condition_value, gc.condition_name, i.href, 
                                             gc.generate_condition_id, case when {user_active_id} = any(c.users_approved)
                                             then true else false end as approved
@@ -132,8 +120,7 @@ class UserGetInfo:
 
 class UserCreate:
     @staticmethod
-    async def create_user_info(user_id: str, data: dict):
-        conn = await asyncpg.connect(connection_url)
+    async def create_user_info(user_id: str, data: dict, conn):
         for i in data.keys():
             await conn.execute(f"""
                                     update users_information
@@ -143,8 +130,7 @@ class UserCreate:
                             """)
 
     @staticmethod
-    async def get_user_info(user_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def get_user_info(user_id: str, conn):
         user_info = await conn.fetchrow(f"""
                                             select name, surname, bio, birthday
                                             from users_information
@@ -153,8 +139,7 @@ class UserCreate:
         return user_info
 
     @staticmethod
-    async def create_user_info_conditions(user_id: str, data: dict):
-        conn = await asyncpg.connect(connection_url)
+    async def create_user_info_conditions(user_id: str, data: dict, conn):
         for i in range(len(data['condition_id'])):
             condition_id = await conn.fetchrow("select max(condition_id) from conditions")
             condition_id = dict(condition_id)['max']
@@ -216,11 +201,10 @@ class UserCreate:
                                 """)
 
     @staticmethod
-    async def create_user(data, token):
+    async def create_user(data, token, conn):
         # TODO: make just phone or email
         email = data['email']
         phone = data['phone']
-        conn = await asyncpg.connect(connection_url)
         user = await conn.fetchrow(f"""
                     SELECT * 
                     FROM authentication
@@ -274,7 +258,7 @@ class UserCreate:
                                 """)
             await conn.execute(f"""
                                     insert into user_statistics (user_id, followers, likes, comments, recommendations, 
-                                        create_achievements, create_courses, create_communities, reach_achievements, 
+                                        create_achievements, create_courses, create_communities, achievements, 
                                         join_courses, join_communities, posts, completed_courses, followings) values(
                                         {id}, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
                                     """)
@@ -311,8 +295,7 @@ class UserCreate:
 
 class UserVerifyAvatar:
     @staticmethod
-    async def verify_user(href):
-        conn = await asyncpg.connect(connection_url)
+    async def verify_user(href, conn):
         verify = await conn.fetchrow(f"""
                             SELECT user_name 
                             FROM authentication
@@ -330,8 +313,7 @@ class UserVerifyAvatar:
         return verify
 
     @staticmethod
-    async def save_avatar_url(user_id: str, url: str):
-        conn = await asyncpg.connect(connection_url)
+    async def save_avatar_url(user_id: str, url: str, conn):
         if url is not None and user_id is not None:
             image_id = await conn.fetchrow(f"""SELECT MAX(image_id) FROM images""")
             image_id = dict(image_id)['max']

@@ -1,14 +1,6 @@
-from datetime import datetime
-import asyncpg
-from config.common import BaseConfig
-
-connection_url = BaseConfig.database_url
-
-
 class MessageGetInfo:
     @staticmethod
-    async def get_messages(chat_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def get_messages(chat_id: str, conn):
         messages = await conn.fetch(f"""
                                         select u.user_id,  u.surname, u.name, m.message, m.datetime, img.href, 
                                         c.community_id, c.community_name, img1.href as href1, 
@@ -27,8 +19,7 @@ class MessageGetInfo:
         return messages
 
     @staticmethod
-    async def is_owner(chat_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def is_owner(chat_id: str, conn):
         owner = await conn.fetchrow(f"""
                                         select u.user_id
                                         from chats as ch
@@ -42,8 +33,7 @@ class MessageGetInfo:
         return owner['user_id']
 
     @staticmethod
-    async def get_chat_owner_cc(chat_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def get_chat_owner_cc(chat_id: str, conn):
         owner = await conn.fetchrow(f"""
                                         select ch.owner_id
                                         from chats as ch
@@ -53,7 +43,7 @@ class MessageGetInfo:
 
     # @staticmethod
     # async def get_inbox_messages_by_user(user_id: str, friend, limit=20):
-    #     conn = await asyncpg.connect(connection_url)
+    #     
     #     messages = await conn.fetch(f"""
     #                         SELECT u.user_id, u.surname, u.name, m.message, m.datetime
     #                         FROM messages as m
@@ -65,7 +55,7 @@ class MessageGetInfo:
     #
     # @staticmethod
     # async def get_send_messages_by_user(user_id: str, friend, limit=20):
-    #     conn = await asyncpg.connect(connection_url)
+    #     
     #     messages = await conn.fetch(f"""
     #                                 SELECT u.user_id,  u.surname, u.name, m.message, m.datetime
     #                                 FROM messages as m
@@ -76,8 +66,7 @@ class MessageGetInfo:
     #     return messages
 
     @staticmethod
-    async def get_users_chats(user_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def get_users_chats(user_id: str, conn):
         chats = await conn.fetch(f"""
                                      select distinct u.user_id, u.name, u.surname, img.href, ch.chat_id, ch.chat_type,
                                         first_value(m.message) over (PARTITION BY m.chat_id order by m.datetime desc) as message,
@@ -96,8 +85,7 @@ class MessageGetInfo:
         return chats
 
     @staticmethod
-    async def get_group_chats(user_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def get_group_chats(user_id: str, conn):
         chats = await conn.fetch(f"""
                                      select distinct c.group_name, img.href, ch.chat_id, ch.chat_type,
                                         first_value(m.message) over (PARTITION BY m.chat_id order by m.datetime desc) as message,
@@ -115,8 +103,7 @@ class MessageGetInfo:
         return chats
 
     @staticmethod
-    async def get_community_chats(user_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def get_community_chats(user_id: str, conn):
         chats = await conn.fetch(f"""
                                     select distinct c.community_id, c.community_name, img.href, ch.chat_id, ch.chat_type,
                                         first_value(m.message) over (PARTITION BY m.chat_id order by m.datetime desc) as message,
@@ -136,8 +123,7 @@ class MessageGetInfo:
         return chats
 
     @staticmethod
-    async def get_course_chats(user_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def get_course_chats(user_id: str, conn):
         chats = await conn.fetch(f"""
                                      select distinct c.course_id, c.course_name, img.href, ch.chat_id, ch.chat_type,
                                         first_value(m.message) over (PARTITION BY m.chat_id order by m.datetime desc) as message,
@@ -157,8 +143,7 @@ class MessageGetInfo:
         return chats
 
     @staticmethod
-    async def get_last_messages(chat_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def get_last_messages(chat_id: str, conn):
         last_messages = []
         for i in chat_id:
             messages = await conn.fetch(f"""
@@ -173,8 +158,7 @@ class MessageGetInfo:
         return last_messages
 
     @staticmethod
-    async def is_read(user_id: str, chat_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def is_read(user_id: str, chat_id: str, conn):
         await conn.fetch(f"""
                          update messages
                          set is_read = True
@@ -182,8 +166,7 @@ class MessageGetInfo:
                         """)
 
     @staticmethod
-    async def get_chat(user_id: str, user_id1: str):
-        conn = await asyncpg.connect(connection_url)
+    async def get_chat(user_id: str, user_id1: str, conn):
         chat_id = await conn.fetchrow(f"""
                                          select chat_id
                                          from chats
@@ -196,8 +179,7 @@ class MessageGetInfo:
         return chat_id
 
     @staticmethod
-    async def get_chat_participants(chat_id: str, user_id:str):
-        conn = await asyncpg.connect(connection_url)
+    async def get_chat_participants(chat_id: str, user_id: str, conn):
         participants = await conn.fetch(f"""
                                                select u.user_id, u.name, u.surname
                                                from (select chat_id, unnest(participants) as participants from chats) as ch
@@ -209,9 +191,7 @@ class MessageGetInfo:
 
 class MessageCreate:
     @staticmethod
-    async def create_message(from_user: str, message: str, type1: str, chat_id: str, to_user: str = None):
-        conn = await asyncpg.connect(connection_url)
-
+    async def create_message(from_user: str, message: str, type1: str, chat_id: str, conn, to_user: str = None):
         message_id = await conn.fetchrow(f"""SELECT MAX(message_id) FROM messages""")
         if dict(message_id)['max'] is not None:
             message_id = int(dict(message_id)['max']) + 1
@@ -236,8 +216,7 @@ class MessageCreate:
                             """)
 
     @staticmethod
-    async def create_group_chat(owner_id: str, chat_name: str, chat_avatar: str = None):
-        conn = await asyncpg.connect(connection_url)
+    async def create_group_chat(owner_id: str, chat_name: str, conn, chat_avatar: str = None):
         if chat_avatar is None:
             image_id = 'null'
         else:
@@ -274,17 +253,15 @@ class MessageCreate:
         return chat_id
 
     @staticmethod
-    async def add_member(chat_id: str, users: list):
-        conn = await asyncpg.connect(connection_url)
+    async def add_member(chat_id: str, users: list, conn):
         await conn.execute(f"""
                                update chats
-                                   set participants = array_cat(participants, array{users})
+                                   set participants = array_cat(participants, array[{users}])
                                    where chat_id = {chat_id}
                             """)
 
     @staticmethod
-    async def remove_member(chat_id: str, users: list):
-        conn = await asyncpg.connect(connection_url)
+    async def remove_member(chat_id: str, users: list, conn):
         # todo: заменить цикл
         for i in users:
             await conn.execute(f"""
