@@ -40,7 +40,7 @@ class LikesRecommendationsGetInfo:
                                                  from {owner_type}_statistics
                                                  where {owner_type}_id = {owner_id}
                                               """)
-        return statistics['statistic']
+        return statistics[f'{statistic}']
 
 
 class LikesRecommendationsAction:

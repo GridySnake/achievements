@@ -10,7 +10,7 @@ async def get_subscribes_suggestions(request):
     user_id = json.loads(request.cookies['user'])['user_id']
     async with pool.acquire() as conn:
         users = await SubscribesGetInfo.get_user_subscribes_suggestions(user_id=user_id, conn=conn)
-    return json_response(users)
+    return json_response({'suggestions': users})
 
 
 async def get_subscribes(request):
@@ -33,7 +33,11 @@ async def follow(request):
     user_passive = data['user_passive_id']
     async with pool.acquire() as conn:
         await SubscribesAction.subscribe_user(user_active_id=user_id, user_passive_id=user_passive, conn=conn)
-    return json_response({'status': '200'})
+        subscribers = await SubscribesGetInfo.get_subscribers(user_id=user_id, conn=conn)
+        friends = [i for i in subscribers if i['status_active'] == 1 and i['status_passive'] == 1]
+        subscribers_active = [i for i in subscribers if i['status_passive'] == 1 and i['status_active'] == 0]
+        subscribers_passive = [i for i in subscribers if i['status_active'] == 1 and i['status_passive'] == 0]
+    return json_response({'value': [friends, subscribers_active, subscribers_passive]})
 
 
 async def unfollow(request):
@@ -43,7 +47,10 @@ async def unfollow(request):
     user_passive = data['user_passive_id']
     async with pool.acquire() as conn:
         await SubscribesAction.unsubscribe_user(user_active_id=user_id, user_passive_id=user_passive, conn=conn)
-    return json_response({'status': '200'})
+        subscribers = await SubscribesGetInfo.get_subscribers(user_id=user_id, conn=conn)
+        friends = [i for i in subscribers if i['status_active'] == 1 and i['status_passive'] == 1]
+        subscribers_active = [i for i in subscribers if i['status_passive'] == 1 and i['status_active'] == 0]
+    return json_response({'value': [friends, subscribers_active]})
 
 
 async def block(request):
@@ -53,7 +60,12 @@ async def block(request):
     user_passive = data['user_passive_id']
     async with pool.acquire() as conn:
         await SubscribesAction.block_user(user_active_id=user_id, user_passive_id=user_passive, conn=conn)
-    return json_response({'status': '200'})
+        subscribers = await SubscribesGetInfo.get_subscribers(user_id=user_id, conn=conn)
+    friends = [i for i in subscribers if i['status_active'] == 1 and i['status_passive'] == 1]
+    subscribers_active = [i for i in subscribers if i['status_passive'] == 1 and i['status_active'] == 0]
+    subscribers_passive = [i for i in subscribers if i['status_active'] == 1 and i['status_passive'] == 0]
+    blocked = [i for i in subscribers if i['status_active'] == -1]
+    return json_response({'value': [friends, subscribers_active, subscribers_passive, blocked]})
 
 
 async def unblock(request):
@@ -63,7 +75,12 @@ async def unblock(request):
     user_passive = data['user_passive_id']
     async with pool.acquire() as conn:
         await SubscribesAction.unblock_user(user_active_id=user_id, user_passive_id=user_passive, conn=conn)
-    return json_response({'status': '200'})
+        subscribers = await SubscribesGetInfo.get_subscribers(user_id=user_id, conn=conn)
+    friends = [i for i in subscribers if i['status_active'] == 1 and i['status_passive'] == 1]
+    subscribers_active = [i for i in subscribers if i['status_passive'] == 1 and i['status_active'] == 0]
+    subscribers_passive = [i for i in subscribers if i['status_active'] == 1 and i['status_passive'] == 0]
+    blocked = [i for i in subscribers if i['status_active'] == -1]
+    return json_response({'value': [friends, subscribers_active, subscribers_passive, blocked]})
 
 
 class SubscribesView(web.View):

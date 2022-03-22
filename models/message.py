@@ -70,7 +70,7 @@ class MessageGetInfo:
         chats = await conn.fetch(f"""
                                      select distinct u.user_id, u.name, u.surname, img.href, ch.chat_id, ch.chat_type,
                                         first_value(m.message) over (PARTITION BY m.chat_id order by m.datetime desc) as message,
-                                        first_value(m.datetime) over (PARTITION BY m.chat_id order by m.datetime desc) as datetime,
+                                        first_value(m.datetime::varchar) over (PARTITION BY m.chat_id order by m.datetime desc) as datetime,
                                         first_value(u1.name) over (PARTITION BY m.chat_id order by m.datetime desc) as m_name,
                                         first_value(u1.surname) over (PARTITION BY m.chat_id order by m.datetime desc) as m_surname,
                                         first_value(m.is_read) over (PARTITION BY m.chat_id order by m.datetime desc) as is_read
@@ -82,14 +82,14 @@ class MessageGetInfo:
                                      left join users_information as u1 on m.from_user = u1.user_id
                                      where {user_id} <> ch.participants
                                 """)
-        return chats
+        return [dict(i) for i in chats]
 
     @staticmethod
     async def get_group_chats(user_id: str, conn):
         chats = await conn.fetch(f"""
                                      select distinct c.group_name, img.href, ch.chat_id, ch.chat_type,
                                         first_value(m.message) over (PARTITION BY m.chat_id order by m.datetime desc) as message,
-                                        first_value(m.datetime) over (PARTITION BY m.chat_id order by m.datetime desc) as datetime,
+                                        first_value(m.datetime::varchar) over (PARTITION BY m.chat_id order by m.datetime desc) as datetime,
                                         first_value(u.name) over (PARTITION BY m.chat_id order by m.datetime desc) as m_name,
                                         first_value(u.surname) over (PARTITION BY m.chat_id order by m.datetime desc) as m_surname,
                                         first_value(m.is_read) over (PARTITION BY m.chat_id order by m.datetime desc) as is_read
@@ -100,14 +100,14 @@ class MessageGetInfo:
                                      left join users_information as u on m.from_user = u.user_id
                                      where {user_id} = any(ch.participants)
                                 """)
-        return chats
+        return [dict(i) for i in chats]
 
     @staticmethod
     async def get_community_chats(user_id: str, conn):
         chats = await conn.fetch(f"""
                                     select distinct c.community_id, c.community_name, img.href, ch.chat_id, ch.chat_type,
                                         first_value(m.message) over (PARTITION BY m.chat_id order by m.datetime desc) as message,
-                                        first_value(m.datetime) over (PARTITION BY m.chat_id order by m.datetime desc) as datetime,
+                                        first_value(m.datetime::varchar) over (PARTITION BY m.chat_id order by m.datetime desc) as datetime,
                                         first_value(u.name) over (PARTITION BY m.chat_id order by m.datetime desc) as m_name,
                                         first_value(u.surname) over (PARTITION BY m.chat_id order by m.datetime desc) as m_surname,
                                         first_value(m.is_read) over (PARTITION BY m.chat_id order by m.datetime desc) as is_read,
@@ -120,14 +120,14 @@ class MessageGetInfo:
                                     left join communities as c1 on m.from_user = c1.community_id and m.from_user_type = 2
                                     where {user_id} = any(ch.participants)
                                 """)
-        return chats
+        return [dict(i) for i in chats]
 
     @staticmethod
     async def get_course_chats(user_id: str, conn):
         chats = await conn.fetch(f"""
                                      select distinct c.course_id, c.course_name, img.href, ch.chat_id, ch.chat_type,
                                         first_value(m.message) over (PARTITION BY m.chat_id order by m.datetime desc) as message,
-                                        first_value(m.datetime) over (PARTITION BY m.chat_id order by m.datetime desc) as datetime,
+                                        first_value(m.datetime::varchar) over (PARTITION BY m.chat_id order by m.datetime desc) as datetime,
                                         first_value(u.name) over (PARTITION BY m.chat_id order by m.datetime desc) as m_name,
                                         first_value(u.surname) over (PARTITION BY m.chat_id order by m.datetime desc) as m_surname,
                                         first_value(m.is_read) over (PARTITION BY m.chat_id order by m.datetime desc) as is_read,
@@ -140,7 +140,7 @@ class MessageGetInfo:
                                      left join courses as c1 on m.from_user = c1.course_id and m.from_user_type = 3
                                      where {user_id} = any(ch.participants)
                                 """)
-        return chats
+        return [dict(i) for i in chats]
 
     @staticmethod
     async def get_last_messages(chat_id: str, conn):

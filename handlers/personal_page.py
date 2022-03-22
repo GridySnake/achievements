@@ -14,7 +14,7 @@ async def personal_page(request):
     my_page = False
     condition_to_chat = None
     allow = None
-    actions = [False, False, False]
+    actions = [True, True, True]
     block = None
     user_id = json.loads(request.cookies['user'])['user_id']
     async with pool.acquire() as conn:

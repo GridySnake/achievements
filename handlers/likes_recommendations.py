@@ -26,8 +26,8 @@ async def likes_recommendations(request):
             await LikesRecommendationsAction.like_recommend(user_id=user_id, user_type=user_type, owner_id=owner_id,
                                                             owner_type=owner_type, like_recommendations=like_recommend,
                                                             conn=conn)
-        value = await LikesRecommendationsGetInfo.get_one_statistic(owner_id=user_id,
-                                                                    owner_type=owner_type_new[owner_type],
+        value = await LikesRecommendationsGetInfo.get_one_statistic(owner_id=owner_id,
+                                                                    owner_type=owner_type_new[owner_type[-1]],
                                                                     statistic=like_recommend[0], conn=conn)
 
     return json_response({'value': value})

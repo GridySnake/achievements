@@ -2,15 +2,19 @@ from aiohttp import web
 from models.message import *
 import json
 import os
+from aiohttp.web import json_response
 
 
 async def messages(request):
     user_id = json.loads(request.cookies['user'])['user_id']
-    user_chats = await MessageGetInfo.get_users_chats(user_id=user_id)
-    community_chats = await MessageGetInfo.get_community_chats(user_id=user_id)
-    course_chats = await MessageGetInfo.get_course_chats(user_id=user_id)
-    group_chats = await MessageGetInfo.get_group_chats(user_id=user_id)
-    return dict(users=user_chats, communities=community_chats, courses=course_chats, groups=group_chats)
+    pool = request.app['pool']
+    async with pool.acquire() as conn:
+        user_chats = await MessageGetInfo.get_users_chats(user_id=user_id, conn=conn)
+        community_chats = await MessageGetInfo.get_community_chats(user_id=user_id, conn=conn)
+        course_chats = await MessageGetInfo.get_course_chats(user_id=user_id, conn=conn)
+        group_chats = await MessageGetInfo.get_group_chats(user_id=user_id, conn=conn)
+    return json_response({'users': user_chats, 'groups': group_chats, 'communities': community_chats,
+                          'courses': course_chats})
 
 
 async def send_message(request):
