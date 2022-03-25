@@ -2,21 +2,24 @@ class MessageGetInfo:
     @staticmethod
     async def get_messages(chat_id: str, conn):
         messages = await conn.fetch(f"""
-                                        select u.user_id,  u.surname, u.name, m.message, m.datetime, img.href, 
-                                        c.community_id, c.community_name, img1.href as href1, 
-                                        c1.course_id, c1.course_name, img2.href as href2, ch.chat_type, ch.participants
+                                        select u.user_id,  u.surname, u.name, m.message, m.datetime::varchar, img.href, 
+                                        c.community_id, c.community_name, img1.href as community_avatar, 
+                                        c1.course_id, c1.course_name, img2.href as course_avatar, ch.chat_type, 
+                                        ch.participants, gci.group_name, img3.href as group_avatar
                                         from chats as ch
                                         left join messages as m on m.chat_id = ch.chat_id
                                         left join users_information as u on u.user_id = m.from_user and m.from_user_type = 0
                                         left join communities as c on c.community_id = m.from_user and m.from_user_type = 2
                                         left join courses as c1 on c1.course_id = m.from_user and m.from_user_type = 3
+                                        left join group_chats_info as gci on gci.chat_id = ch.chat_id
                                         left join images as img on img.image_id = u.image_id[array_upper(u.image_id, 1)]
                                         left join images as img1 on img1.image_id = c.image_id[array_upper(u.image_id, 1)]
                                         left join images as img2 on img2.image_id = c1.image_id
+                                        left join images as img3 on img3.image_id = gci.image_id
                                         where ch.chat_id = {chat_id}
                                         ORDER BY datetime
 									""")
-        return messages
+        return [dict(i) for i in messages]
 
     @staticmethod
     async def is_owner(chat_id: str, conn):
@@ -30,7 +33,7 @@ class MessageGetInfo:
                                             u.user_id = c1.course_owner_id and c1.course_owner_type = 0 or u.user_id = any(c2.community_owner_id)
                                         where ch.chat_id = {chat_id}
     								""")
-        return owner['user_id']
+        return owner
 
     @staticmethod
     async def get_chat_owner_cc(chat_id: str, conn):
@@ -186,30 +189,30 @@ class MessageGetInfo:
                                                left join users_information as u on u.user_id = ch.participants
                                                WHERE chat_id = {chat_id} and u.user_id != {user_id}
                                             """)
-        return participants
+        return [dict(i) for i in participants]
 
 
 class MessageCreate:
     @staticmethod
     async def create_message(from_user: str, message: str, type1: str, chat_id: str, conn, to_user: str = None):
-        message_id = await conn.fetchrow(f"""SELECT MAX(message_id) FROM messages""")
+        message_id = await conn.fetchrow(f"""select max(message_id) from messages""")
         if dict(message_id)['max'] is not None:
             message_id = int(dict(message_id)['max']) + 1
         else:
             message_id = 0
         if chat_id == -1:
-            chat_id = await conn.fetchrow(f"""SELECT MAX(chat_id) FROM chats""")
+            chat_id = await conn.fetchrow(f"""select max(chat_id) from chats""")
             if dict(chat_id)['max'] is not None:
                 chat_id = int(dict(chat_id)['max']) + 1
             else:
                 chat_id = 0
             await conn.execute(f"""
-                                    insert INTO chats (chat_id, chat_type, participants, owner_id) values(
-                                    {chat_id}, 0, ARRAY[{from_user}, {to_user}], null) 
+                                    insert into chats (chat_id, chat_type, participants, owner_id) values(
+                                    {chat_id}, 0, array[{from_user}, {to_user}], null) 
                                 """)
 
         await conn.execute(f"""
-                                insert INTO messages (message_id, from_user, message, from_user_type,
+                                insert into messages (message_id, from_user, message, from_user_type,
                                 datetime, is_read, chat_id) values(
                                 {message_id}, {from_user}, '{message}', 
                                 {type1}, statement_timestamp(), False, {chat_id})

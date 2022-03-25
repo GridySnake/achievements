@@ -7,60 +7,13 @@ from handlers.achievements import *
 from handlers.communities import *
 from handlers.courses import *
 from handlers.personal_page import personal_page
-from handlers.chat import ChatView
+from handlers.chat import get_chat
 from handlers.user_info import UserInfoView
 from handlers.goal import GoalView
-from config.common import BaseConfig
 from handlers.conditions import *
 from handlers.likes_recommendations import likes_recommendations
-# from sqlalchemy import create_engine
 from aiohttp_swagger import *
 #todo: изменить ссылки на страницы, а то из подтврждения ачивок не падаем на нужные страницы
-# engine = create_engine(BaseConfig.database_url)
-
-# len_users = len(engine.execute(f"""
-# select user_id
-# from users_main
-# """).fetchall())
-#
-# verify = [str(i[0]) for i in engine.execute(f"""
-# select verifying_token
-# from authentication
-# where verifying_token is not null
-# """).fetchall()]
-#
-# verify_achievement_qr = [str(i[0]) for i in engine.execute(f"""
-# select value
-# from achi_conditions
-# where achi_condition_group_id = 1
-# """).fetchall()]
-#
-# verify_achievement_location = [str(i[0]) for i in engine.execute(f"""
-# select condition_id
-# from achi_conditions
-# where achi_condition_group_id = 2
-# """).fetchall()]
-#
-# verify_achievement_service = [str(i[0]) for i in engine.execute(f"""
-# select parameter
-# from achi_conditions
-# where achi_condition_group_id = 3
-# """).fetchall()]
-#
-# achievements = [str(i[0]) for i in engine.execute(f"""
-# select achievement_id
-# from achievements
-# """).fetchall()]
-#
-# communities = [str(i).split(',')[0][1:] for i in engine.execute(f"""
-# select community_id
-# from communities
-# """).fetchall()]
-#
-# courses = [str(i).split(',')[0][1:] for i in engine.execute(f"""
-# select course_id
-# from courses
-# """).fetchall()]
 
 
 def setup_routes(app):
@@ -103,7 +56,7 @@ def setup_routes(app):
     app.router.add_route('POST', '/add_community_member', CommunitiesInfoView.post, name='add_community_member')
     app.router.add_route('POST', '/remove_community_member', CommunitiesInfoView.post, name='remove_community_member')
     app.router.add_route('GET', '/courses', CoursesView.get, name='courses')
-    app.router.add_route('GET', r'/chat/{i}', ChatView.get, name='chat')
+    app.router.add_route('GET', r'/chat/{i}', get_chat, name='chat')
     app.router.add_route('GET', r'/verify/{i}', Verify.get, name='verify_i')
     app.router.add_route('POST', r'/verify_achievement', AchievementsVerificationView.post, name='verify_achievement')
     app.router.add_route('POST', r'/verify_achievement/{i}', AchievementsVerificationView.post,

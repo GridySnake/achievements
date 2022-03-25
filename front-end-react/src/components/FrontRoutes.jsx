@@ -4,6 +4,7 @@ import FormSignUp from "./FormSignUp";
 import PersonalPageContainer from "./Personal Page/PersonalPageContainer";
 import SubscribesContainer from "./Subscribes/SubscribesContainer";
 import ChatsContainer from "./Chats/ChatsContainer";
+import ChatContainer from "./Chats/ChatContainer";
 
 const FrontRoutes = () => {
     return (
@@ -16,7 +17,7 @@ const FrontRoutes = () => {
                     <Route path="/user/:id" key="user:id" element={<PersonalPageContainer/>}/>
                     <Route path="/subscribes" key="subscribes" element={<SubscribesContainer/>}/>
                     <Route path="/chats" key="chats" element={<ChatsContainer/>}/>
-                    <Route path="/chat/:id"/>
+                    <Route path="/chat/:id" key="/chat/:id" element={<ChatContainer/>}/>
                     <Route path="/achievements"/>
                     <Route path="/posts"/>
                     <Route path="/communities"/>

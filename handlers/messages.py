@@ -18,6 +18,17 @@ async def messages(request):
 
 
 async def send_message(request):
+    data = await request.json()
+    from_user = json.loads(request.cookies['user'])['user_id']
+    pool = request.app['pool']
+    async with pool.acquire() as conn:
+        await MessageCreate.create_message(from_user=from_user, message=data['message'],
+                                           type1=data['chat_type'], chat_id=data['chat_id'], conn=conn)
+    return json_response({'value': 200})
+
+
+async def ssend_message(request):
+
     if 'send_message' in str(request):
 
         data = await request.json()
