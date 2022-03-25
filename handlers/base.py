@@ -23,7 +23,9 @@ async def login(request):
         type = 'email'
     else:
         type = 'phone'
-    user = await UserGetInfo.get_user_by_email_phone(email=data['email'], type=type)
+    pool = request.app['pool']
+    async with pool.acquire() as conn:
+        user = await UserGetInfo.get_user_by_email_phone(email=data['email'], type=type, conn=conn)
     # if user == 'verify':
     #     return web.HTTPFound(location=self.app.router['verify'].url_for())
     if user and user['password'] == hashlib.sha256(data['password'].encode('utf8')).hexdigest():

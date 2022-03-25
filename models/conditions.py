@@ -1,13 +1,7 @@
-import asyncpg
-from config.common import BaseConfig
-connection_url = BaseConfig.database_url
-
-
 class ConditionsGetInfo:
 
     @staticmethod
-    async def get_conditions(user_id: str, owner_id: str, owner_type: list):
-        conn = await asyncpg.connect(connection_url)
+    async def get_conditions(user_id: str, owner_id: str, owner_type: list, conn):
         conditions = await conn.fetch(f"""select c.condition_id, c.task, c.answer, c.condition_value, gc.condition_name
                                             from {owner_type[0]} as ow
                                             left join conditions as c 
@@ -21,8 +15,7 @@ class ConditionsGetInfo:
         return conditions
 
     @staticmethod
-    async def is_follower(user_active_id: str, user_passive_id: str, parameter: str):
-        conn = await asyncpg.connect(connection_url)
+    async def is_follower(user_active_id: str, user_passive_id: str, parameter: str, conn):
         if parameter == 'followings':
             user = user_active_id
             user_active_id = user_passive_id
@@ -40,8 +33,7 @@ class ConditionsGetInfo:
         return follower['follower']
 
     @staticmethod
-    async def get_condition_user_statistics(user_id: str, condition_name: str, condition_value: str): #owner_type: list,
-        conn = await asyncpg.connect(connection_url)
+    async def get_condition_user_statistics(user_id: str, condition_name: str, condition_value: str, conn):
         statistics = await conn.fetchrow(f"""select case when {condition_name} >= {condition_value} then true
                                              else false end as result
                                              from user_statistics
@@ -50,8 +42,7 @@ class ConditionsGetInfo:
         return statistics['result']
 
     @staticmethod
-    async def get_data_for_condition_test(user_id: str, condition_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def get_data_for_condition_test(user_id: str, condition_id: str, conn):
         email = await conn.fetchrow(f"""
                                         select u.email
                                         from users_main as u
@@ -66,7 +57,7 @@ class ConditionsGetInfo:
 
     @staticmethod
     async def is_allowed_communicate_by_conditions(user_active_id: str, user_passive_id: str, owner_table: str,
-                                                   owner_column: str):
+                                                   owner_column: str, conn):
         """
         :param user_active_id: str
         :param user_passive_id: str
@@ -74,7 +65,6 @@ class ConditionsGetInfo:
         :param owner_column: str
         :return: allow: bool
         """
-        conn = await asyncpg.connect(connection_url)
         allow = await conn.fetchrow(f"""
                                         select case when count(*) = 1 then true
                                         else false
@@ -87,8 +77,7 @@ class ConditionsGetInfo:
         return allow
 
     @staticmethod
-    async def get_cover_letters(receiver_id: str, receiver_type: int):
-        conn = await asyncpg.connect(connection_url)
+    async def get_cover_letters(receiver_id: str, receiver_type: int, conn):
         cover_letters = await conn.fetch(f"""
                                              select cl.user_id, ui.name, ui.surname, cl.letter_text, cl.letter_href
                                              from cover_letters as cl
@@ -100,8 +89,7 @@ class ConditionsGetInfo:
         return cover_letters
 
     @staticmethod
-    async def get_interviews_requests(sender_id: str, sender_type: int):
-        conn = await asyncpg.connect(connection_url)
+    async def get_interviews_requests(sender_id: str, sender_type: int, conn):
         interviews = await conn.fetch(f"""
                                           select int.user_id, ui.name, ui.surname, int.send_datetime
                                           from interviews as int
@@ -113,8 +101,7 @@ class ConditionsGetInfo:
         return interviews
 
     @staticmethod
-    async def is_send(user_id: str, sender_id: str, sender_type: list):
-        conn = await asyncpg.connect(connection_url)
+    async def is_send(user_id: str, sender_id: str, sender_type: list, conn):
         send = await conn.fetchrow(f"""
                                        select case when count(*) > 0 then true else false end as send
                                        from interviews
@@ -124,8 +111,7 @@ class ConditionsGetInfo:
         return send['send']
 
     @staticmethod
-    async def get_interviews_future(sender_id: str, sender_type: int):
-        conn = await asyncpg.connect(connection_url)
+    async def get_interviews_future(sender_id: str, sender_type: int, conn):
         interviews = await conn.fetch(f"""
                                           select int.user_id, ui.name, ui.surname, int.href, int.interview_datetime, 
                                             int.send_datetime
@@ -140,8 +126,7 @@ class ConditionsGetInfo:
 
 class ConditionsInsertCheck:
     @staticmethod
-    async def approve_condition(user_id: str, condition_id: list):
-        conn = await asyncpg.connect(connection_url)
+    async def approve_condition(user_id: str, condition_id: list, conn):
         await conn.execute(f"""
                                update conditions as c
                                set users_approved = array_append(users_approved, {user_id})
@@ -149,8 +134,7 @@ class ConditionsInsertCheck:
                            """)
 
     @staticmethod
-    async def give_access(user_active_id: str, owner_id: str, owner_type: list):
-        conn = await asyncpg.connect(connection_url)
+    async def give_access(user_active_id: str, owner_id: str, owner_type: list, conn):
         await conn.execute(f"""
                                update {owner_type[0]} as ow
                                set conditions_approved = array_append(conditions_approved, {user_active_id})
@@ -159,8 +143,7 @@ class ConditionsInsertCheck:
                             """)
 
     @staticmethod
-    async def request_interview(user_id: str, owner_id: str, owner_type: list, condition_id: int):
-        conn = await asyncpg.connect(connection_url)
+    async def request_interview(user_id: str, owner_id: str, owner_type: list, condition_id: int, conn):
         interview_id = await conn.fetchrow("""select max(interview_id) from interviews""")
         interview_id = dict(interview_id)['max']
         if interview_id:
@@ -185,8 +168,7 @@ class ConditionsInsertCheck:
                             """)
 
     @staticmethod
-    async def send_cover_letter(user_id: str, owner_id: str, owner_type: list, data: dict, condition_id: int):
-        conn = await asyncpg.connect(connection_url)
+    async def send_cover_letter(user_id: str, owner_id: str, owner_type: list, data: dict, condition_id: int, conn):
         cl_id = await conn.fetchrow("""select max(cover_letter_id) from cover_letters""")
         cl_id = dict(cl_id)['max']
         if cl_id:
@@ -226,8 +208,7 @@ class ConditionsInsertCheck:
                             """)
 
     @staticmethod
-    async def accept_decline_cover_letter(user_id: str, receiver_id: str, receiver_type: list, status: int):
-        conn = await asyncpg.connect(connection_url)
+    async def accept_decline_cover_letter(user_id: str, receiver_id: str, receiver_type: list, status: int, conn):
         await conn.execute(f"""
                                update cover_letters
                                set status = {status}
@@ -252,8 +233,7 @@ class ConditionsInsertCheck:
                                                               owner_type=receiver_type)
 
     @staticmethod
-    async def accept_decline_interview(user_id: str, sender_id: str, sender_type: list, status: int):
-        conn = await asyncpg.connect(connection_url)
+    async def accept_decline_interview(user_id: str, sender_id: str, sender_type: list, status: int, conn):
         await conn.execute(f"""
                                update interviews
                                set status = {status}
@@ -275,8 +255,7 @@ class ConditionsInsertCheck:
                                                         owner_type=sender_type)
 
     @staticmethod
-    async def update_interview_info(sender_id: str, sender_type: list, data: dict):
-        conn = await asyncpg.connect(connection_url)
+    async def update_interview_info(sender_id: str, sender_type: list, data: dict, conn):
         await conn.execute(f"""
                                update interviews
                                set href = '{data['link']}',

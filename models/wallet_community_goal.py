@@ -1,13 +1,8 @@
-import asyncpg
-from config.common import BaseConfig
-connection_url = BaseConfig.database_url
-
-
 class CommunityWalletGoal:
     @staticmethod
     async def create_wallet_goal(community_id: str,
-                                 data):
-        conn = await asyncpg.connect(connection_url)
+                                 data, conn):
+        
         await conn.execute(f"""
                            insert into community_payment_goals (
                                 goal_name, description, from_date, to_date, 
@@ -18,8 +13,7 @@ class CommunityWalletGoal:
                            """)
 
     @staticmethod
-    async def close_wallet_goal():
-        conn = await asyncpg.connect(connection_url)
+    async def close_wallet_goal(conn):
         await conn.execute(f"""
                     update community_payment_goals
                         set is_active = false
@@ -27,7 +21,7 @@ class CommunityWalletGoal:
                 """)
 
     @staticmethod
-    async def get_payment_goal(community_id: str,
+    async def get_payment_goal(community_id: str, conn,
                                is_active=True):
         """
         Get all goals as is_active
@@ -36,7 +30,6 @@ class CommunityWalletGoal:
                     is_active true or false
         :return:
         """
-        conn = await asyncpg.connect(connection_url)
         community_id = int(community_id)
         payment_goals = await conn.fetch(f"""
                     select goal_name, payment_goal_id, target_value, 
@@ -51,8 +44,8 @@ class CommunityWalletGoal:
 class Wallet:
     @staticmethod
     async def create_wallet(community_id: str,
-                            data):
-        conn = await asyncpg.connect(connection_url)
+                            data, conn):
+        
         community_id = int(community_id)
         await conn.execute(f"""
             insert into community_wallet (
@@ -71,8 +64,8 @@ class Wallet:
 
     @staticmethod
     async def update_wallet_payment(wallet_id: str,
-                            payment_goal_id: str):
-        conn = await asyncpg.connect(connection_url)
+                                    payment_goal_id: str, conn):
+        
         wallet_id = int(wallet_id)
         payment_goal_id = int(payment_goal_id)
         await conn.execute(f"""
@@ -85,8 +78,7 @@ class Wallet:
         """)
 
     @staticmethod
-    async def deactivate_wallet(wallet_id):
-        conn = await asyncpg.connect(connection_url)
+    async def deactivate_wallet(wallet_id, conn):
         wallet_id = int(wallet_id)
         await conn.execute(f"""
             update community_wallet
@@ -96,10 +88,8 @@ class Wallet:
         """)
 
     @staticmethod
-    async def get_wallet(community_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def get_wallet(community_id: str, conn):
         community_id = int(community_id)
-
         wallets = await conn.fetch(f"""
             select wallet_name, wallet_id, currency
             from community_wallet

@@ -1,15 +1,8 @@
-import asyncpg
-from config.common import BaseConfig
-
-connection_url = BaseConfig.database_url
-
-
 class CommunityGetInfo:
     # Recommendation system will be here!!!
     @staticmethod
-    async def get_some_communities(user_id):
+    async def get_some_communities(user_id, conn):
         user_id = int(user_id)
-        conn = await asyncpg.connect(connection_url)
         communities = await conn.fetch(f"""
             select c.community_id, c.community_name
             from communities as c
@@ -21,8 +14,7 @@ class CommunityGetInfo:
         return communities
 
     @staticmethod
-    async def get_community_info_by_value(community_id: str, value: str):
-        conn = await asyncpg.connect(connection_url)
+    async def get_community_info_by_value(community_id: str, value: str, conn):
         community = await conn.fetchrow(f"""
                                          select {value} 
                                          from community_statistics
@@ -31,8 +23,7 @@ class CommunityGetInfo:
         return community[value]
 
     @staticmethod
-    async def get_user_communities(user_id):
-        conn = await asyncpg.connect(connection_url)
+    async def get_user_communities(user_id, conn):
         communities = await conn.fetch(f"""
                                           select c.community_id, c.community_name, 
                                                 s.sphere_name, s.subsphere_name, i.href
@@ -58,8 +49,7 @@ class CommunityGetInfo:
         return [dict(i) for i in communities]
 
     @staticmethod
-    async def get_user_owner_communities(user_id):
-        conn = await asyncpg.connect(connection_url)
+    async def get_user_owner_communities(user_id, conn):
         communities = await conn.fetch(f"""
                                            select c.community_id, c.community_name, s.sphere_name, s.subsphere_name
                                            from (
@@ -79,8 +69,7 @@ class CommunityGetInfo:
         return communities
 
     @staticmethod
-    async def get_community_info(community_id):
-        conn = await asyncpg.connect(connection_url)
+    async def get_community_info(community_id, conn):
         community = await conn.fetchrow(f"""
                                            select u.user_id, u.name, u.surname, c.community_id, 
                                                     c.community_name, c.community_type, c.community_bio, 
@@ -98,8 +87,7 @@ class CommunityGetInfo:
         return community
 
     @staticmethod
-    async def user_in_community(community_id: str, user_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def user_in_community(community_id: str, user_id: str, conn):
         in_community = await conn.fetchrow(f"""
                                             select case when {user_id} = any(c.user_id) then true else false end 
                                                 as in_community
@@ -109,8 +97,7 @@ class CommunityGetInfo:
         return in_community['in_community']
 
     @staticmethod
-    async def get_community_participants(community_id):
-        conn = await asyncpg.connect(connection_url)
+    async def get_community_participants(community_id, conn):
         community = await conn.fetch(f"""
                                             select u.user_id, u.name, u.surname
                                             from users_information as u
@@ -121,8 +108,7 @@ class CommunityGetInfo:
         return community
 
     @staticmethod
-    async def get_generate_conditions():
-        conn = await asyncpg.connect(connection_url)
+    async def get_generate_conditions(conn):
         conditions = await conn.fetch(f"""
                                     select condition_id, condition_name, condition_description, community_type
                                     from community_conditions_generate
@@ -130,8 +116,7 @@ class CommunityGetInfo:
         return conditions
 
     @staticmethod
-    async def user_requests(user_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def user_requests(user_id: str, conn):
         conditions = await conn.fetch(f"""
                                         select community_id, community_name
                                         from communities
@@ -141,8 +126,7 @@ class CommunityGetInfo:
         return conditions
 
     @staticmethod
-    async def is_owner(user_id: str, community_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def is_owner(user_id: str, community_id: str, conn):
         owner = await conn.fetch(f"""select case when count(*) > 0 then true else false end as owner
                                      from communities as com
                                      left join users_information ui on ui.user_id = any(com.community_owner_id)
@@ -151,8 +135,7 @@ class CommunityGetInfo:
         return owner['owner']
 
     @staticmethod
-    async def get_community_conditions(user_id: str, community_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def get_community_conditions(user_id: str, community_id: str, conn):
         conditions = await conn.fetch(f"""select c.task, c.condition_value, gc.condition_name, i.href, 
                                             gc.generate_condition_id, case when {user_id} = any(c.users_approved)
                                             then true else false end as approved, case when {user_id} = 
@@ -175,8 +158,7 @@ class CommunityGetInfo:
 
 class CommunityAvatarAction:
     @staticmethod
-    async def save_community_avatar_url(community_id, url):
-        conn = await asyncpg.connect(connection_url)
+    async def save_community_avatar_url(community_id, url, conn):
         image_id = await conn.fetchrow(f"""select max(image_id) from images""")
         image_id = dict(image_id)['max']
         if image_id is not None:
@@ -194,8 +176,7 @@ class CommunityAvatarAction:
                                """)
 
     @staticmethod
-    async def leave_join(community_id, method, user_id):
-        conn = await asyncpg.connect(connection_url)
+    async def leave_join(community_id, method, user_id, conn):
         if method == 'join':
             await conn.execute(f"""
                                    update communities
@@ -230,18 +211,16 @@ class CommunityAvatarAction:
                                    """)
 
     @staticmethod
-    async def add_member(community_id: str, users: list, status: list):
-        conn = await asyncpg.connect(connection_url)
+    async def add_member(community_id: str, users: list, status: list, conn):
         await conn.execute(f"""
                                update communities
-                                    set requests = array_cat(requests, array{users}),
+                                    set requests = array_cat(requests, array[{users}]),
                                         request_statuses = array_cat(requests, {status})
                                     where community_id = {community_id}
                             """)
 
     @staticmethod
-    async def remove_member(community_id: str, users: list):
-        conn = await asyncpg.connect(connection_url)
+    async def remove_member(community_id: str, users: list, conn):
         for i in users:
             await conn.execute(f"""
                                    update communities
@@ -250,8 +229,7 @@ class CommunityAvatarAction:
                                 """)
 
     @staticmethod
-    async def accept_decline_request(user_id: str, action: int, community_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def accept_decline_request(user_id: str, action: int, community_id: str, conn):
         if action == 0:
             await conn.execute(f"""
                                     update communities
@@ -280,8 +258,7 @@ class CommunityAvatarAction:
 
 class CommunityCreate:
     @staticmethod
-    async def create_community(user_id, data):
-        conn = await asyncpg.connect(connection_url)
+    async def create_community(user_id, data, conn):
         id = await conn.fetchrow(f"""
                                   select max(community_id)
                                   from communities
@@ -339,8 +316,7 @@ class CommunityCreate:
         return id
 
     @staticmethod
-    async def create_community_info_conditions(community_id: str, data: dict):
-        conn = await asyncpg.connect(connection_url)
+    async def create_community_info_conditions(community_id: str, data: dict, conn):
         for i in range(len(data['condition_id'])):
             condition_id = await conn.fetchrow("select max(condition_id) from conditions")
             condition_id = dict(condition_id)['max']

@@ -1,13 +1,6 @@
-import asyncpg
-from config.common import BaseConfig
-
-connection_url = BaseConfig.database_url
-
-
 class AchievementsGenerateData:
     @staticmethod
-    async def data_for_group_drop_down_generate_achievements():
-        conn = await asyncpg.connect(connection_url)
+    async def data_for_group_drop_down_generate_achievements(conn):
         achievements = await conn.fetch("""
                                            select distinct agc.condition_group_id as group_id, acg.achi_condition_group_name 
                                                 as group_name
@@ -20,8 +13,7 @@ class AchievementsGenerateData:
         return achievements
 
     @staticmethod
-    async def data_for_drop_downs_generate_achievements():
-        conn = await asyncpg.connect(connection_url)
+    async def data_for_drop_downs_generate_achievements(conn):
         achievements = await conn.fetch("""
                                            select agc.condition_group_id as group_id, acg.achi_condition_group_name 
                                                 as group_name, agc.aggregate_id, agc.aggregate_name, agc.parameter_id, 
@@ -36,8 +28,7 @@ class AchievementsGenerateData:
 
 class AchievementsGetInfo:
     @staticmethod
-    async def get_achievement_conditions(achievement_id: str, user_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def get_achievement_conditions(achievement_id: str, user_id: str, conn):
         conditions = await conn.fetch(f"""
                                           select agc.parameter_name, agc.condition_group_id, agc.aggregate_id, 
                                                 agc.service_id, ui.services_username, c.geo, c.value, c.equality, 
@@ -55,8 +46,7 @@ class AchievementsGetInfo:
         return conditions
 
     @staticmethod
-    async def get_users_achievements(user_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def get_users_achievements(user_id: str, conn):
         achievement = await conn.fetch(f"""
                                             select a.achievement_id, a.name
                                             from achievements as a
@@ -67,8 +57,7 @@ class AchievementsGetInfo:
         return [dict(i) for i in achievement]
 
     @staticmethod
-    async def get_users_desire_achievements(user_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def get_users_desire_achievements(user_id: str, conn):
         achievements = await conn.fetch(f"""
                                             select a.achievement_id, a.name
                                              from achievements as a
@@ -82,8 +71,7 @@ class AchievementsGetInfo:
         return [dict(i) for i in achievements]
 
     @staticmethod
-    async def get_users_approve_achievements(user_id: str, user_active: str = None):
-        conn = await asyncpg.connect(connection_url)
+    async def get_users_approve_achievements(user_id: str, conn, user_active: str = None):
         if user_active is not None:
             achievement = await conn.fetch(f"""
                                                select a.achievement_id, a.name, COUNT(aa.user_passive_id) as approve
@@ -124,8 +112,7 @@ class AchievementsGetInfo:
         return achievement
 
     @staticmethod
-    async def get_achievement_info(achievement_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def get_achievement_info(achievement_id: str, conn):
         achievement = await conn.fetchrow(f"""
                                             select a.achievement_id, a.name, a.description, agc.aggregate_name, 
                                                 c.parameter_id, c.value, g.achi_condition_group_id, 
@@ -147,8 +134,7 @@ class AchievementsGetInfo:
         return achievement
 
     @staticmethod
-    async def get_achievement_by_condition_id(condition_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def get_achievement_by_condition_id(condition_id: str, conn):
         achievements = await conn.fetch(f"""
                 select a.achievement_id, a.name, c.value, c.geo
                 from achi_conditions as c
@@ -159,8 +145,7 @@ class AchievementsGetInfo:
         return achievements
 
     @staticmethod
-    async def get_achievement_by_condition_value(value: str):
-        conn = await asyncpg.connect(connection_url)
+    async def get_achievement_by_condition_value(value: str, conn):
         achievements = await conn.fetchrow(f"""
             select a.achievement_id
             from achi_conditions as c
@@ -176,8 +161,7 @@ class AchievementsGetInfo:
         return achievements
 
     @staticmethod
-    async def get_achievement_by_condition_parameter(parameter: str):
-        conn = await asyncpg.connect(connection_url)
+    async def get_achievement_by_condition_parameter(parameter: str, conn):
         achievements = await conn.fetch(f"""
                 select a.achievement_id, a.name, c.value, c.geo, agc.condition_group_id
                 from achi_conditions as c
@@ -189,8 +173,7 @@ class AchievementsGetInfo:
         return achievements
 
     @staticmethod
-    async def get_created_achievements(user_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def get_created_achievements(user_id: str, conn):
         achievements = await conn.fetch(f"""
         select achievement_id, name, a.description, achievement_qr, s.sphere_name, s.subsphere_name, c.community_name,
             co.course_name
@@ -204,8 +187,7 @@ class AchievementsGetInfo:
         return achievements
 
     @staticmethod
-    async def get_reached_achievements(user_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def get_reached_achievements(user_id: str, conn):
         achievements = await conn.fetch(f"""
             select achievement_id, a.name, a.description, s.sphere_name, s.subsphere_name
             from (select user_id, unnest(achievements_id) as achievements_id from users_information) as u
@@ -216,8 +198,7 @@ class AchievementsGetInfo:
         return achievements
 
     @staticmethod
-    async def get_suggestion_achievements(user_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def get_suggestion_achievements(user_id: str, conn):
         achievements = await conn.fetch(f"""
             select achievement_id, a.user_id, a.user_type, a.name as title, a.description, a.created_date, a.new, 
                 u.name, u.surname, s.sphere_name, s.subsphere_name, c.community_name, c.community_owner_id, 
@@ -239,8 +220,7 @@ class AchievementsGetInfo:
 
 class AchievementsGiveVerify:
     @staticmethod
-    async def give_achievement_to_user(achievement_id: str, user_id: str, user_type: int):
-        conn = await asyncpg.connect(connection_url)
+    async def give_achievement_to_user(achievement_id: str, user_id: str, user_type: int, conn):
         if user_type == 0:
             await conn.execute(f"""
                                     update users_information
@@ -250,7 +230,7 @@ class AchievementsGiveVerify:
                                 """)
             await conn.execute(f"""
                                    update user_statistics
-                                   set reach_achievements = reach_achievements + 1
+                                   set achievements = achievements + 1
                                    where user_id = {user_id}
                                 """)
         elif user_type == 1:
@@ -280,7 +260,7 @@ class AchievementsGiveVerify:
 
     # @staticmethod
     # async def user_info_achievements_verify(achievement_id: str, value: str):
-    #     conn = await asyncpg.connect(connection_url)
+    #     
     #     data = await conn.fetchrow(f"""
     #                             select case when a.achievement_id is null then false
     #                                     else true
@@ -315,8 +295,7 @@ class AchievementsGiveVerify:
         #                            """)
 
     @staticmethod
-    async def qr_verify(user_id: str, value: str):
-        conn = await asyncpg.connect(connection_url)
+    async def qr_verify(user_id: str, value: str, conn):
         qr = await conn.fetchrow(f"""
                             select a.achievement_id
                             from achi_conditions as c
@@ -339,7 +318,7 @@ class AchievementsGiveVerify:
 
     # @staticmethod
     # async def location_verify(user_id: str, value: str):
-    #     conn = await asyncpg.connect(connection_url)
+    #     
     #     achi_id = await conn.fetchrow(f"""
     #                         select a.achievement_id
     #                         from achi_conditions as c
@@ -362,7 +341,7 @@ class AchievementsGiveVerify:
 
     # @staticmethod
     # async def chess_verify(user_id: str, achievement_id: str):
-    #     conn = await asyncpg.connect(connection_url)
+    #     
     #     await conn.execute(f"""
     #                            update users_information
     #                            set achievements_id = array_append(achievements_id, {achievement_id})
@@ -371,8 +350,7 @@ class AchievementsGiveVerify:
     #         """)
 
     @staticmethod
-    async def approve_verify(user_id: str, parameter_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def approve_verify(user_id: str, parameter_id: str, conn):
         achievements = await conn.fetchrow(f"""
                                                 select case when a.achievement_id is null then false
                                                         else true
@@ -418,8 +396,7 @@ class AchievementsGiveVerify:
 
 class AchievementsDesireApprove:
     @staticmethod
-    async def desire_achievement(user_id: str, user_type: int, achievement_desire_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def desire_achievement(user_id: str, user_type: int, achievement_desire_id: str, conn):
         if user_type == 0:
             table = 'users_information'
             column = 'user_id'
@@ -440,8 +417,7 @@ class AchievementsDesireApprove:
                            """)
 
     @staticmethod
-    async def is_desire(user_id: str, achievement_desire_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def is_desire(user_id: str, achievement_desire_id: str, conn):
         data = await conn.fetchrow(f"""
                                        select count(achievements_desired_id)
                                        from (select unnest(achievements_desired_id) as achievements_desired_id from users_information where user_id = {user_id}) as u 
@@ -454,8 +430,7 @@ class AchievementsDesireApprove:
         return result
 
     @staticmethod
-    async def approve_achievement(user_active_id: str, user_passive_id: str, achievement_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def approve_achievement(user_active_id: str, user_passive_id: str, achievement_id: str, conn):
         id = await conn.fetchrow(f"""
                         select max(approvement_id)
                         from approve_achievements
@@ -472,8 +447,7 @@ class AchievementsDesireApprove:
                        """)
 
     @staticmethod
-    async def get_data_for_test(user_id: str, condition_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def get_data_for_test(user_id: str, condition_id: str, conn):
         email = await conn.fetchrow(f"""
                                         select u.email
                                         from users_main as u
@@ -490,8 +464,7 @@ class AchievementsDesireApprove:
 
 class AchievementsCreate:
     @staticmethod
-    async def create_achievement(user_id: str, user_type: int, data):
-        conn = await asyncpg.connect(connection_url)
+    async def create_achievement(user_id: str, user_type: int, data, conn):
         id_achi = await conn.fetch(f"""
                 select max(achievement_id)
                 from achievements

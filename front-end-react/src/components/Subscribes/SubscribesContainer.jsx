@@ -1,28 +1,74 @@
 import React, {useEffect, useState} from "react";
-import GetAnyUserInfo from "../../api/GeneralApi";
-import {Avatar, List, Skeleton, Tabs} from "antd";
+import {GetAnyUserInfo, GetAnyUserInfoVT} from "../../api/GeneralApi";
+import {Avatar, Button, List, Skeleton, Tabs} from "antd";
 import StaticAvatars from "../StaticRoutes";
+import makeAction from "../../api/PageActions";
 
 const { TabPane } = Tabs;
 
-function callback(key) {
-  console.log(key);
-}
-
 const SubscribesContainer = () => {
-    const [Subscribes, setSubscribes] = useState(null);
+    const [Friends, setFriends] = useState(null);
+    const [Followers, setFollowers] = useState(null);
+    const [Followings, setFollowings] = useState(null);
+    const [Blocked, setBlocked] = useState(null);
+    const [Suggestions, setSuggestions] = useState(null);
+    const url = '/subscribes'
+    const url1 = '/subscribes_suggestions'
+
     useEffect(() => {
-        GetAnyUserInfo(setSubscribes, '/subscribes')
-    }, [setSubscribes])
-    console.log(Subscribes)
+        const setInfoSubscribes = (Subscribes) => {
+            setFriends(Subscribes.friends)
+            setFollowers(Subscribes.followers)
+            setFollowings(Subscribes.followings)
+            setBlocked(Subscribes.blocked)
+        }
+        GetAnyUserInfo(setInfoSubscribes, url)
+    }, [url])
+
+    useEffect(() => {
+        const setInfoSuggestions = (Suggestions) => {
+            setSuggestions(Suggestions.suggestions)
+        }
+        GetAnyUserInfoVT(setInfoSuggestions, url1)
+    }, [url1])
+
+    const Unfollow = (user_id) => {
+        makeAction('/unfollow', {'user_passive_id': user_id}, (value) => {
+            setFriends(value[0])
+            setFollowers(value[1])
+        })
+    }
+    const Follow = (user_id) => {
+        makeAction('/follow', {'user_passive_id': user_id}, (value) => {
+            setFriends(value[0])
+            setFollowers(value[1])
+            setFollowings(value[2])
+        })
+    }
+    const Block = (user_id) => {
+        makeAction('/block', {'user_passive_id': user_id}, (value) => {
+            setFriends(value[0])
+            setFollowers(value[1])
+            setFollowings(value[2])
+            setBlocked(value[3])
+        })
+    }
+    const Unblock = (user_id) => {
+        makeAction('/unblock', {'user_passive_id': user_id}, (value) => {
+            setFriends(value[0])
+            setFollowers(value[1])
+            setFollowings(value[2])
+            setBlocked(value[3])
+        })
+    }
 
     return (
-        Subscribes?
-        <Tabs defaultActiveKey="1" onChange={callback}>
-            <TabPane tab="Friends" key="1">
+        Friends?
+        <Tabs defaultActiveKey="Suggestions">
+            <TabPane tab="Suggestions" key="Suggestions">
                 <List
                     itemLayout="horizontal"
-                    dataSource={Subscribes.friends}
+                    dataSource={Suggestions}
                     renderItem={item => (
                         <List.Item>
                             <Skeleton avatar title={false} loading={item.loading} active>
@@ -31,15 +77,17 @@ const SubscribesContainer = () => {
                                     title={<a href={'/user/' + item.user_id}>{item.name + ' ' + item.surname}</a>}
                                     description={item.bio}
                                 />
+                                <Button type="primary" htmlType="button" onClick={() => Follow(item.user_id)}>Follow</Button>
+                                <Button type="primary" htmlType="button" onClick={() => Block(item.user_id)}>Block</Button>
                             </Skeleton>
                         </List.Item>
                     )}
                 />
             </TabPane>
-            <TabPane tab="Followers" key="2">
+            <TabPane tab="Friends" key="Friends">
                 <List
                     itemLayout="horizontal"
-                    dataSource={Subscribes.followers}
+                    dataSource={Friends}
                     renderItem={item => (
                         <List.Item>
                             <Skeleton avatar title={false} loading={item.loading} active>
@@ -48,15 +96,17 @@ const SubscribesContainer = () => {
                                     title={<a href={'/user/' + item.user_id}>{item.name + ' ' + item.surname}</a>}
                                     description={item.bio}
                                 />
+                                <Button type="primary" htmlType="button" onClick={() => Unfollow(item.user_id)}>Unfollow</Button>
+                                <Button type="primary" htmlType="button" onClick={() => Block(item.user_id)}>Block</Button>
                             </Skeleton>
                         </List.Item>
                     )}
                 />
             </TabPane>
-            <TabPane tab="Followings" key="3">
+            <TabPane tab="Followers" key="Followers">
                 <List
                     itemLayout="horizontal"
-                    dataSource={Subscribes.followings}
+                    dataSource={Followers}
                     renderItem={item => (
                         <List.Item>
                             <Skeleton avatar title={false} loading={item.loading} active>
@@ -65,15 +115,17 @@ const SubscribesContainer = () => {
                                     title={<a href={'/user/' + item.user_id}>{item.name + ' ' + item.surname}</a>}
                                     description={item.bio}
                                 />
+                                <Button type="primary" htmlType="button" onClick={() => Follow(item.user_id)}>Follow</Button>
+                                <Button  type="primary" htmlType="button" onClick={() => Block(item.user_id)}>Block</Button>
                             </Skeleton>
                         </List.Item>
                     )}
                 />
             </TabPane>
-            <TabPane tab="Blocked" key="4">
+            <TabPane tab="Followings" key="Followings">
                 <List
                     itemLayout="horizontal"
-                    dataSource={Subscribes.blocked}
+                    dataSource={Followings}
                     renderItem={item => (
                         <List.Item>
                             <Skeleton avatar title={false} loading={item.loading} active>
@@ -82,6 +134,26 @@ const SubscribesContainer = () => {
                                     title={<a href={'/user/' + item.user_id}>{item.name + ' ' + item.surname}</a>}
                                     description={item.bio}
                                 />
+                                <Button type="primary" htmlType="button" onClick={() => Unfollow(item.user_id)}>Unfollow</Button>
+                                <Button type="primary" htmlType="button" onClick={() => Block(item.user_id)}>Block</Button>
+                            </Skeleton>
+                        </List.Item>
+                    )}
+                />
+            </TabPane>
+            <TabPane tab="Blocked" key="Blocked">
+                <List
+                    itemLayout="horizontal"
+                    dataSource={Blocked}
+                    renderItem={item => (
+                        <List.Item>
+                            <Skeleton avatar title={false} loading={item.loading} active>
+                                <List.Item.Meta
+                                    avatar={<Avatar src={StaticAvatars.StaticAvatars + item.href}/>}
+                                    title={<a href={'/user/' + item.user_id}>{item.name + ' ' + item.surname}</a>}
+                                    description={item.bio}
+                                />
+                                <Button  type="primary" htmlType="button" onClick={() => Unblock(item.user_id)}>Unblock</Button>
                             </Skeleton>
                         </List.Item>
                     )}

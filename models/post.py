@@ -1,17 +1,14 @@
-import asyncpg
 import datetime
-from config.common import BaseConfig
-connection_url = BaseConfig.database_url
 
 
 class Post:
     @staticmethod
     async def create_post(user_id: str,
                           message: str,
+                          conn,
                           image_href: str = None,
                           community_id: str = None,
                           course_id: str = None):
-        conn = await asyncpg.connect(connection_url)
         post_id = await conn.fetchrow(f"""SELECT MAX(post_id) FROM posts""")
         if post_id['max'] is not None:
             post_id = int(post_id['max']) + 1
@@ -51,7 +48,6 @@ class Post:
             'date_created': datetime.datetime.now(),
             'image_id': image_id
         }
-
         await conn.execute(f"""
                         insert INTO posts (post_id, user_id, community_id, course_id, message, image_id, date_created) 
                         values(
@@ -60,8 +56,7 @@ class Post:
         """)
 
     @staticmethod
-    async def get_posts_subscribes_me(user_id: str):
-        conn = await asyncpg.connect(connection_url)
+    async def get_posts_subscribes_me(user_id: str, conn):
         posts = await conn.fetch(f"""
                                     select distinct(u.user_id), u.name, u.surname, img1.href as avatar, p.message, p.date_created, img.href
                                     from
@@ -74,10 +69,9 @@ class Post:
         return posts
 
     @staticmethod
-    async def get_posts_by_user(user_id: str,
+    async def get_posts_by_user(conn, user_id: str = None,
                                 community_id: str = None,
                                 course_id: str = None):
-        conn = await asyncpg.connect(connection_url)
         if user_id is not None:
             posts = await conn.fetch(f"""
                 select p.user_id, p.message, img1.href as avatar,
@@ -112,4 +106,6 @@ class Post:
                     on im.image_id = p.image_id
                 WHERE p.user_id = {course_id}
             """)
+        else:
+            print('lol')
         return [dict(i) for i in posts]

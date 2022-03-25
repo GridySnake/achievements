@@ -1,13 +1,7 @@
-import asyncpg
-from config.common import BaseConfig
-connection_url = BaseConfig.database_url
-
-
 class LikesRecommendationsGetInfo:
 
     @staticmethod
-    async def is_like_recommend(user_id: str, user_type: int, owner_id: str, owner_type: int):
-        conn = await asyncpg.connect(connection_url)
+    async def is_like_recommend(user_id: str, user_type: int, owner_id: str, owner_type: int, conn):
         like_rec = await conn.fetchrow(f"""select case when l.owner_id = {owner_id} then true else false end as likes, 
                                                   case when d.owner_id = {owner_id} then true else false 
                                                   end as dislikes,
@@ -31,8 +25,7 @@ class LikesRecommendationsGetInfo:
         return [like_rec['likes'], like_rec['dislikes'], like_rec['recommend']]
 
     @staticmethod
-    async def get_statistics(owner_id: str, owner_type: str):
-        conn = await asyncpg.connect(connection_url)
+    async def get_statistics(owner_id: str, owner_type: str, conn):
         statistics = await conn.fetchrow(f"""
                                              select *
                                              from {owner_type}_statistics
@@ -40,12 +33,21 @@ class LikesRecommendationsGetInfo:
                                           """)
         return dict(statistics)
 
+    @staticmethod
+    async def get_one_statistic(owner_id: str, owner_type: str, statistic: str, conn):
+        statistics = await conn.fetchrow(f"""
+                                                 select {statistic}
+                                                 from {owner_type}_statistics
+                                                 where {owner_type}_id = {owner_id}
+                                              """)
+        return statistics[f'{statistic}']
+
 
 class LikesRecommendationsAction:
 
     @staticmethod
-    async def like_recommend(user_id: str, user_type: int, owner_id: str, owner_type: list, like_recommendations: list):
-        conn = await asyncpg.connect(connection_url)
+    async def like_recommend(user_id: str, user_type: int, owner_id: str, owner_type: list, like_recommendations: list, 
+                             conn):
         await conn.execute(f"""update {like_recommendations[0]}
                                set users_{like_recommendations[1]}_id = 
                                         array_append(users_{like_recommendations[1]}_id, {user_id}),
@@ -61,8 +63,7 @@ class LikesRecommendationsAction:
 
     @staticmethod
     async def unlike_unrecommend(user_id: str, user_type: int, owner_id: str, owner_type: list,
-                                 like_recommendations: list):
-        conn = await asyncpg.connect(connection_url)
+                                 like_recommendations: list, conn):
         await conn.execute(f"""
                                 update {like_recommendations[0]}
                                     set users_{like_recommendations[1]}_id = 

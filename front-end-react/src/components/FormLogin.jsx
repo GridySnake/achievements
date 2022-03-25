@@ -99,9 +99,9 @@ const FormLogin = () => {
         </Button>
       </Form.Item>
         {/*<Link to='/signup'>*/}
-            <Button type="primary" htmlType="button" onClick={<Link to='/signup'/>}>
-                Sign In
-            </Button>
+        {/*    <Button type="primary" htmlType="button" onClick={<Link to='/signup'/>}>*/}
+        {/*        Sign In*/}
+        {/*    </Button>*/}
         {/*</Link>*/}
     </Form>
   )

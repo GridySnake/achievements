@@ -1,8 +1,3 @@
-import asyncpg
-from config.common import BaseConfig
-connection_url = BaseConfig.database_url
-
-
 class SubscribesGetInfo:
     """
     Class for getting information for subscribes
@@ -23,12 +18,11 @@ class SubscribesGetInfo:
         Give status of follower
     """
     @staticmethod
-    async def get_user_subscribes_suggestions(user_id: str):
+    async def get_user_subscribes_suggestions(user_id: str, conn):
         """
         :param user_id: str
         :return: list of asyncpg records: user_id, name, surname, href
         """
-        conn = await asyncpg.connect(connection_url)
         users = await conn.fetch(f"""select u.user_id, u.name, u.surname, img.href
                                      from users_information as u 
                                      left join images as img on img.image_id = u.image_id[array_upper(u.image_id, 1)]
@@ -40,12 +34,11 @@ class SubscribesGetInfo:
         return [dict(i) for i in users]
 
     @staticmethod
-    async def get_user_subscribes_names(user_id: str):
+    async def get_user_subscribes_names(user_id: str, conn):
         """
         :param user_id: str
         :return: list of asyncpg records: user_id, name, surname, href
         """
-        conn = await asyncpg.connect(connection_url)
         users = await conn.fetch(f"""
                 select u.user_id, u.name, u.surname, a.href
                 from users_information as u
@@ -58,12 +51,11 @@ class SubscribesGetInfo:
         return [dict(i) for i in users]
 
     @staticmethod
-    async def get_subscribers(user_id: str):
+    async def get_subscribers(user_id: str, conn):
         """
         :param user_id: str
         :return: list of asyncpg records: user_id, name, surname, status_active, status_passive, href
         """
-        conn = await asyncpg.connect(connection_url)
         subscribes = await conn.fetch(f"""
                                           select distinct(u.user_id), u.name, u.surname, u.bio, f.status_id as status_active, 
                                             f1.status_id as status_passive, img.href
@@ -82,13 +74,12 @@ class SubscribesGetInfo:
         return [dict(i) for i in subscribes]
 
     @staticmethod
-    async def subscribe_each_other(user_active_id: str, user_passive_id: str):
+    async def subscribe_each_other(user_active_id: str, user_passive_id: str, conn):
         """
         :param user_active_id: str
         :param user_passive_id: str
         :return: follows: bool
         """
-        conn = await asyncpg.connect(connection_url)
         follows = await conn.fetchrow(f"""
                                           select case when count(distinct status_id) = 1 then true
                                           else false
@@ -105,13 +96,12 @@ class SubscribesGetInfo:
         return follows
 
     @staticmethod
-    async def is_block(user_active_id: str, user_passive_id: str):
+    async def is_block(user_active_id: str, user_passive_id: str, conn):
         """
         :param user_active_id: str
         :param user_passive_id: str
         :return: asyncpg record: status_id
         """
-        conn = await asyncpg.connect(connection_url)
         block = await conn.fetchrow(f"""
                         select case when f.status_id = 2 then true
                                 else false
@@ -148,13 +138,12 @@ class SubscribesAction:
         Unblock user which user has been blocked
     """
     @staticmethod
-    async def subscribe_user(user_active_id: str, user_passive_id: str):
+    async def subscribe_user(user_active_id: str, user_passive_id: str, conn):
         """
         :param user_active_id: str
         :param user_passive_id: str
         :return: None
         """
-        conn = await asyncpg.connect(connection_url)
         checker = await conn.fetchrow(f"""
                                           select
                                           status_id[(select array_position(f.users_id, {user_passive_id})
@@ -205,13 +194,12 @@ class SubscribesAction:
                     """)
 
     @staticmethod
-    async def block_user(user_active_id: str, user_passive_id: str):
+    async def block_user(user_active_id: str, user_passive_id: str, conn):
         """
         :param user_active_id: str
         :param user_passive_id: str
         :return: None
         """
-        conn = await asyncpg.connect(connection_url)
         checker = await conn.fetchrow(f"""
                                           select
                                           status_id[(select array_position(f.users_id, {user_passive_id})
@@ -261,13 +249,12 @@ class SubscribesAction:
         """)
 
     @staticmethod
-    async def unsubscribe_user(user_active_id: str, user_passive_id: str):
+    async def unsubscribe_user(user_active_id: str, user_passive_id: str, conn):
         """
         :param user_active_id: str
         :param user_passive_id: str
         :return: None
         """
-        conn = await asyncpg.connect(connection_url)
         checker = await conn.fetchrow(f"""
                                           select
                                           status_id[(select array_position(f.users_id, {user_active_id})
@@ -334,13 +321,12 @@ class SubscribesAction:
                                 """)
 
     @staticmethod
-    async def unblock_user(user_active_id: str, user_passive_id: str):
+    async def unblock_user(user_active_id: str, user_passive_id: str, conn):
         """
         :param user_active_id: str
         :param user_passive_id: str
         :return: None
         """
-        conn = await asyncpg.connect(connection_url)
         await conn.execute(f"""
                         update subscribes
                             set users_id = users_id[:(select array_position(f.users_id, {user_passive_id})
