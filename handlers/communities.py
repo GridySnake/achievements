@@ -26,15 +26,15 @@ async def community_page(request):
     subspheres = await InfoGet.get_subspheres()
     communities_recommend = await CommunityGetInfo.get_some_communities(user_id=user_id)
     conditions_to_join = await InfoGet.get_conditions(owner_type=1)
-    return json_response({'communities': communities,
-                          'owner_communities': owner_communities,
-                          'conditions': conditions,
-                          'community_types': community_types,
-                          'dropdown_community': dropdown_community,
-                          'requests': requests,
-                          'subspheres': subspheres,
-                          'communities_recommend': communities_recommend,
-                          'conditions_tj': conditions_to_join})
+    return json_response({'communities': communities,})
+                          # 'owner_communities': owner_communities,})
+                          # 'conditions': conditions,
+                          # 'community_types': community_types,
+                          # 'dropdown_community': dropdown_community,
+                          # 'requests': requests,
+                          # 'subspheres': subspheres,
+                          # 'communities_recommend': communities_recommend,
+                          # 'conditions_tj': conditions_to_join})
 
 
 class CommunitiesView(web.View):

@@ -34,20 +34,28 @@ class CommunityGetInfo:
     async def get_user_communities(user_id):
         conn = await asyncpg.connect(connection_url)
         communities = await conn.fetch(f"""
-                                          select c.community_id, c.community_name, s.sphere_name, s.subsphere_name
+                                          select c.community_id, c.community_name, 
+                                                s.sphere_name, s.subsphere_name, i.href
                                           from communities as c
                                           right join (
-                                                      select unnest(community_id) as community_id from users_information where user_id={user_id}
-                                                      ) as u on u.community_id = c.community_id
+                                                      select unnest(community_id) as community_id 
+                                                      from users_information 
+                                                      where user_id={user_id}
+                                                      ) as u 
+                                                      on u.community_id = c.community_id
                                           left join (
                                                         select c.community_id, array_agg(s.subsphere_name) as subsphere_name, 
                                                         array_agg(s.sphere_name) as sphere_name
                                                         from communities as c
-                                                        left join spheres s on s.subsphere_id = any(c.subsphere_id)
+                                                            left join spheres s 
+                                                                on s.subsphere_id = any(c.subsphere_id)
                                                         group by c.community_id
                                                     ) s on c.community_id = s.community_id
+                                          left join images as i 
+                                                on i.image_id = c.image_id[array_upper(c.image_id, 1)] 
+                                                    and i.image_type = 'community'
                                           """)
-        return communities
+        return [dict(i) for i in communities]
 
     @staticmethod
     async def get_user_owner_communities(user_id):
@@ -74,11 +82,17 @@ class CommunityGetInfo:
     async def get_community_info(community_id):
         conn = await asyncpg.connect(connection_url)
         community = await conn.fetchrow(f"""
-                                           select u.user_id, u.name, u.surname, c.community_id, c.community_name, c.community_type, c.community_bio, c.condition_id, c.created_date, i.href, c.community_owner_id
+                                           select u.user_id, u.name, u.surname, c.community_id, 
+                                                    c.community_name, c.community_type, c.community_bio, 
+                                                    c.condition_id, c.created_date, i.href, c.community_owner_id
                                            from users_information as u
-                                           right join (select community_id, community_name, community_type, unnest(user_id) as user_id, community_bio, unnest(conditions) as condition_id, created_date, image_id, unnest(community_owner_id) as community_owner_id
+                                           right join (select community_id, community_name, community_type, 
+                                                            unnest(user_id) as user_id, community_bio, unnest(conditions) as condition_id, 
+                                                            created_date, image_id, unnest(community_owner_id) as community_owner_id
                                                         from communities) as c on c.user_id = u.user_id
-                                           left join images as i on i.image_id = c.image_id[array_upper(c.image_id, 1)] and i.image_type = 'community'
+                                           left join images as i 
+                                           on i.image_id = c.image_id[array_upper(c.image_id, 1)] 
+                                                and i.image_type = 'community'
                                            where c.community_id = {community_id}
                                            """)
         return community

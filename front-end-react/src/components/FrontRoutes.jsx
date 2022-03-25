@@ -3,6 +3,7 @@ import FormLogin from "./FormLogin";
 import FormSignUp from "./FormSignUp";
 import PersonalPageContainer from "./Personal Page/PersonalPageContainer";
 import SubscribesContainer from "./Subscribes/SubscribesContainer";
+import CommunitiesContainer from "./Communities/CommunitiesContainer";
 
 // auth? <navbar + all> : <login + signup>
 const FrontRoutes = () => {
@@ -19,7 +20,7 @@ const FrontRoutes = () => {
                     <Route path="/chat/"/>
                     <Route path="/achievements"/>
                     <Route path="/posts"/>
-                    <Route path="/communities"/>
+                    <Route path="/communities" key="communities" element={<CommunitiesContainer/>}/>
                     <Route path="/courses"/>
                     <Route path="/goals"/>
                 </Routes>
