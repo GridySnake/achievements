@@ -15,17 +15,19 @@ from aiohttp.web import json_response
 
 
 async def community_page(request):
-    conditions = await CommunityGetInfo.get_generate_conditions()
-    community_types = set([i['community_type'] for i in conditions])
-    values = [dict(record) for record in conditions]
-    dropdown_community = json.dumps(values).replace("</", "<\\/")
-    user_id = json.loads(request.cookies['user'])['user_id']
-    owner_communities = await CommunityGetInfo.get_user_owner_communities(user_id=user_id)
-    communities = await CommunityGetInfo.get_user_communities(user_id=user_id)
-    requests = await CommunityGetInfo.user_requests(user_id=user_id)
-    subspheres = await InfoGet.get_subspheres()
-    communities_recommend = await CommunityGetInfo.get_some_communities(user_id=user_id)
-    conditions_to_join = await InfoGet.get_conditions(owner_type=1)
+    pool = request.app['pool']
+    async with pool.acquire() as conn:
+        conditions = await CommunityGetInfo.get_generate_conditions(conn=conn)
+        community_types = set([i['community_type'] for i in conditions])
+        values = [dict(record) for record in conditions]
+        dropdown_community = json.dumps(values).replace("</", "<\\/")
+        user_id = json.loads(request.cookies['user'])['user_id']
+        owner_communities = await CommunityGetInfo.get_user_owner_communities(user_id=user_id, conn=conn)
+        communities = await CommunityGetInfo.get_user_communities(user_id=user_id, conn=conn)
+        requests = await CommunityGetInfo.user_requests(user_id=user_id, conn=conn)
+        subspheres = await InfoGet.get_subspheres(conn=conn)
+        communities_recommend = await CommunityGetInfo.get_some_communities(user_id=user_id, conn=conn)
+        conditions_to_join = await InfoGet.get_conditions(owner_type=1, conn=conn)
     return json_response({'communities': communities,})
                           # 'owner_communities': owner_communities,})
                           # 'conditions': conditions,
