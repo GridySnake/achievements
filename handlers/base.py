@@ -9,6 +9,8 @@ from email.parser import Parser
 from email.policy import default
 import json
 from aiohttp.web import json_response
+import os
+from models.images import Images
 
 
 async def auth(request):
@@ -42,6 +44,21 @@ async def login(request):
         return resp
     else:
         return json_response({"error": "User is not found"})
+
+
+async def upload(request):
+    try:
+        data = await request.multipart()
+        d = await data.next()
+        with open(os.path.join(BaseConfig.STATIC_DIR + '/group_avatar/' + d.filename), 'wb') as f:
+            chunk = await d.read_chunk()
+            f.write(chunk)
+    except:
+        return json_response({'image_id': None})
+    pool = request.app['pool']
+    async with pool.acquire() as conn:
+        image_id = await Images.create_image(path=d.filename, image_type='group', conn=conn)
+    return json_response({'image_id': image_id})
 
 
 class Signup(web.View):

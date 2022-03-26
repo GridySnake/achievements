@@ -219,20 +219,20 @@ class MessageCreate:
                             """)
 
     @staticmethod
-    async def create_group_chat(owner_id: str, chat_name: str, conn, chat_avatar: str = None):
-        if chat_avatar is None:
+    async def create_group_chat(owner_id: str, chat_name: str, conn, image_id: str = None):
+        if image_id is None:
             image_id = 'null'
-        else:
-            image_id = await conn.fetchrow("""select max(image_id) from images""")
-            image_id = dict(image_id)['max']
-            if image_id is not None:
-                image_id += 1
-            else:
-                image_id = 0
-            await conn.execute(f"""
-                                    insert into images(image_id, href, image_type, create_date) values(
-                                    {image_id}, '{chat_avatar}', 'group', statement_timestamp())
-                                """)
+        # else:
+        #     image_id = await conn.fetchrow("""select max(image_id) from images""")
+        #     image_id = dict(image_id)['max']
+        #     if image_id is not None:
+        #         image_id += 1
+        #     else:
+        #         image_id = 0
+        # await conn.execute(f"""
+        #                         insert into images(image_id, href, image_type, create_date) values(
+        #                         {image_id}, '{image_id}', 'group', statement_timestamp())
+        #                     """)
         chat_id = await conn.fetchrow("""select max(chat_id) from chats""")
         chat_id = dict(chat_id)['max']
         if chat_id is not None:

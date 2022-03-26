@@ -3,6 +3,7 @@ from models.message import *
 import json
 import os
 from aiohttp.web import json_response
+from config.common import BaseConfig
 
 
 async def messages(request):
@@ -25,6 +26,16 @@ async def send_message(request):
         await MessageCreate.create_message(from_user=from_user, message=data['message'],
                                            type1=data['chat_type'], chat_id=data['chat_id'], conn=conn)
     return json_response({'value': 200})
+
+
+async def create_group_chat(request):
+    data = await request.json()
+    pool = request.app['pool']
+    async with pool.acquire() as conn:
+        chat_id = await MessageCreate.create_group_chat(owner_id=json.loads(request.cookies['user'])['user_id'],
+                                                        chat_name=data['chat_name'],
+                                                        image_id=data['image_id'], conn=conn)
+    return json_response({'chat_id': chat_id})
 
 
 async def ssend_message(request):
