@@ -4,7 +4,7 @@ import {Avatar, List, Typography, Form, Input, Button} from "antd";
 import StaticAvatars from "../StaticRoutes";
 import {useLocation, useParams} from "react-router-dom";
 import {useNavigate} from "react-router";
-import SendMessage from "../../api/SendForms";
+import {SendMessage} from "../../api/SendForms";
 
 
 const ChatContainer = () => {
@@ -78,47 +78,6 @@ const ChatContainer = () => {
         }
     }
 
-    const ISForm = () => {
-        if (Block) {
-            return (<p>U was blocked:(</p>)
-        } else {
-            return (
-                <div>
-                    <Form
-                        labelCol={{
-                            span: 6,
-                        }}
-                        wrapperCol={{
-                            span: 8,
-                        }}
-                        initialValues={{
-                            remember: false,
-                        }}
-                        autoComplete="off"
-                    >
-                        <Form.Item
-                            name="message"
-                            onChange={e => setMessage(e.target.value)}
-                            onKeyPress={e => onPressSend(e)}
-                        >
-                            <Input value={Message} />
-                        </Form.Item>
-                        <Form.Item
-                            wrapperCol={{
-                                offset: 8,
-                                span: 8
-                            }}
-                        >
-                            <Button type="primary" htmlType="button" onClick={() => SendForm()}>
-                                    Send
-                            </Button>
-                        </Form.Item>
-                    </Form>
-                </div>
-            )
-        }
-    }
-
     const onPressSend = e => {
         if (e.key === "Enter" && Message !== "") {
             SendForm();
@@ -126,18 +85,11 @@ const ChatContainer = () => {
     }
 
     const SendForm = () => {
-        if (Message !== "") {
-            {SendMessage('/send_message', {'message': Message, 'chat_id': id,
-                'chat_type': Messages[0]['chat_type']}, (data) => {
-                setSended(data);
-                // to do: clear input
-                setMessage("");
-                console.log(Message)
-            })
-            }
-        } else {
-            return null
-        }
+        SendMessage({'message': Message, 'chat_id': id,
+            'chat_type': Messages[0]['chat_type']}, (data) => {
+            setSended(data);
+        })
+        setMessage('');
     }
 
     const BackToChats = () => {
@@ -156,7 +108,40 @@ const ChatContainer = () => {
                     <MessagePositions item={item}/>
                 }
             />
-            {ISForm()}
+            {
+                Block?
+                    <p>U was blocked:(</p>
+            :
+                <Form
+                    labelCol={{
+                        span: 6,
+                    }}
+                    wrapperCol={{
+                        span: 8,
+                    }}
+                    initialValues={{
+                        remember: false,
+                    }}
+                    autoComplete="off"
+                >
+                    <Form.Item
+                        name="message"
+                    >
+                        <Input name="message" onChange={e => setMessage(e.target.value)}
+                               onKeyPress={e => onPressSend(e)}/>
+                    </Form.Item>
+                    <Form.Item
+                        wrapperCol={{
+                            offset: 8,
+                            span: 8
+                        }}
+                    >
+                        <Button type="primary" htmlType="button" onClick={() => SendForm()}>
+                            Send
+                        </Button>
+                    </Form.Item>
+                </Form>
+            }
         </div>
             : <></>
     )
