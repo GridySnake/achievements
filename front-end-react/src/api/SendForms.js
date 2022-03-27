@@ -20,4 +20,24 @@ const CreateGroupChat = (data, callback) => {
     })
 };
 
-export {SendMessage, CreateGroupChat};
+const AddChatMembers = (data, callback) => {
+    axiosInstance.post('/add_chat_member', data)
+    .then(({data}) => {
+        callback(data.value)
+    })
+    .catch(({response}) => {
+        console.log(response);
+    })
+};
+
+const RemoveChatMembers = (data, callback) => {
+    axiosInstance.post('/remove_chat_member', data)
+    .then(({data}) => {
+        callback(data.value)
+    })
+    .catch(({response}) => {
+        console.log(response);
+    })
+};
+
+export {SendMessage, CreateGroupChat, AddChatMembers, RemoveChatMembers};

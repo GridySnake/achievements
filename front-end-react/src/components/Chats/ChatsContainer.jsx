@@ -26,8 +26,8 @@ const ChatsContainer = () => {
         const setInfoChats = (Chats) => {
             setUsers(Chats.users)
             setGroups(Chats.groups)
-            setCommunities(Chats.followings)
-            setCourses(Chats.blocked)
+            setCommunities(Chats.communities)
+            setCourses(Chats.courses)
         }
         GetAnyUserInfo(setInfoChats, url)
     }, [url])
@@ -43,29 +43,28 @@ const ChatsContainer = () => {
             } else {
                 var me = 'You: '
             }
-        if (message.chat_type === 0) {
-            return (
+        return (
                 message.message?
                 <div>
                     <p>{me + ' ' + message.message + ' ' + message.datetime}</p>
                 </div>
                     : <></>
             )
-        } else if (message.chat_type === 1) {
-            return (
-                message.message?
-                <div>
-                    <p>{message.m_name + ' ' + message.m_surname}</p>
-                    <p>{message.message + ' ' + message.datetime}</p>
-                </div>
-                    : <></>
-            )
-        }
-        else {
-            return (
-                <></>
-            )
-        }
+        // } else if (message.chat_type === 1) {
+        //     return (
+        //         message.message?
+        //         <div>
+        //             <p>{message.m_name + ' ' + message.m_surname}</p>
+        //             <p>{message.message + ' ' + message.datetime}</p>
+        //         </div>
+        //             : <></>
+        //     )
+        // }
+        // else {
+        //     return (
+        //         <></>
+        //     )
+        // }
 
         // return (
         //     message.message?
@@ -159,7 +158,9 @@ const ChatsContainer = () => {
                 <List
                     itemLayout="horizontal"
                     dataSource={Users}
-                    renderItem={item =>
+                    renderItem={item => {
+                        if (item.message !== null) {
+                            return(
                             <Card onClick={() => toChat(item.chat_id)}>
                                 <List.Item.Meta
                                     avatar={<Avatar src={StaticAvatars.StaticAvatars + item.href}/>}
@@ -167,22 +168,32 @@ const ChatsContainer = () => {
                                 />
                                 <Message message={item}/>
                             </Card>
-                    }
+                            )
+                        } else {
+                            return (<></>)
+                        }
+                    }}
                 />
             </TabPane>
             <TabPane tab="Group chats" key="Groups">
                 <List
                     itemLayout="horizontal"
                     dataSource={Groups}
-                    renderItem={item => (
-                        <Card onClick={() => toChat(item.chat_id)}>
-                            <List.Item.Meta
-                                avatar={<Avatar src={StaticAvatars.StaticGroupAvatars + item.href}/>}
-                                title={<a href={'/chat/' + item.chat_id}>{item.group_name}</a>}
-                            />
-                            <Message message={item}/>
-                        </Card>
-                    )}
+                    renderItem={item => {
+                        if (item.message !== null) {
+                            return(
+                                <Card onClick={() => toChat(item.chat_id)}>
+                                    <List.Item.Meta
+                                        avatar={<Avatar src={StaticAvatars.StaticGroupAvatars + item.href}/>}
+                                        title={<a href={'/chat/' + item.chat_id}>{item.group_name}</a>}
+                                    />
+                                    <Message message={item}/>
+                                </Card>
+                                )
+                        } else {
+                            return (<></>)
+                        }
+                    }}
                 />
                 <Button type="primary" onClick={() => showDrawer()} icon={<PlusOutlined />}>
                     New chat
@@ -230,30 +241,42 @@ const ChatsContainer = () => {
                 <List
                     itemLayout="horizontal"
                     dataSource={Communities}
-                    renderItem={item => (
-                        <Card onClick={() => toChat(item.chat_id)}>
-                            <List.Item.Meta
-                                avatar={<Avatar src={StaticAvatars.StaticCommunityAvatars + item.href}/>}
-                                title={<a href={'/community/' + item.community_id}>{item.community_name}</a>}
-                            />
-                            <Message message={item}/>
-                        </Card>
-                    )}
+                    renderItem={item => {
+                        if (item.message !== null) {
+                            return(
+                                <Card onClick={() => toChat(item.chat_id)}>
+                                    <List.Item.Meta
+                                        avatar={<Avatar src={StaticAvatars.StaticCommunityAvatars + item.href}/>}
+                                        title={<a href={'/community/' + item.community_id}>{item.community_name}</a>}
+                                    />
+                                    <Message message={item}/>
+                                </Card>
+                                )
+                        } else {
+                            return (<></>)
+                        }
+                    }}
                 />
             </TabPane>
             <TabPane tab="Course chats" key="Courses">
                 <List
                     itemLayout="horizontal"
                     dataSource={Courses}
-                    renderItem={item => (
-                        <Card onClick={() => toChat(item.chat_id)}>
-                            <List.Item.Meta
-                                avatar={<Avatar src={StaticAvatars.StaticCourseAvatars + item.href}/>}
-                                title={<a href={'/course/' + item.course_id}>{item.course_name}</a>}
-                            />
-                            <Message message={item}/>
-                        </Card>
-                    )}
+                    renderItem={item => {
+                        if (item.message !== null) {
+                            return(
+                                <Card onClick={() => toChat(item.chat_id)}>
+                                    <List.Item.Meta
+                                        avatar={<Avatar src={StaticAvatars.StaticCourseAvatars + item.href}/>}
+                                        title={<a href={'/course/' + item.course_id}>{item.course_name}</a>}
+                                    />
+                                    <Message message={item}/>
+                                </Card>
+                                )
+                        } else {
+                            return (<></>)
+                        }
+                    }}
                 />
             </TabPane>
         </Tabs>

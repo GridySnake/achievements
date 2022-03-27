@@ -58,7 +58,7 @@ class SubscribesGetInfo:
         """
         subscribes = await conn.fetch(f"""
                                           select distinct(u.user_id), u.name, u.surname, u.bio, f.status_id as status_active, 
-                                            f1.status_id as status_passive, img.href
+                                            f1.status_id as status_passive, img.href, ch.chat_id
                                           from
                                           (select user_id, unnest(users_id) as users_id, unnest(status_id) as status_id 
                                             from subscribes) as f
@@ -66,6 +66,9 @@ class SubscribesGetInfo:
                                               (select user_id, unnest(users_id) as users_id, unnest(status_id) 
                                                 as status_id from subscribes) as f1 on f1.user_id = f.users_id and 
                                                 f1.users_id = {user_id}
+                                          left join (select chat_id, participants, owner_id from chats) as ch on 
+                                            f.user_id = any(ch.participants) and f1.user_id = any(ch.participants) 
+                                            and ch.owner_id is null
                                           inner join users_information as u on u.user_id = f.users_id
                                           left join images as img 
                                             on img.image_id = u.image_id[array_upper(u.image_id, 1)]

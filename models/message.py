@@ -22,6 +22,51 @@ class MessageGetInfo:
         return [dict(i) for i in messages]
 
     @staticmethod
+    async def get_user_chat_info(user_id: str, chat_id: str, conn):
+        chat = await conn.fetchrow(f"""
+                                        select concat('/user/', u.user_id::varchar) as link, 
+                                            concat(u.surname, ' ', u.name) as title, img.href, ch.chat_type, ch.chat_id
+                                        from chats as ch
+                                        left join users_information as u on u.user_id = any(ch.participants)
+                                        left join images as img on img.image_id = u.image_id[array_upper(u.image_id, 1)]
+                                        where ch.chat_id = {chat_id} and {user_id} <> u.user_id and ch.chat_type=0
+                                    """)
+        return dict(chat)
+
+    @staticmethod
+    async def get_group_chat_info(chat_id: str, conn):
+        chat = await conn.fetchrow(f"""
+                                       select concat('/chat/', {chat_id}) as link, c.group_name as title, img.href, 
+                                       ch.chat_type, ch.chat_id
+                                       from group_chats_info as c
+                                       inner join chats as ch on ch.chat_id = c.chat_id and ch.chat_id ={chat_id}
+                                       left join images as img on img.image_id = c.image_id
+                                    """)
+        return dict(chat)
+
+    @staticmethod
+    async def get_community_chat_info(chat_id: str, conn):
+        chat = await conn.fetchrow(f"""
+                                       select concat('/community/', c.community_id::varchar) as link, 
+                                            c.community_name as title, img.href, ch.chat_type, ch.chat_id
+                                       from communities as c
+                                       inner join chats as ch on ch.owner_id = c.community_id and ch.chat_id ={chat_id}
+                                       left join images as img on img.image_id = c.image_id[array_upper(c.image_id, 1)]
+                                    """)
+        return dict(chat)
+
+    @staticmethod
+    async def get_course_chat_info(chat_id: str, conn):
+        chat = await conn.fetchrow(f"""
+                                       select concat('/course/', c.course_id::varchar) as link, c.course_name as title, 
+                                            img.href, ch.chat_type, ch.chat_id
+                                       from courses as c
+                                       inner join chats as ch on ch.owner_id = c.course_id and ch.chat_id ={chat_id}
+                                       left join images as img on img.image_id = c.image_id
+                                    """)
+        return dict(chat)
+
+    @staticmethod
     async def is_owner(chat_id: str, conn):
         owner = await conn.fetchrow(f"""
                                         select u.user_id
@@ -194,7 +239,7 @@ class MessageGetInfo:
 
 class MessageCreate:
     @staticmethod
-    async def create_message(from_user: str, message: str, type1: str, chat_id: str, conn, to_user: str = None):
+    async def create_message(from_user: str, message: str, type1: str, chat_id: str, conn, from_type: str, to_user: str = None):
         message_id = await conn.fetchrow(f"""select max(message_id) from messages""")
         if dict(message_id)['max'] is not None:
             message_id = int(dict(message_id)['max']) + 1
@@ -208,31 +253,34 @@ class MessageCreate:
                 chat_id = 0
             await conn.execute(f"""
                                     insert into chats (chat_id, chat_type, participants, owner_id) values(
-                                    {chat_id}, 0, array[{from_user}, {to_user}], null) 
+                                    {chat_id}, {type1}, array[{from_user}, {to_user}], null) 
                                 """)
 
         await conn.execute(f"""
                                 insert into messages (message_id, from_user, message, from_user_type,
                                 datetime, is_read, chat_id) values(
                                 {message_id}, {from_user}, '{message}', 
-                                {type1}, statement_timestamp(), False, {chat_id})
+                                {from_type}, statement_timestamp(), False, {chat_id})
                             """)
+
+    @staticmethod
+    async def create_user_chat(user_active_id: str, user_passive_id: str, conn):
+        chat_id = await conn.fetchrow("""select max(chat_id) from chats""")
+        chat_id = dict(chat_id)['max']
+        if chat_id is not None:
+            chat_id += 1
+        else:
+            chat_id = 0
+        await conn.execute(f"""
+                               insert into chats (chat_id, chat_type, participants, owner_id) values(
+                               {chat_id}, 0, array[{user_active_id}, {user_passive_id}], null)
+                            """)
+        return chat_id
 
     @staticmethod
     async def create_group_chat(owner_id: str, chat_name: str, conn, image_id: str = None):
         if image_id is None:
             image_id = 'null'
-        # else:
-        #     image_id = await conn.fetchrow("""select max(image_id) from images""")
-        #     image_id = dict(image_id)['max']
-        #     if image_id is not None:
-        #         image_id += 1
-        #     else:
-        #         image_id = 0
-        # await conn.execute(f"""
-        #                         insert into images(image_id, href, image_type, create_date) values(
-        #                         {image_id}, '{image_id}', 'group', statement_timestamp())
-        #                     """)
         chat_id = await conn.fetchrow("""select max(chat_id) from chats""")
         chat_id = dict(chat_id)['max']
         if chat_id is not None:
@@ -257,11 +305,12 @@ class MessageCreate:
 
     @staticmethod
     async def add_member(chat_id: str, users: list, conn):
-        await conn.execute(f"""
-                               update chats
-                                   set participants = array_cat(participants, array[{users}])
-                                   where chat_id = {chat_id}
-                            """)
+        for i in users:
+            await conn.execute(f"""
+                                   update chats
+                                       set participants = array_append(participants, {i})
+                                       where chat_id = {chat_id}
+                                """)
 
     @staticmethod
     async def remove_member(chat_id: str, users: list, conn):
