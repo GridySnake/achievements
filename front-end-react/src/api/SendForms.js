@@ -40,4 +40,14 @@ const RemoveChatMembers = (data, callback) => {
     })
 };
 
-export {SendMessage, CreateGroupChat, AddChatMembers, RemoveChatMembers};
+const ChangeUserSettings = (data, callback) => {
+    axiosInstance.post('/user_info', data)
+    .then(({data}) => {
+        callback(data.response)
+    })
+    .catch(({response}) => {
+        console.log(response);
+    })
+};
+
+export {SendMessage, CreateGroupChat, AddChatMembers, RemoveChatMembers, ChangeUserSettings};

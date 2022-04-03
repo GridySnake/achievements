@@ -19,13 +19,18 @@ async def messages(request):
 
 
 async def send_message(request):
-    # todo: send from not user
     data = await request.json()
-    from_user = json.loads(request.cookies['user'])['user_id']
+    from_type = data['sender_type']
     pool = request.app['pool']
+    if from_type == 0:
+        from_user = json.loads(request.cookies['user'])['user_id']
+    else:
+        async with pool.acquire() as conn:
+            from_user = await MessageGetInfo.get_co_id_by_chat_id(chat_id=data['chat_id'], conn=conn)
     async with pool.acquire() as conn:
         await MessageCreate.create_message(from_user=from_user, message=data['message'],
-                                           type1=data['chat_type'], chat_id=data['chat_id'], from_type='0', conn=conn)
+                                           type1=data['chat_type'], chat_id=data['chat_id'], from_type=from_type,
+                                           conn=conn)
     return json_response({'value': True})
 
 

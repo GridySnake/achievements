@@ -20,4 +20,14 @@ const CreateUserChat = (data, callback) => {
     })
 };
 
-export {GetAnyUserInfo, CreateUserChat};
+const GetCitiesByCountry = async (data, set) => {
+    try {
+        const resp = await axiosInstance.get(`/get_cities_by_country/${data}`);
+        set(resp.data)
+        console.log(resp.data)
+    } catch (err) {
+        console.error(err);
+    }
+};
+
+export {GetAnyUserInfo, CreateUserChat, GetCitiesByCountry};

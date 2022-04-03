@@ -78,7 +78,7 @@ class MessageGetInfo:
                                             u.user_id = c1.course_owner_id and c1.course_owner_type = 0 or u.user_id = any(c2.community_owner_id)
                                         where ch.chat_id = {chat_id}
     								""")
-        return owner
+        return owner['user_id']
 
     @staticmethod
     async def get_chat_owner_cc(chat_id: str, conn):
@@ -189,6 +189,15 @@ class MessageGetInfo:
                                      where {user_id} = any(ch.participants)
                                 """)
         return [dict(i) for i in chats]
+
+    @staticmethod
+    async def get_co_id_by_chat_id(chat_id: str, conn):
+        co_id = await conn.fetchrow(f"""
+                                        select owner_id
+                                        from chats
+                                        where chat_id = {chat_id}
+                                    """)
+        return co_id['owner_id']
 
     @staticmethod
     async def get_last_messages(chat_id: str, conn):

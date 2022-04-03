@@ -51,12 +51,16 @@ class UserGetInfo:
     @staticmethod
     async def get_user_info(user_id: str, conn):
         user = await conn.fetchrow(f"""
-                            select name, surname, c.country_name_native, c.country_id, age, bio
+                            select ui.name, ui.surname, co.country_name_native as country_name, co.country_id, 
+                                ci.city_name, ci.city_id, ui.birthday::varchar, ui.bio, um.email, um.phone, um.user_name
                             from users_information as ui
-                            left join countries as c on c.country_id = ui.country_id
-                            where user_id = {user_id}
+                            left join users_main as um on um.user_id = ui.user_id
+                            left join countries as co on co.country_id = ui.country_id
+                            left join cities as ci on ci.city_id = ui.city_id
+                            left join conditions as con on con.condition_id = any(ui.conditions)
+                            where ui.user_id = {user_id}
                             """)
-        return user
+        return dict(user)
 
     @staticmethod
     async def get_user_info_by_count(user_id: str, value: str, conn):
@@ -70,13 +74,13 @@ class UserGetInfo:
     @staticmethod
     async def get_avatar_by_user_id(user_id: str, conn):
         avatar = await conn.fetch(f"""
-                SELECT images.href
+                SELECT us.user_id, images.href
                 FROM images
                 INNER JOIN users_information as us ON images.image_id = ANY(us.image_id) and images.image_type = 'user'
                 WHERE us.user_id = {user_id}
                 """)
         if avatar:
-            return avatar
+            return [dict(i) for i in avatar]
         else:
             return None
 
@@ -122,21 +126,30 @@ class UserCreate:
     @staticmethod
     async def create_user_info(user_id: str, data: dict, conn):
         for i in data.keys():
-            await conn.execute(f"""
-                                    update users_information
-                                    set 
-                                        {i} = '{data[i]}'
-                                    where user_id = {user_id}
-                            """)
+            if i in ['city', 'country', 'age']:
+                await conn.execute(f"""
+                                       update users_information
+                                       set 
+                                           {i} = {data[i]}
+                                       where user_id = {user_id}
+                                    """)
+            else:
+                await conn.execute(f"""
+                                        update users_information
+                                        set 
+                                            {i} = '{data[i]}'
+                                        where user_id = {user_id}
+                                    """)
 
     @staticmethod
-    async def get_user_info(user_id: str, conn):
-        user_info = await conn.fetchrow(f"""
-                                            select name, surname, bio, birthday
-                                            from users_information
-                                            where user_id = {user_id}
-                                        """)
-        return user_info
+    async def create_user_main(user_id: str, data: dict, conn):
+        for i in data.keys():
+            await conn.execute(f"""
+                                   update users_main
+                                   set 
+                                       {i} = '{data[i]}'
+                                   where user_id = {user_id}
+                                """)
 
     @staticmethod
     async def create_user_info_conditions(user_id: str, data: dict, conn):
@@ -250,11 +263,12 @@ class UserCreate:
                                     surname, language_id, wedding, conditions, status_work, 
                                     position, company_id, school_id, bachelor_id, master_id, image_id, achievements_id, 
                                     achievements_desired_id, services_id, services_username,
-                                    community_id, community_owner_id) values(
+                                    community_id, community_owner_id, age) values(
                                     {id}, null, null, null, null, null, null, null, null,
                                     null, null, ARRAY []::integer[], null, null, null, null, null, 
                                     null, ARRAY []::integer[], ARRAY []::integer[], ARRAY []::integer[], 
-                                    ARRAY []::integer[], ARRAY []::varchar[], ARRAY []::integer[], ARRAY []::integer[])
+                                    ARRAY []::integer[], ARRAY []::varchar[], ARRAY []::integer[], ARRAY []::integer[],
+                                    null)
                                 """)
             await conn.execute(f"""
                                     insert into user_statistics (user_id, followers, likes, comments, recommendations, 

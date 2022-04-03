@@ -8,7 +8,7 @@ from handlers.communities import *
 from handlers.courses import *
 from handlers.personal_page import personal_page
 from handlers.chat import get_chat
-from handlers.user_info import UserInfoView
+from handlers.user_info import *
 from handlers.goal import GoalView
 from handlers.conditions import *
 from handlers.likes_recommendations import likes_recommendations
@@ -31,8 +31,9 @@ def setup_routes(app):
     app.router.add_route('GET', '/my_subscribes', MySubscribesView.get, name='my_subscribes')
     app.router.add_route('GET', '/achievements', AchievementsView.get, name='achievements')
     app.router.add_route('POST', '/add_achievement', AchievementsView.post, name='add_achievement')
-    app.router.add_route('POST', '/user_info', UserInfoView.post, name='user_info')
-    app.router.add_route('GET', '/user_info', UserInfoView.get, name='user_info')
+    app.router.add_route('POST', '/user_info', change_user_info, name='user_info')
+    app.router.add_route('GET', '/user_info', get_user_info, name='user_info')
+    app.router.add_route('GET', r'/get_cities_by_country/{i}', get_cities_by_country, name='get_cities_by_country')
     app.router.add_route('GET', '/verify', NeedVerify.get, name='verify')
     app.router.add_route('POST', '/unfollow', unfollow, name='unfollow')
     app.router.add_route('POST', '/follow', follow, name='follow')

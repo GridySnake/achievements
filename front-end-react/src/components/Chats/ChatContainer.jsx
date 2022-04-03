@@ -24,6 +24,9 @@ const ChatContainer = () => {
     const [MembersAdd, setMembersAdd] = useState(null);
     const [MembersRemove, setMembersRemove] = useState(null);
     const [Update, setUpdate] = useState(false);
+    const [Owner, setOwner] = useState(false);
+    const [User, setUser] = useState(null);
+    const [Sender, setSender] = useState(null);
     const navigate = useNavigate();
     const avatarPath = {0: StaticAvatars.StaticAvatars, 1: StaticAvatars.StaticGroupAvatars,
         2: StaticAvatars.StaticCommunityAvatars, 3: StaticAvatars.StaticCourseAvatars}
@@ -42,6 +45,8 @@ const ChatContainer = () => {
                 setBlock(ChatInfo.block)
                 setParticipants(ChatInfo.participants)
                 setSubscribers(ChatInfo.subscribers)
+                setOwner(ChatInfo.is_owner)
+                setUser(ChatInfo.user)
                 setInfo(ChatInfo.chat_info)
             }
         }
@@ -74,7 +79,7 @@ const ChatContainer = () => {
 
     const SendForm = () => {
         SendMessage({'message': Message, 'chat_id': id,
-            'chat_type': Messages[0]['chat_type']}, (data) => {
+            'chat_type': Info.chat_type, 'sender_type': Sender}, (data) => {
             setSended(data);
         })
         setMessage('');
@@ -101,43 +106,38 @@ const ChatContainer = () => {
     };
 
     // const AddMember = () => {
-    //     if (Info.chat_type === 1) {
-    //         const options = []
-    //         for (let i in Subscribers) {
-    //             options.push(<Option key={Subscribers[i].user_id}>{Subscribers[i].surname + ' ' + Subscribers[i].name}</Option>)
-    //                 }
-    //         return (
-    //             <Popover
-    //                 content={
-    //                     <div>
-    //                         <Button type="primary" onClick={() => hide()}>X</Button>
-    //                         <Form>
-    //                             <Form.Item>
-    //                                 <Select
-    //                                     mode="multiple"
-    //                                     allowClear
-    //                                     style={{ width: '100%' }}
-    //                                     placeholder="Please select"
-    //                                     onChange={MemberChange}
-    //                                 >
-    //                                     {options}
-    //                                 </Select>
-    //                             </Form.Item>
-    //                             <Button type="primary" onClick={() => Add()}>Add</Button>
-    //                         </Form>
-    //                     </div>
-    //                 }
-    //                 title="Add members"
-    //                 trigger="click"
-    //                 visible={visible}
-    //                 onVisibleChange={handleVisibleChange}
-    //             >
-    //                 <Button type="primary">+</Button>
-    //             </Popover>
-    //
-    //         )
-    //     } else {
-    //         return (<></>)
+    //     Subscribers?
+    //                 <Popover name="subscribes"
+    //                     content={
+    //                         <div>
+    //                             <Button type="primary" onClick={() => hideAdd()}>X</Button>
+    //                             <Form>
+    //                                 <Form.Item>
+    //                                     <Select
+    //                                         mode="multiple"
+    //                                         allowClear
+    //                                         style={{ width: '100%' }}
+    //                                         placeholder="Please select"
+    //                                         onChange={MemberChange}
+    //                                     >
+    //                                         {Subscribers.map((sub) => {
+    //                                             return (<Option key={sub.user_id}>{sub.surname + ' ' + sub.name}</Option>)
+    //                                         })}
+    //                                     </Select>
+    //                                 </Form.Item>
+    //                                 <Button type="primary" onClick={() => Add()}>Add</Button>
+    //                             </Form>
+    //                         </div>
+    //                     }
+    //                     title="Add members"
+    //                     trigger="click"
+    //                     visible={VisibleAdd}
+    //                     onVisibleChange={handleVisibleAdd}
+    //                 >
+    //                     <Button type="primary">+</Button>
+    //                 </Popover>
+    //                 :
+    //                 <></>
     //     }
     // }
 
@@ -163,12 +163,30 @@ const ChatContainer = () => {
         })
     }
 
+    const FromCourseCommunity = () => {
+        if (Info.chat_type >= 2) {
+            if (Owner) {
+                return (
+                    <Select defaultValue={0} onChange={e => setSender(e)}>
+                        <Option value={Info.chat_type-1}><Avatar src={avatarPath[Info.chat_type] + Info.href}/></Option>
+                        <Option value={0}><Avatar src={StaticAvatars.StaticAvatars + User.href}/></Option>
+                    </Select>
+            )
+        }else {
+            return <></>
+        }
+        }
+         else {
+            return <></>
+        }
+    }
 
     return (
         Info?
         <div>
             <Button onClick={BackToChats}>{'<'}</Button>
             <a href={Info.link}>{<Avatar src={avatarPath[Info.chat_type] + Info.href}/>} {<Title level={5}>{Info.title}</Title>}</a>
+            <FromCourseCommunity/>
             <List
                 itemLayout="horizontal"
                 dataSource={Messages}
@@ -242,7 +260,6 @@ const ChatContainer = () => {
                 </Popover>
                 :
                 <></>}
-            <Space>1</Space>
             {Participants?
                 <Popover name="participants"
                     content={
