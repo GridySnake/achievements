@@ -11,11 +11,11 @@ class BaseConfig:
     STATIC_DIR = str(PROJECT_ROOT / 'static')
     database_url = 'postgresql://postgres:qGvMff59zv1GQ4krq23o@achievements.ckxfyxwprcap.eu-north-1.rds.amazonaws.com:5432/achievements'
     # database_url = 'postgresql://gachi_achi:achi_for_gachi@204.2.63.15:10485/achievements'
-    host = '204.2.63.15'
-    port = 10485
-    database_name = 'achievements'
-    user = 'gachi_achi'
-    password = 'achi_for_gachi'
+    # host = '204.2.63.15'
+    # port = 10485
+    # database_name = 'achievements'
+    # user = 'gachi_achi'
+    # password = 'achi_for_gachi'
     email_mail = 'kunilovalex@gmail.com'
     email_user = 'kunilovalex@gmail.com'
     email_password = '12041999alex'
