@@ -37,13 +37,13 @@ async def create_app():
     setup_static_routes(app)
     await setup_middlewares(app)
     app['config'] = BaseConfig
-    app['db'] = asyncpgsa.create_pool(
-        host=BaseConfig.host,
-        port=BaseConfig.port,
-        database=BaseConfig.database_name,
-        user=BaseConfig.user,
-        password=BaseConfig.password
-    )
+    # app['db'] = asyncpgsa.create_pool(
+    #     host=BaseConfig.host,
+    #     port=BaseConfig.port,
+    #     database=BaseConfig.database_name,
+    #     user=BaseConfig.user,
+    #     password=BaseConfig.password
+    # )
     app['pool'] = await asyncpg.create_pool(dsn=BaseConfig.database_url, max_size=30)
     logging.basicConfig(level=logging.DEBUG)
     return app
