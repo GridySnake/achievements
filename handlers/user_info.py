@@ -6,20 +6,60 @@ from models.information import InfoGet
 from PIL import Image, ImageDraw
 import json
 import datetime
+from aiohttp.web import json_response
+
+
+async def get_user_info(request):
+    pool = request.app['pool']
+    cities = None
+    async with pool.acquire() as conn:
+        user = await UserGetInfo.get_user_info(json.loads(request.cookies['user'])['user_id'], conn=conn)
+        countries = await InfoGet.get_countries(conn=conn)
+        if user['country_id']:
+            cities = await InfoGet.get_cities_by_country(country_id=user['country_id'], conn=conn)
+
+    # conditions = await InfoGet.get_conditions(owner_type=0)
+    return json_response({'user': user, 'countries': countries, 'cities': cities})
+
+
+async def get_cities_by_country(request):
+    if str(request).split('/')[-1][:-2] == 'null':
+        cities = None
+    else:
+        pool = request.app['pool']
+        async with pool.acquire() as conn:
+            cities = await InfoGet.get_cities_by_country(country_id=str(request).split('/')[-1][:-2], conn=conn)
+    return json_response({'cities': cities})
+
+
+async def change_user_info(request):
+    data = await request.json()
+    print(data)
+    pool = request.app['pool']
+    if data['table'] == 'user_info':
+        del data['table']
+        if 'birthday' in data.keys():
+            birthday = [int(i) for i in data['birthday'].split('-')]
+            today = datetime.date.today()
+            data['birthday'] = datetime.date(birthday[0], birthday[1], birthday[2])
+            years = today.year - data['birthday'].year
+            if today.month < data['birthday'].month or (today.month == data['birthday'].month and
+                                                        today.day < data['birthday'].day):
+                years -= 1
+            data['age'] = years
+        async with pool.acquire() as conn:
+            await UserCreate.create_user_info(user_id=json.loads(request.cookies['user'])['user_id'], data=data,
+                                              conn=conn)
+    elif data['table'] == 'user_main':
+        del data['table']
+        async with pool.acquire() as conn:
+            await UserCreate.create_user_main(user_id=json.loads(request.cookies['user'])['user_id'], data=data,
+                                              conn=conn)
+
+    return json_response({'response': 200})
 
 
 class UserInfoView(web.View):
-
-    @aiohttp_jinja2.template('user_info.html')
-    async def get(self):
-        countries = await InfoGet.get_countries()
-        cities = await InfoGet.get_cities()
-        # values = [dict(record) for record in cities]
-        # cities = json.dumps(values).replace("</", "<\\/")
-        user = await UserGetInfo.get_user_info(json.loads(request.cookies['user'])['user_id'])
-        conditions = await InfoGet.get_conditions(owner_type=0)
-        return dict(countries=countries, cities=cities, user=user, conditions=conditions)
-
     async def post(self):
         data = await self.post()
         session = await get_session(self)

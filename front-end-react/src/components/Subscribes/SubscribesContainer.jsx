@@ -1,8 +1,9 @@
 import React, {useEffect, useState} from "react";
-import {GetAnyUserInfo, GetAnyUserInfoVT} from "../../api/GeneralApi";
+import {CreateUserChat, GetAnyUserInfo} from "../../api/GeneralApi";
 import {Avatar, Button, List, Skeleton, Tabs} from "antd";
 import StaticAvatars from "../StaticRoutes";
 import makeAction from "../../api/PageActions";
+import {useNavigate} from "react-router";
 
 const { TabPane } = Tabs;
 
@@ -12,8 +13,8 @@ const SubscribesContainer = () => {
     const [Followings, setFollowings] = useState(null);
     const [Blocked, setBlocked] = useState(null);
     const [Suggestions, setSuggestions] = useState(null);
+    const navigate = useNavigate();
     const url = '/subscribes'
-    const url1 = '/subscribes_suggestions'
 
     useEffect(() => {
         const setInfoSubscribes = (Subscribes) => {
@@ -21,16 +22,10 @@ const SubscribesContainer = () => {
             setFollowers(Subscribes.followers)
             setFollowings(Subscribes.followings)
             setBlocked(Subscribes.blocked)
+            setSuggestions(Subscribes.suggestions)
         }
         GetAnyUserInfo(setInfoSubscribes, url)
     }, [url])
-
-    useEffect(() => {
-        const setInfoSuggestions = (Suggestions) => {
-            setSuggestions(Suggestions.suggestions)
-        }
-        GetAnyUserInfoVT(setInfoSuggestions, url1)
-    }, [url1])
 
     const Unfollow = (user_id) => {
         makeAction('/unfollow', {'user_passive_id': user_id}, (value) => {
@@ -62,8 +57,18 @@ const SubscribesContainer = () => {
         })
     }
 
+    const Chat = (item) => {
+        if (item.chat_id !== null) {
+            navigate(`/chat/${item.chat_id}`)
+        } else {
+            CreateUserChat({'user_id': item.user_id}, (chat_id) => {
+                navigate(`/chat/${chat_id}`)
+            })
+        }
+    }
+
     return (
-        Friends?
+        Suggestions?
         <Tabs defaultActiveKey="Suggestions">
             <TabPane tab="Suggestions" key="Suggestions">
                 <List
@@ -96,6 +101,7 @@ const SubscribesContainer = () => {
                                     title={<a href={'/user/' + item.user_id}>{item.name + ' ' + item.surname}</a>}
                                     description={item.bio}
                                 />
+                                <Button type="primary" htmlType="button" onClick={() => Chat(item)}>Chat</Button>
                                 <Button type="primary" htmlType="button" onClick={() => Unfollow(item.user_id)}>Unfollow</Button>
                                 <Button type="primary" htmlType="button" onClick={() => Block(item.user_id)}>Block</Button>
                             </Skeleton>

@@ -20,12 +20,18 @@ async def messages(request):
 
 async def send_message(request):
     data = await request.json()
-    from_user = json.loads(request.cookies['user'])['user_id']
+    from_type = data['sender_type']
     pool = request.app['pool']
+    if from_type == 0:
+        from_user = json.loads(request.cookies['user'])['user_id']
+    else:
+        async with pool.acquire() as conn:
+            from_user = await MessageGetInfo.get_co_id_by_chat_id(chat_id=data['chat_id'], conn=conn)
     async with pool.acquire() as conn:
         await MessageCreate.create_message(from_user=from_user, message=data['message'],
-                                           type1=data['chat_type'], chat_id=data['chat_id'], conn=conn)
-    return json_response({'value': 200})
+                                           type1=data['chat_type'], chat_id=data['chat_id'], from_type=from_type,
+                                           conn=conn)
+    return json_response({'value': True})
 
 
 async def create_group_chat(request):
@@ -38,8 +44,35 @@ async def create_group_chat(request):
     return json_response({'chat_id': chat_id})
 
 
-async def ssend_message(request):
+async def create_user_chat(request):
+    data = await request.json()
+    pool = request.app['pool']
+    async with pool.acquire() as conn:
+        chat_id = await MessageCreate.create_user_chat(user_active_id=json.loads(request.cookies['user'])['user_id'],
+                                                       user_passive_id=data['user_id'],
+                                                       conn=conn)
+    return json_response({'chat_id': chat_id})
 
+
+async def add_chat_member(request):
+    data = await request.json()
+    users = [int(i) for i in data['members']]
+    pool = request.app['pool']
+    async with pool.acquire() as conn:
+        await MessageCreate.add_member(chat_id=data['chat_id'], users=users, conn=conn)
+    return json_response({'value': True})
+
+
+async def remove_chat_member(request):
+    data = await request.json()
+    users = [int(i) for i in data['members']]
+    pool = request.app['pool']
+    async with pool.acquire() as conn:
+        await MessageCreate.remove_member(chat_id=data['chat_id'], users=users, conn=conn)
+    return json_response({'value': 200})
+
+
+async def ssend_message(request):
     if 'send_message' in str(request):
 
         data = await request.json()

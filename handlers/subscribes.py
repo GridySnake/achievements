@@ -18,12 +18,13 @@ async def get_subscribes(request):
     user_id = json.loads(request.cookies['user'])['user_id']
     async with pool.acquire() as conn:
         subscribers = await SubscribesGetInfo.get_subscribers(user_id=user_id, conn=conn)
+        suggestions = await SubscribesGetInfo.get_user_subscribes_suggestions(user_id=user_id, conn=conn)
     friends = [i for i in subscribers if i['status_active'] == 1 and i['status_passive'] == 1]
     subscribers_active = [i for i in subscribers if i['status_passive'] == 1 and i['status_active'] == 0]
     subscribers_passive = [i for i in subscribers if i['status_active'] == 1 and i['status_passive'] == 0]
     blocked = [i for i in subscribers if i['status_active'] == -1]
     return json_response({'friends': friends, 'followers': subscribers_active, 'followings': subscribers_passive,
-                          'blocked': blocked})
+                          'blocked': blocked, 'suggestions': suggestions})
 
 
 async def follow(request):
