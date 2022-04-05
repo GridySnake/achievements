@@ -45,6 +45,7 @@ class CommunityGetInfo:
                                           left join images as i 
                                                 on i.image_id = c.image_id[array_upper(c.image_id, 1)] 
                                                     and i.image_type = 'community'
+                                          where {user_id} <> ALL(c.community_owner_id)
                                           """)
         return [dict(i) for i in communities]
 
@@ -66,7 +67,7 @@ class CommunityGetInfo:
                                                     ) s on c.community_id = s.community_id
                                            where c.community_id is not null
                                            """)
-        return communities
+        return [dict(i) for i in communities]
 
     @staticmethod
     async def get_community_info(community_id, conn):

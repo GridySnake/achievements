@@ -28,8 +28,8 @@ async def community_page(request):
         subspheres = await InfoGet.get_subspheres(conn=conn)
         communities_recommend = await CommunityGetInfo.get_some_communities(user_id=user_id, conn=conn)
         conditions_to_join = await InfoGet.get_conditions(owner_type=1, conn=conn)
-    return json_response({'communities': communities,})
-                          # 'owner_communities': owner_communities,})
+    return json_response({'communities': communities,
+                          'owner_communities': owner_communities,})
                           # 'conditions': conditions,
                           # 'community_types': community_types,
                           # 'dropdown_community': dropdown_community,
