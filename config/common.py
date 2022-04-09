@@ -9,7 +9,7 @@ class BaseConfig:
 
     PROJECT_ROOT = pathlib.Path(__file__).parent.parent
     STATIC_DIR = str(PROJECT_ROOT / 'static')
-    database_url = 'postgresql://postgres:qGvMff59zv1GQ4krq23o@achievements.ckxfyxwprcap.eu-north-1.rds.amazonaws.com:5432/achievements'
+    database_url = 'postgresql://postgres:achi_for_gachi@188.225.26.101:5432/achievements'
     # database_url = 'postgresql://gachi_achi:achi_for_gachi@204.2.63.15:10485/achievements'
     # host = '204.2.63.15'
     # port = 10485

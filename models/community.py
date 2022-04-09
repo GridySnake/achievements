@@ -23,7 +23,11 @@ class CommunityGetInfo:
         return community[value]
 
     @staticmethod
-    async def get_user_communities(user_id, conn):
+    async def get_user_communities(user_id, conn, own):
+        if own:
+            operator = '= ANY'
+        else:
+            operator = '<> ALL'
         communities = await conn.fetch(f"""
                                           select c.community_id, c.community_name, 
                                                 s.sphere_name, s.subsphere_name, i.href
@@ -45,7 +49,7 @@ class CommunityGetInfo:
                                           left join images as i 
                                                 on i.image_id = c.image_id[array_upper(c.image_id, 1)] 
                                                     and i.image_type = 'community'
-                                          where {user_id} <> ALL(c.community_owner_id)
+                                          where {user_id} {operator}(c.community_owner_id)
                                           """)
         return [dict(i) for i in communities]
 

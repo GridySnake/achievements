@@ -10,11 +10,13 @@ const { TabPane } = Tabs;
 
 const CommunitiesContainer = () => {
     const [Communities, setCommunities] = useState(null);
+    const [OwnCommunities, setOwnCommunities] = useState(null);
     const url = '/communities'
 
     useEffect(() => {
         const  CommunitiesInfo = (Community) => {
             setCommunities(Community.communities)
+            setOwnCommunities(Community.owner_communities)
         }
         GetAnyUserInfo(CommunitiesInfo, url)
     }, [url])
@@ -65,6 +67,25 @@ const CommunitiesContainer = () => {
                 <List
                     itemLayout="horizontal"
                     dataSource={Communities}
+                    renderItem={item => (
+                        <List.Item>
+                            <Skeleton avatar title={false} loading={item.loading} active>
+                                <List.Item.Meta
+                                    avatar={<Avatar src={StaticAvatars.StaticCommunityAvatars + item.href}/>}
+                                    title={<a href={'/community/' + item.community_id}>{item.community_name}</a>}
+                                    description={item.sphere_name}
+                                />
+                                {/*<Button type="primary" htmlType="button" onClick={() => Unfollow(item.community_id)}>Unfollow</Button>*/}
+                                {/*<Button type="primary" htmlType="button" onClick={() => Block(item.user_id)}>Block</Button>*/}
+                            </Skeleton>
+                        </List.Item>
+                    )}
+                />
+            </TabPane>
+            <TabPane tab="Created" key="Created">
+                <List
+                    itemLayout="horizontal"
+                    dataSource={OwnCommunities}
                     renderItem={item => (
                         <List.Item>
                             <Skeleton avatar title={false} loading={item.loading} active>
