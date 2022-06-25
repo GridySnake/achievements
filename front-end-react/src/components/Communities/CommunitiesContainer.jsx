@@ -2,6 +2,7 @@ import React, {useState, useEffect} from "react";
 import {Avatar, Button, Card, Col, Image, List, Skeleton, Tabs, Typography} from "antd";
 import {GetAnyUserInfo} from "../../api/GeneralApi";
 import StaticAvatars from "../StaticRoutes";
+import makeAction from "../../api/PageActions";
 
 const {Title} = Typography;
 const { Meta } = Card;
@@ -9,14 +10,23 @@ const { TabPane } = Tabs;
 
 const CommunitiesContainer = () => {
     const [Communities, setCommunities] = useState(null);
+    const [OwnCommunities, setOwnCommunities] = useState(null);
     const url = '/communities'
 
     useEffect(() => {
         const  CommunitiesInfo = (Community) => {
             setCommunities(Community.communities)
+            setOwnCommunities(Community.owner_communities)
         }
         GetAnyUserInfo(CommunitiesInfo, url)
     }, [url])
+
+    // const Leave = (user_id) => {
+    //     makeAction('/unfollow', {'user_passive_id': user_id}, (value) => {
+    //         setFriends(value[0])
+    //         setFollowers(value[1])
+    //     })
+    // }
 
 // const CommunitiesContainer = () => {
 //     const [CommunitiesPage, setCommunitiesPage] = useState(null);
@@ -62,10 +72,29 @@ const CommunitiesContainer = () => {
                             <Skeleton avatar title={false} loading={item.loading} active>
                                 <List.Item.Meta
                                     avatar={<Avatar src={StaticAvatars.StaticCommunityAvatars + item.href}/>}
-                                    title={<a href={'/user/' + item.user_id}>{item.name + ' ' + item.surname}</a>}
+                                    title={<a href={'/community/' + item.community_id}>{item.community_name}</a>}
                                     description={item.sphere_name}
                                 />
-                                {/*<Button type="primary" htmlType="button" onClick={() => Unfollow(item.user_id)}>Unfollow</Button>*/}
+                                {/*<Button type="primary" htmlType="button" onClick={() => Unfollow(item.community_id)}>Unfollow</Button>*/}
+                                {/*<Button type="primary" htmlType="button" onClick={() => Block(item.user_id)}>Block</Button>*/}
+                            </Skeleton>
+                        </List.Item>
+                    )}
+                />
+            </TabPane>
+            <TabPane tab="Created" key="Created">
+                <List
+                    itemLayout="horizontal"
+                    dataSource={OwnCommunities}
+                    renderItem={item => (
+                        <List.Item>
+                            <Skeleton avatar title={false} loading={item.loading} active>
+                                <List.Item.Meta
+                                    avatar={<Avatar src={StaticAvatars.StaticCommunityAvatars + item.href}/>}
+                                    title={<a href={'/community/' + item.community_id}>{item.community_name}</a>}
+                                    description={item.sphere_name}
+                                />
+                                {/*<Button type="primary" htmlType="button" onClick={() => Unfollow(item.community_id)}>Unfollow</Button>*/}
                                 {/*<Button type="primary" htmlType="button" onClick={() => Block(item.user_id)}>Block</Button>*/}
                             </Skeleton>
                         </List.Item>
