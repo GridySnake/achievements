@@ -30,4 +30,45 @@ const GetCitiesByCountry = async (data, set) => {
     }
 };
 
-export {GetAnyUserInfo, CreateUserChat, GetCitiesByCountry};
+const GetSubspheresBySphere = async (data, set) => {
+    try {
+        const resp = await axiosInstance.get(`/get_subspheres_by_sphere/${data}`);
+        set(resp.data)
+        console.log(resp.data)
+    } catch (err) {
+        console.error(err);
+    }
+};
+
+const GetConditionsByGroup = async (data, set) => {
+    try {
+        const resp = await axiosInstance.get(`/get_conditions_by_group/${data}`);
+        set(resp.data)
+        console.log(resp.data)
+    } catch (err) {
+        console.error(err);
+    }
+};
+
+const GetConditionsByService = async (data, set) => {
+    try {
+        const resp = await axiosInstance.get(`/get_conditions_by_service/${data}`);
+        set(resp.data)
+        console.log(resp.data)
+    } catch (err) {
+        console.error(err);
+    }
+};
+
+const GetConditionsByAggregation = async (data, set) => {
+    try {
+        const resp = await axiosInstance.get(`/get_conditions_by_aggregation/${data}`);
+        set(resp.data)
+        console.log(resp.data)
+    } catch (err) {
+        console.error(err);
+    }
+};
+
+export {GetAnyUserInfo, CreateUserChat, GetCitiesByCountry, GetSubspheresBySphere, GetConditionsByGroup,
+    GetConditionsByService, GetConditionsByAggregation};

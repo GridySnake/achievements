@@ -133,7 +133,7 @@ class CoursesGetInfo:
                                             group by c.course_id
                                            ) s on c.course_id = s.course_id
                                     """)
-        return courses
+        return [dict(i) for i in courses]
 
     @staticmethod
     async def is_user_in_course(course_id: str, user_id: str, conn):

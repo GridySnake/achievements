@@ -93,6 +93,74 @@ class InfoGet:
         return sphere['sphere_id']
 
     @staticmethod
+    async def get_subsphere_id_by_sphere_id(sphere_id: str, conn):
+        sphere = await conn.fetch(f"""
+                                        select subsphere_id::varchar, subsphere_name
+                                        from spheres
+                                        where sphere_id = {sphere_id}
+                                        """)
+        return [dict(i) for i in sphere]
+
+    @staticmethod
+    async def get_agg_par_by_group_id(group_id: str, conn):
+        agg = await conn.fetch(f"""
+                                   select distinct aggregate_id::varchar, aggregate_name
+                                   from achi_generate_conditions
+                                   where condition_group_id = {group_id}
+                                   """)
+        if len(agg) <= 1:
+            parameters = await conn.fetch(f"""
+                                               select parameter_id::varchar, parameter_name
+                                               from achi_generate_conditions
+                                               where condition_group_id = {group_id}
+                                               """)
+            parameters = [dict(i) for i in parameters]
+            agg = None
+        else:
+            parameters = None
+            agg = [dict(i) for i in agg]
+        return agg, parameters
+
+    @staticmethod
+    async def get_agg_par_by_service_id(service_id: str, conn):
+        agg = await conn.fetch(f"""
+                                   select distinct aggregate_id::varchar, aggregate_name
+                                   from achi_generate_conditions
+                                   where service_id = {service_id}
+                                   """)
+        if len(agg) <= 1:
+            parameters = await conn.fetch(f"""
+                                               select parameter_id::varchar, parameter_name
+                                               from achi_generate_conditions
+                                               where service_id = {service_id}
+                                               """)
+            parameters = [dict(i) for i in parameters]
+            agg = None
+        else:
+            parameters = None
+            agg = [dict(i) for i in agg]
+        return agg, parameters
+
+    @staticmethod
+    async def get_par_by_agg_id_group_id(agg_id: str, group_id: str, conn):
+        parameters = await conn.fetch(f"""
+                                          select parameter_id::varchar, parameter_name
+                                          from achi_generate_conditions
+                                          where condition_group_id = {group_id} and aggregate_id = {agg_id}
+                                          """)
+        return [dict(i) for i in parameters]
+
+    @staticmethod
+    async def get_par_by_agg_id_group_id_service(agg_id: str, group_id: str, service_id: str, conn):
+        parameters = await conn.fetch(f"""
+                                              select parameter_id::varchar, parameter_name
+                                              from achi_generate_conditions
+                                              where condition_group_id = {group_id} 
+                                                and aggregate_id = {agg_id} and service_id = {service_id}
+                                              """)
+        return [dict(i) for i in parameters]
+
+    @staticmethod
     async def get_conditions(owner_type: int, conn):
         conditions = await conn.fetch(f"""
                                             select generate_condition_id, condition_name

@@ -66,7 +66,7 @@ class CommunityGetInfo:
                                                     ) s on c.community_id = s.community_id
                                            where c.community_id is not null
                                            """)
-        return communities
+        return [dict(i) for i in communities]
 
     @staticmethod
     async def get_community_info(community_id, conn):

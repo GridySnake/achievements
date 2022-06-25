@@ -7,6 +7,7 @@ import CommunitiesContainer from "./Communities/CommunitiesContainer";
 import ChatsContainer from "./Chats/ChatsContainer";
 import ChatContainer from "./Chats/ChatContainer";
 import UserSettings from "./Personal Page/UserSettings";
+import AchievementsContainer from "./Achievements/AchievementsContainer";
 
 // auth? <navbar + all> : <login + signup>
 const FrontRoutes = () => {
@@ -21,7 +22,7 @@ const FrontRoutes = () => {
                     <Route path="/subscribes" key="subscribes" element={<SubscribesContainer/>}/>
                     <Route path="/chats" key="chats" element={<ChatsContainer/>}/>
                     <Route path="/chat/:id" key="/chat/:id" element={<ChatContainer/>}/>
-                    <Route path="/achievements"/>
+                    <Route path="/achievements" element={<AchievementsContainer/>}/>
                     <Route path="/user_settings" element={<UserSettings/>}/>
                     <Route path="/posts"/>
                     <Route path="/communities" key="communities" element={<CommunitiesContainer/>}/>

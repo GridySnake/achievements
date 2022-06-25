@@ -10,7 +10,7 @@ class AchievementsGenerateData:
                                            order by agc.condition_group_id
 
                 """)
-        return achievements
+        return [dict(i) for i in achievements]
 
     @staticmethod
     async def data_for_drop_downs_generate_achievements(conn):
@@ -23,7 +23,7 @@ class AchievementsGenerateData:
                                                 on agc.condition_group_id = acg.achi_condition_group_id
                                            left join external_services as es on agc.service_id = es.service_id
                                         """)
-        return achievements
+        return [dict(i) for i in achievements]
 
 
 class AchievementsGetInfo:
@@ -175,7 +175,7 @@ class AchievementsGetInfo:
     @staticmethod
     async def get_created_achievements(user_id: str, conn):
         achievements = await conn.fetch(f"""
-        select achievement_id, name, a.description, achievement_qr, s.sphere_name, s.subsphere_name, c.community_name,
+        select achievement_id, a.name, a.description, achievement_qr, s.sphere_name, s.subsphere_name, c.community_name,
             co.course_name
         from achievements as a
         left join spheres as s on a.subsphere_id = s.subsphere_id
@@ -184,23 +184,23 @@ class AchievementsGetInfo:
         where (a.user_id = {user_id} and user_type = 0) or c.community_name is not null or co.course_name is not null
         order by a.created_date desc
         """)
-        return achievements
+        return [dict(i) for i in achievements]
 
     @staticmethod
     async def get_reached_achievements(user_id: str, conn):
         achievements = await conn.fetch(f"""
-            select achievement_id, a.name, a.description, s.sphere_name, s.subsphere_name
-            from (select user_id, unnest(achievements_id) as achievements_id from users_information) as u
+            select achievement_id, a.name, a.description, s.sphere_name, s.subsphere_name, u.hide_achievements
+            from (select user_id, unnest(achievements_id) as achievements_id, unnest(hide_achievements) as hide_achievements from users_information) as u
             inner join achievements as a on u.achievements_id = a.achievement_id
             left join spheres s on a.subsphere_id = s.subsphere_id
             where u.user_id = {user_id}
             """)
-        return achievements
+        return [dict(i) for i in achievements]
 
     @staticmethod
     async def get_suggestion_achievements(user_id: str, conn):
         achievements = await conn.fetch(f"""
-            select achievement_id, a.user_id, a.user_type, a.name as title, a.description, a.created_date, a.new, 
+            select achievement_id, a.user_id, a.user_type, a.name as title, a.description, a.created_date::varchar, a.new, 
                 u.name, u.surname, s.sphere_name, s.subsphere_name, c.community_name, c.community_owner_id, 
                 co.course_name
             from achievements as a
@@ -215,7 +215,21 @@ class AchievementsGetInfo:
                   (u1.user_id is null or u1.user_id <> {user_id}) and
                   u.user_id <> {user_id}
             """)
-        return achievements
+        return [dict(i) for i in achievements]
+
+    @staticmethod
+    async def is_drop(achievement_id: int,  conn):
+        drop = await conn.fetchrow(f"""
+                select 
+                       case when count(ui.user_id) < 10 or extract(month from age(a.created_date)) < 1 then true
+                        else false
+                    end as is_drop
+                from achievements as a
+                left join users_information as ui on a.achievement_id = any(ui.achievements_id)
+                where a.achievement_id = {achievement_id}
+                group by a.achievement_id
+                """)
+        return drop['is_drop']
 
 
 class AchievementsGiveVerify:
@@ -348,6 +362,29 @@ class AchievementsGiveVerify:
     #                            where user_id = {user_id} and {achievement_id} not in (
     #                                    select unnest(achievements_id) from users_information where user_id = {user_id})
     #         """)
+    @staticmethod
+    async def show_achievement(user_id: int, achievement_id: int, conn):
+        await conn.execute(f"""
+                                update users_information
+                                set hide_achievements = hide_achievements[:(select array_position(ui.achievements_id,
+                                    {achievement_id}) from users_information as ui where user_id = {user_id})-1] || 
+                                    array[0] || 
+                                    hide_achievements[(select array_position(ui.achievements_id,
+                                    {achievement_id}) from users_information as ui where user_id = {user_id})+1:]
+                                where user_id = {user_id}
+                            """)
+
+    @staticmethod
+    async def hide_achievement(user_id: int, achievement_id: int, conn):
+        await conn.execute(f"""
+                                update users_information
+                                set hide_achievements = hide_achievements[:(select array_position(ui.achievements_id,
+                                    {achievement_id}) from users_information as ui where user_id = {user_id})-1] || 
+                                    array[1] || 
+                                    hide_achievements[(select array_position(ui.achievements_id,
+                                    {achievement_id}) from users_information as ui where user_id = {user_id})+1:]
+                                where user_id = {user_id}
+                            """)
 
     @staticmethod
     async def approve_verify(user_id: str, parameter_id: str, conn):
@@ -372,6 +409,8 @@ class AchievementsGiveVerify:
         else:
             achievements = True
         return achievements
+
+
         # for i in achievements:
         #     await conn.execute(f"""
         #                           update users_information
@@ -462,7 +501,30 @@ class AchievementsDesireApprove:
         return data
 
 
-class AchievementsCreate:
+class AchievementsCreateDelete:
+    @staticmethod
+    async def delete_achievement(achievement_id: int, conn):
+        # await conn.execute(f"""
+        #                         delete from achievements
+        #                         where achievement_id = {achievement_id}
+        #                     """)
+        await conn.execute(f"""
+                               update users_information
+                               set achievements_id = achievements_id[:(select array_position(ui.achievements_id, 
+                                    {achievement_id}) from users_information as ui where {achievement_id} = 
+                                    any(achievements_id))-1] ||
+                                    achievements_id[(select array_position(ui.achievements_id, {achievement_id})
+                                    from users_information as ui where {achievement_id} = any(achievements_id))+1:],
+                               achievements_desired_id = achievements_desired_id[:(select 
+                                    array_position(ui.achievements_desired_id, 
+                                    {achievement_id}) from users_information as ui where {achievement_id} = 
+                                    any(achievements_desired_id))-1] ||
+                                    achievements_desired_id[(select array_position(ui.achievements_desired_id, 
+                                        {achievement_id})
+                                    from users_information as ui where {achievement_id} = 
+                                    any(achievements_desired_id))+1:]
+                            """)
+
     @staticmethod
     async def create_achievement(user_id: str, user_type: int, data, conn):
         id_achi = await conn.fetch(f"""
