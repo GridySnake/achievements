@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import {Button, Form, Input, Select, DatePicker} from "antd";
-import {GetAnyUserInfo, GetCitiesByCountry} from "../../api/GeneralApi";
+import {GetAnyInfo, GetCitiesByCountry} from "../../api/GeneralApi";
 import {ChangeUserSettings} from "../../api/SendForms";
 import moment from "moment";
 
@@ -62,7 +62,7 @@ const UserSettings = () => {
             setShow(true);
             }
 
-        GetAnyUserInfo(UserInfo, '/user_info')
+        GetAnyInfo(UserInfo, '/user_info')
     }, [Change])
 
     useEffect(() => {

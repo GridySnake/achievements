@@ -34,7 +34,7 @@ async def get_chat(request):
                 chat = await MessageGetInfo.get_community_chat_info(chat_id=chat_id, conn=conn)
             elif 3 == messages[0]['chat_type']:
                 chat = await MessageGetInfo.get_course_chat_info(chat_id=chat_id, conn=conn)
-            avatar = await UserGetInfo.get_avatar_by_user_id(user_id=user_id, conn=conn)
+        avatar = await UserGetInfo.get_avatar_by_user_id(user_id=user_id, conn=conn)
         await MessageGetInfo.is_read(user_id=user_id, chat_id=chat_id, conn=conn)
     return json_response({'messages': messages, 'block': block, 'me': int(user_id),
                           'is_owner': is_owner, 'subscribers': subscribers, 'participants': participants,

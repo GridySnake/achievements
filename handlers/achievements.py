@@ -33,8 +33,8 @@ async def get_achievements(request):
     return json_response({'my': achievements_created, 'suggestion': achievements_sug,
                           'get': achievements_get,
                           'create': {'group': group,
-                                         'communities': communities, 'courses': courses, 'spheres': spheres,
-                                         'groups': groups}
+                                     'communities': communities, 'courses': courses, 'spheres': spheres,
+                                     'groups': groups}
                           })
 
 
@@ -151,25 +151,38 @@ async def hide_achievement(request):
     return json_response({'value': achievements_get})
 
 
+async def get_users_by_type(request):
+    pool = request.app['pool']
+    user_type = str(request).split('/')[-1][:-2]
+    if user_type == 'null':
+        users = None
+    else:
+        user_id = json.loads(request.cookies['user'])['user_id']
+        async with pool.acquire() as conn:
+            users = await UserGetInfo.get_community_course_by_type(user_id=user_id, user_type=user_type, conn=conn)
+    return json_response({'users': users})
+
+
 async def create_achievement(request):
+    # todo: unique achievement name
     pool = request.app['pool']
     data = await request.json()
+    print(data)
     if data['user_type'] == 0:
         data['user_id'] = json.loads(request.cookies['user'])['user_id']
-    # todo: unique achievement name
-    user_type = 0
-    if 'achi_as_community' in data.keys():
-        user_type = 1
-        user_id = data['achi_community']
-    elif 'achi_as_course' in data.keys():
-        user_type = 2
-        user_id = data['achi_course']
+    if data['dates']:
+        [data['from_date'], data['to_date']] = [i.split('T')[0] for i in data['dates']]
+    async with pool.acquire() as conn:
+        data['select_group'], data['select_aggregation'] = \
+            await InfoGet.get_conditions_by_parameter(data['select_parameter'], conn=conn)
+        data['sphere'] = await InfoGet.get_sphere_id_by_subsphere_id(data['select_subsphere'], conn=conn)
     data['geo'] = 'null'
     data['achievement_qr'] = 'null'
-    data['test_url'] = 'null'
-    data['answers_url'] = 'null'
+    if not data['test_url']:
+        data['test_url'] = 'null'
+        data['answers_url'] = 'null'
     if data['select_group'] == '1':
-        token = hashlib.sha256(data['name'].replace(' ', '_').lower().encode('utf8')).hexdigest()
+        token = hashlib.sha256(data['name'] + '_' + data['value'].replace(' ', '_').lower().encode('utf8')).hexdigest()
         img = qrcode.make(f"http://localhost:8080/verify_achievement/{token}")
         img.save(f'{str(BaseConfig.STATIC_DIR) + "/QR/" + str(token)}.png')
         data['achievement_qr'] = str(token)
@@ -192,16 +205,15 @@ async def create_achievement(request):
             data['geo'] = f'CIRCLE(POINT({location[0]}, {location[1]}), 10)'
             data['achievement_qr'] = 'null'
     elif data['select_group'] == '6':
-       data['test_url'] = data['test_web']
-       data['answers_url'] = ''.join(data['answers_web'].split('/')[:3]) + '/export?format=csv'
-       data['value'] = data['value'].replace(',', '.')
+        data['test_url'] = data['test_web']
+        data['answers_url'] = ''.join(data['answers_web'].split('/')[:3]) + '/export?format=csv'
+        data['value'] = data['value'].replace(',', '.')
     elif data['select_group'] == '8':
-       data['select_parameter'] = 'null'
-       data['value'] = 'null'
-    data['sphere'] = await InfoGet.get_sphere_id_by_subsphere_id(data['select_subsphere'])
+        data['select_parameter'] = 'null'
+        data['value'] = 'null'
     async with pool.acquire() as conn:
-        await AchievementsCreateDelete.create_achievement(user_id=data['user_id'], user_type=user_type, data=data, conn=conn)
-    return web.HTTPFound(location=['achievements'].url_for())
+        achievement_id = await AchievementsCreateDelete.create_achievement(data=data, conn=conn)
+    return json_response({'achievement': achievement_id})
 
 
 class AchievementsVerificationView(web.View):
@@ -374,6 +386,26 @@ class AchievementsVerificationView(web.View):
             decline = False
         achievement = await AchievementsGetInfo.get_achievement_info(achievement_id)
         return dict(achievement=achievement, decline=decline, conditions_not_reached=conditions_not_reached)
+
+
+async def get_achievement_info(request):
+    user_id = json.loads(request.cookies['user'])['user_id']
+    pool = request.app['pool']
+    async with pool.acquire() as conn:
+        communities = await CommunityGetInfo.get_user_owner_communities(user_id=user_id, conn=conn)
+        courses = await CoursesGetInfo.get_own_courses(user_id=user_id, conn=conn)
+        achievement_id = str(request).split('/')[-1][:-2]
+        achievement = await AchievementsGetInfo.get_achievement_info(achievement_id=achievement_id, conn=conn)
+        print(achievement_id)
+        print(achievement)
+        # is_owner =
+        if achievement['achi_condition_group_id'] == 7:
+            desire = await AchievementsDesireApprove.is_desire(user_id=user_id, achievement_desire_id=achievement_id,
+                                                               conn=conn)
+        else:
+            desire = False
+        return json_response({'achievement': achievement, 'desire': desire, 'communities': communities,
+                              'courses': courses})
 
 
 class AchievementInfoView(web.View):

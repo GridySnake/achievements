@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import GetAnyUserInfo from "../../api/GeneralApi";
+import GetAnyInfo from "../../api/GeneralApi";
 import {Avatar, List, Skeleton, Tabs} from "antd";
 import StaticAvatars from "../StaticRoutes";
 
@@ -12,7 +12,7 @@ function callback(key) {
 const SubscribesContainer = () => {
     const [Subscribes, setSubscribes] = useState(null);
     useEffect(() => {
-        GetAnyUserInfo(setSubscribes, '/subscribes')
+        GetAnyInfo(setSubscribes, '/subscribes')
     }, [setSubscribes])
     console.log(Subscribes)
 

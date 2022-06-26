@@ -114,9 +114,9 @@ class AchievementsGetInfo:
     @staticmethod
     async def get_achievement_info(achievement_id: str, conn):
         achievement = await conn.fetchrow(f"""
-                                            select a.achievement_id, a.name, a.description, agc.aggregate_name, 
-                                                c.parameter_id, c.value, g.achi_condition_group_id, 
-                                                g.achi_condition_group_name, a.created_date, a.new, u.name as u_name, 
+                                            select a.achievement_id:: varchar, a.name, a.description, agc.aggregate_name, 
+                                                c.parameter_id:: varchar, c.value, g.achi_condition_group_id, 
+                                                g.achi_condition_group_name, a.created_date::varchar, a.new, u.name as u_name, 
                                                 u.surname as u_surname, u.user_id, c.geo, c.condition_id, s.sphere_name, 
                                                 s.subsphere_name, c.test_url
                                             from achi_conditions as c
@@ -131,7 +131,7 @@ class AchievementsGetInfo:
                                             left join spheres s on a.subsphere_id = s.subsphere_id
                                             where a.achievement_id = {achievement_id}
             """)
-        return achievement
+        return dict(achievement)# for i in achievement]
 
     @staticmethod
     async def get_achievement_by_condition_id(condition_id: str, conn):
@@ -526,7 +526,7 @@ class AchievementsCreateDelete:
                             """)
 
     @staticmethod
-    async def create_achievement(user_id: str, user_type: int, data, conn):
+    async def create_achievement(data, conn):
         id_achi = await conn.fetch(f"""
                 select max(achievement_id)
                 from achievements
@@ -548,26 +548,29 @@ class AchievementsCreateDelete:
         if data['value'] == 'null':
             await conn.execute(f"""
                                    insert into achi_conditions (condition_id, parameter_id, value, geo, test_url, 
-                                        answers_url) values({id_condi}, {data['select_parameter']}, {data['value']}, 
-                                        {data['geo']}, {data["test_url"]}, {data["answers_url"]})
+                                        answers_url, from_date, to_date) values({id_condi}, {data['select_parameter']}, 
+                                        {data['value']}, {data['geo']}, {data["test_url"]}, {data["answers_url"]}, 
+                                        '{data['from_date']}', '{data['to_date']}')
                                 """)
         if data['value'] != 'null' and data['test_url'] == 'null' and data['answers_url'] == 'null':
             await conn.execute(f"""
                                    insert into achi_conditions (condition_id, parameter_id, value, geo, test_url, 
-                                        answers_url) values({id_condi}, {data['select_parameter']}, '{data['value']}', 
-                                        {data['geo']}, {data["test_url"]}, {data["answers_url"]})
+                                        answers_url, from_date, to_date) values({id_condi}, {data['select_parameter']}, 
+                                        '{data['value']}', {data['geo']}, {data["test_url"]}, {data["answers_url"]}, 
+                                        '{data['from_date']}', '{data['to_date']}')
                                 """)
         if data['value'] != 'null' and data['test_url'] != 'null' and data['answers_url'] != 'null':
             await conn.execute(f"""
                                    insert into achi_conditions (condition_id, parameter_id, value, geo, test_url, 
-                                        answers_url) values({id_condi}, {data['select_parameter']}, '{data['value']}', 
-                                        {data['geo']}, '{data["test_url"]}', '{data["answers_url"]}')
+                                        answers_url, from_date, to_date) values({id_condi}, {data['select_parameter']}, 
+                                        '{data['value']}', {data['geo']}, '{data["test_url"]}', '{data["answers_url"]}', 
+                                        '{data['from_date']}', '{data['to_date']}')
                                 """)
         if data['achievement_qr'] == 'null':
             await conn.execute(f"""
                                    insert into achievements (achievement_id, user_id, user_type, name, description, 
                                         conditions, created_date, new, achievement_qr, sphere_id, subsphere_id) values(
-                                        {id_achi}, {user_id}, {user_type}, '{data['name']}', '{data['description']}',
+                                        {id_achi}, {data['user_id']}, {data['user_type']}, '{data['name']}', '{data['description']}',
                                         ARRAY[{id_condi}], statement_timestamp(), true, {data['achievement_qr']}, 
                                         {data['sphere']}, {data['select_subsphere']})
                                 """)
@@ -575,37 +578,37 @@ class AchievementsCreateDelete:
             await conn.execute(f"""
                                    insert into achievements (achievement_id, user_id, user_type, name, description, 
                                         conditions, created_date, new, achievement_qr, sphere_id, subsphere_id) values(
-                                        {id_achi}, {user_id}, {user_type}, '{data['name']}', '{data['description']}',
+                                        {id_achi}, {data['user_id']}, {data['user_type']}, '{data['name']}', '{data['description']}',
                                         ARRAY[{id_condi}], statement_timestamp(), true, '{data['achievement_qr']}', 
                                         {data['sphere']}, {data['select_subsphere']})
                                 """)
-        if user_type == 0:
+        if data['user_type'] == 0:
             await conn.execute(f"""
                                    update user_statistics
                                        set create_achievements = create_achievements + 1
-                                       where user_id = {user_id}
+                                       where user_id = {data['user_id']}
                                 """)
-        elif user_type == 1:
+        elif data['user_type'] == 1:
             await conn.execute(f"""
                                    update communities
                                        set achievements_give_id = array_append(achievements_give_id, {id_achi})
-                                       where community_id = {user_id}
+                                       where community_id = {data['user_id']}
                                 """)
             await conn.execute(f"""
                                    update community_statistics
                                        set create_achievements = create_achievements + 1
-                                       where community_id = {user_id}
+                                       where community_id = {data['user_id']}
                                 """)
-        elif user_type == 2:
+        elif data['user_type'] == 2:
             await conn.execute(f"""
                                    update courses
                                        set achievements_give = array_append(achievements_give, {id_achi})
-                                       where course_id = {user_id}
+                                       where course_id = {data['user_id']}
                                 """)
             await conn.execute(f"""
                                    update course_statistics
                                        set create_achievements = create_achievements + 1
-                                       where course_id = {user_id}
+                                       where course_id = {data['user_id']}
                                 """)
         await conn.execute(f"""
                                insert into likes (owner_id, owner_type, users_liked_id, users_liked_type, 
@@ -622,6 +625,7 @@ class AchievementsCreateDelete:
                                     users_recommend_type, action_datetime) values({id_achi}, 3, array[]::integer[], 
                                     array[]::integer[], array[]::timestamptz[])
                             """)
+        return id_achi
         # elif int(data['select_group']) == 31 and data['name'] != '' and data['description'] != '' and data['value'] != '' and data['select_service'] == '0':
         #     parameter = str(data['select_service'] + '-' + data['chess_parameter_global'] + '-' + data['chess_parameter_local_profile'] + '-' + data['chess_parameter_local_last'] + '-' + data['chess_parameter_local_chess'] + '-' + data['chess_parameter_local_equal'])
         #     await conn.execute(f"""

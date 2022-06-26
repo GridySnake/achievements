@@ -121,6 +121,20 @@ class UserGetInfo:
                                     """)
         return [dict(i) for i in conditions]
 
+    @staticmethod
+    async def get_community_course_by_type(user_id: str, user_type: str, conn):
+        join = {'1': 'c.image_id[array_upper(c.image_id, 1)]', '2': 'c.image_id'}
+        table = {'1': 'communities', '2': 'courses'}
+        columns = {'1': 'community', '2': 'course'}
+        where = {'1': f'any({columns[user_type]}_owner_id)', '2': f'{columns[user_type]}_owner_id'}
+        users = await conn.fetch(f"""select c.{columns[user_type]}_id as user_id, 
+                                                c.{columns[user_type]}_name as user_name, img.href
+                                                from {table[user_type]} as c
+                                                left join images as img on img.image_id = {join[user_type]}
+                                                where {user_id} = {where[user_type]}
+                                        """)
+        return [dict(i) for i in users]
+
 
 class UserCreate:
     @staticmethod

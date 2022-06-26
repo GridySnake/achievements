@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {CreateUserChat, GetAnyUserInfo} from "../../api/GeneralApi";
+import {CreateUserChat, GetAnyInfo} from "../../api/GeneralApi";
 import {Avatar, Button, List, Skeleton, Tabs} from "antd";
 import StaticAvatars from "../StaticRoutes";
 import makeAction from "../../api/PageActions";
@@ -24,7 +24,7 @@ const SubscribesContainer = () => {
             setBlocked(Subscribes.blocked)
             setSuggestions(Subscribes.suggestions)
         }
-        GetAnyUserInfo(setInfoSubscribes, url)
+        GetAnyInfo(setInfoSubscribes, url)
     }, [url])
 
     const Unfollow = (user_id) => {

@@ -1,6 +1,6 @@
 import axiosInstance from "./APIClient";
 
-const GetAnyUserInfo = async (set, url) => {
+const GetAnyInfo = async (set, url) => {
     try {
         const resp = await axiosInstance.get(url);
         set(resp.data)
@@ -70,5 +70,15 @@ const GetConditionsByAggregation = async (data, set) => {
     }
 };
 
-export {GetAnyUserInfo, CreateUserChat, GetCitiesByCountry, GetSubspheresBySphere, GetConditionsByGroup,
-    GetConditionsByService, GetConditionsByAggregation};
+const GetUsersByType = async (data, set) => {
+    try {
+        const resp = await axiosInstance.get(`/get_users_by_type/${data}`);
+        set(resp.data)
+        console.log(resp.data)
+    } catch (err) {
+        console.error(err);
+    }
+};
+
+export {GetAnyInfo, CreateUserChat, GetCitiesByCountry, GetSubspheresBySphere, GetConditionsByGroup,
+    GetConditionsByService, GetConditionsByAggregation, GetUsersByType};

@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from "react";
 import {Avatar, Button, Card, Col, Image, List, Skeleton, Tabs, Typography} from "antd";
-import {GetAnyUserInfo} from "../../api/GeneralApi";
+import {GetAnyInfo} from "../../api/GeneralApi";
 import StaticAvatars from "../StaticRoutes";
 import makeAction from "../../api/PageActions";
 
@@ -18,7 +18,7 @@ const CommunitiesContainer = () => {
             setCommunities(Community.communities)
             setOwnCommunities(Community.owner_communities)
         }
-        GetAnyUserInfo(CommunitiesInfo, url)
+        GetAnyInfo(CommunitiesInfo, url)
     }, [url])
 
     // const Leave = (user_id) => {

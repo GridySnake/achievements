@@ -151,6 +151,15 @@ class InfoGet:
         return [dict(i) for i in parameters]
 
     @staticmethod
+    async def get_conditions_by_parameter(parameter_id: str, conn):
+        condition = await conn.fetchrow(f"""
+                                         select condition_group_id, aggregate_id
+                                         from achi_generate_conditions
+                                         where parameter_id = {parameter_id}
+                                      """)
+        return condition
+
+    @staticmethod
     async def get_par_by_agg_id_group_id_service(agg_id: str, group_id: str, service_id: str, conn):
         parameters = await conn.fetch(f"""
                                               select parameter_id::varchar, parameter_name

@@ -42,6 +42,8 @@ def setup_routes(app):
                          name='get_conditions_by_service')
     app.router.add_route('GET', r'/get_conditions_by_aggregation/{i}', get_conditions_by_agg_group,
                          name='get_conditions_by_aggregation')
+    app.router.add_route('GET', r'/get_users_by_type/{i}', get_users_by_type,
+                         name='get_users_by_type')
     app.router.add_route('GET', '/verify', NeedVerify.get, name='verify')
     app.router.add_route('POST', '/unfollow', unfollow, name='unfollow')
     app.router.add_route('POST', '/follow', follow, name='follow')
@@ -74,7 +76,7 @@ def setup_routes(app):
     app.router.add_route('POST', r'/verify_achievement', AchievementsVerificationView.post, name='verify_achievement')
     app.router.add_route('POST', r'/verify_achievement/{i}', AchievementsVerificationView.post,
                          name='qr_verify_achievement')
-    app.router.add_route('GET', r'/achievement/{i}', AchievementInfoView.get, name='achievement')
+    app.router.add_route('GET', r'/achievement/{i}', get_achievement_info, name='achievement')
     app.router.add_route('GET', r'/community/{i}', CommunitiesInfoView.get, name='community_info')
     app.router.add_route('GET', r'/community/{i}/cover_letter_interview', ApproveConditionsView.get,
                          name='cover_letter_interview_community')

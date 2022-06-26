@@ -50,4 +50,14 @@ const ChangeUserSettings = (data, callback) => {
     })
 };
 
-export {SendMessage, CreateGroupChat, AddChatMembers, RemoveChatMembers, ChangeUserSettings};
+const CreateAchievement = (data, callback) => {
+    axiosInstance.post('/add_achievement', data)
+    .then(({data}) => {
+        callback(data.achievement)
+    })
+    .catch(({response}) => {
+        console.log(response);
+    })
+};
+
+export {SendMessage, CreateGroupChat, AddChatMembers, RemoveChatMembers, ChangeUserSettings, CreateAchievement};

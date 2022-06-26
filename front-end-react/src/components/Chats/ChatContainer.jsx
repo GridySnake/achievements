@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {GetAnyUserInfo} from "../../api/GeneralApi";
+import {GetAnyInfo} from "../../api/GeneralApi";
 import {Avatar, List, Typography, Form, Input, Button, Popover, Select, Space} from "antd";
 import StaticAvatars from "../StaticRoutes";
 import {useLocation, useParams} from "react-router-dom";
@@ -50,7 +50,7 @@ const ChatContainer = () => {
                 setInfo(ChatInfo.chat_info)
             }
         }
-        GetAnyUserInfo(fillChatInfo, pathname)
+        GetAnyInfo(fillChatInfo, pathname)
     }, [pathname, Sended, Update])
 
 

@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {GetAnyUserInfo} from "../../api/GeneralApi";
+import {GetAnyInfo} from "../../api/GeneralApi";
 import {Avatar, List, Card, Tabs, Button, Drawer, Form, Col, Row, Input, Space, Upload} from "antd";
 import { PlusOutlined, InboxOutlined } from '@ant-design/icons';
 import StaticAvatars from "../StaticRoutes";
@@ -29,7 +29,7 @@ const ChatsContainer = () => {
             setCommunities(Chats.communities)
             setCourses(Chats.courses)
         }
-        GetAnyUserInfo(setInfoChats, url)
+        GetAnyInfo(setInfoChats, url)
     }, [url])
 
     const toChat = (id) => {

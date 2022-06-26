@@ -1,12 +1,16 @@
 import React, {useEffect, useState} from "react";
-import {GetAnyUserInfo, GetSubspheresBySphere, GetConditionsByGroup, GetConditionsByService,
-    GetConditionsByAggregation} from "../../api/GeneralApi";
-import {Avatar, Button, Form, Input, List, Select, Skeleton, Tabs} from "antd";
+import {GetAnyInfo, GetSubspheresBySphere, GetConditionsByGroup, GetConditionsByService,
+    GetConditionsByAggregation, GetUsersByType} from "../../api/GeneralApi";
+import {Avatar, Button, Form, Input, List, Select, Skeleton, Tabs, DatePicker} from "antd";
+import {CreateAchievement} from "../../api/SendForms";
+import moment from "moment";
 import StaticAvatars from "../StaticRoutes";
+import type { RadioChangeEvent } from 'antd';
+import { Radio } from 'antd';
 import makeAction from "../../api/PageActions";
 import {useNavigate} from "react-router";
 import {Option} from "antd/es/mentions";
-
+const { RangePicker } = DatePicker;
 const { TabPane } = Tabs;
 
 const AchievementsContainer = () => {
@@ -14,21 +18,36 @@ const AchievementsContainer = () => {
     const [Get, setGet] = useState(null);
     const [Suggestions, setSuggestions] = useState(null);
     const [ToCreate, setToCreate] = useState(null);
-    const [AchievementName, setAchievementName] = useState("");
-    const [AchievementDescription, setAchievementDescription] = useState("");
-    const [Group, setGroup] = useState("");
-    const [Subsphere, setSubsphere] = useState("");
-    const [Subspheres, setSubspheres] = useState("");
-    const [Sphere, setSphere] = useState("");
-    const [Service, setService] = useState("");
-    const [Services, setServices] = useState("");
-    const [Aggregation, setAggregation] = useState("");
-    const [Aggregations, setAggregations] = useState("");
-    const [Parameter, setParameter] = useState("");
-    const [Parameters, setParameters] = useState("");
-    const [Values, setValues] = useState("");
+    const [AchievementName, setAchievementName] = useState(null);
+    const [AchievementDescription, setAchievementDescription] = useState(null);
+    const [Group, setGroup] = useState(null);
+    const [Answer, setAnswer] = useState(null);
+    const [Answers, setAnswers] = useState(null);
+    const [Subsphere, setSubsphere] = useState(null);
+    const [Subspheres, setSubspheres] = useState(null);
+    const [Sphere, setSphere] = useState(null);
+    const [Service, setService] = useState(null);
+    const [Services, setServices] = useState(null);
+    const [Aggregation, setAggregation] = useState(null);
+    const [Aggregations, setAggregations] = useState(null);
+    const [Parameter, setParameter] = useState(null);
+    const [Parameters, setParameters] = useState(null);
+    const [Values, setValues] = useState(null);
+    const [UserType, setUserType] = useState(null);
+    const [UserId, setUserId] = useState(null);
+    const [Users, setUsers] = useState(null);
+    const [Test, setTest] = useState(null);
+    const [Dates, setDates] = useState([null, null]);
+    const [AchievementId, setAchievementId] = useState(null);
     const navigate = useNavigate();
     const url = '/achievements'
+    const RadioOptions = [
+      {label: 'User', value: 0},
+      {label: 'Community', value: 1},
+      {label: 'Course', value: 2},
+    ];
+    const avatarPath = {0: StaticAvatars.StaticAvatars, 1: StaticAvatars.StaticGroupAvatars,
+        2: StaticAvatars.StaticCommunityAvatars, 3: StaticAvatars.StaticCourseAvatars}
 
      useEffect(() => {
         const setInfoAchievements = (Achievements) => {
@@ -36,9 +55,8 @@ const AchievementsContainer = () => {
             setGet(Achievements.get)
             setSuggestions(Achievements.suggestion)
             setToCreate(Achievements.create)
-
         }
-        GetAnyUserInfo(setInfoAchievements, url)
+        GetAnyInfo(setInfoAchievements, url)
     }, [url])
 
     const HideShow = (item) => {
@@ -88,12 +106,19 @@ const AchievementsContainer = () => {
     }, [Sphere])
 
     useEffect(() => {
-        const GetConditionsByGroups = (Conditions) => {
-            setServices(Conditions.services)
-            setAggregations(Conditions.agg)
-            setParameters(Conditions.parameters)
+        if (Group !== 8) {
+            const GetConditionsByGroups = (Conditions) => {
+                setServices(Conditions.services)
+                setAggregations(Conditions.agg)
+                setParameters(Conditions.parameters)
+                if (Group === 6) {
+                    setAnswers(true)
+                } else {
+                    setAnswers(false)
+                }
+            }
+            GetConditionsByGroup(Group, GetConditionsByGroups)
         }
-        GetConditionsByGroup(Group, GetConditionsByGroups)
     }, [Group])
 
     useEffect(() => {
@@ -110,6 +135,32 @@ const AchievementsContainer = () => {
         }
         GetConditionsByAggregation(`${Group}_${Service}_${Aggregation}`, GetConditionsByAggregations)
     }, [Aggregation, Service])
+
+    useEffect(() => {
+        if (UserType !== 0) {
+            const GetUsersByTypes = (User) => {
+                setUsers(User.users)
+            }
+            GetUsersByType(UserType, GetUsersByTypes)
+        } else {
+            setUsers(null)
+            setUserId(null)
+        }
+    }, [UserType])
+
+    const RadioChange = ({ target: { value } }: RadioChangeEvent) => {
+        setUserType(value);
+    };
+
+    const CreateAchievements = () => {
+        const send = {'name': AchievementName, 'description':AchievementDescription, 'user_type': UserType,
+            'user_id': UserId, 'select_parameter': Parameter, 'value': Values, 'test_url': Test, 'answer_url': Answer,
+            'select_subsphere': Subsphere, 'dates': Dates}
+        CreateAchievement(send, (data) => {
+            navigate(`/achievement/${data}`)
+        })
+    };
+
 
     return (
         ToCreate?
@@ -200,6 +251,46 @@ const AchievementsContainer = () => {
                     >
                         <Input />
                     </Form.Item>
+                    <Form.Item
+                        label="Achievement creator type"
+                        name="achievement_creator_type"
+                        rules={[
+                          {
+                            required: true,
+                            message: 'Achievement creator type is required',
+                          }
+                        ]}>
+                        <Radio.Group
+                            options={RadioOptions}
+                            onChange={RadioChange}
+                            value={null}
+                            optionType="button"
+                            buttonStyle="solid"
+                          />
+                    </Form.Item>
+                    {Users?
+                        <Form.Item
+                            label="Achievement creator"
+                            name="achievement_creator"
+                            rules={[
+                              {
+                                required: true,
+                                message: 'Achievement creator is required',
+                              }
+                            ]}>
+                            <Select defaultValue={null} onChange={e => setUserId(e)}>
+                                {Users.map((user) => {
+                                    return (
+                                        <Option value={user.user_id}><Avatar src={avatarPath[UserType+1] + user.href}/>
+                                            {user.user_name}</Option>
+                                    )
+                                })
+                                }
+                            </Select>
+                        </Form.Item>
+                        :
+                        <></>
+                    }
                     <Form.Item
                         label="Achievement sphere"
                         name="achievement_sphere"
@@ -324,6 +415,40 @@ const AchievementsContainer = () => {
                         :
                         <></>
                     }
+                    {Answers?
+                        <Form.Item
+                            label="Achievement test"
+                            name="achievement_test"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: 'Achievement test is required',
+                                },
+                            ]}
+                            onChange={e => setTest(e.target.value)}
+                        >
+                            <Input/>
+                        </Form.Item>
+                        :
+                        <></>
+                    }
+                    {Answers?
+                        <Form.Item
+                            label="Achievement answer"
+                            name="achievement_answer"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: 'Achievement answer is required',
+                                },
+                            ]}
+                            onChange={e => setAnswer(e.target.value)}
+                        >
+                            <Input/>
+                        </Form.Item>
+                        :
+                        <></>
+                    }
                     {Parameters ?
                         <Form.Item
                             label="Achievement value"
@@ -341,6 +466,15 @@ const AchievementsContainer = () => {
                         :
                         <></>
                     }
+                    <Form.Item label="Achievement dates"
+                            name="achievement_dates"
+                            onChange={date => setDates(date.format("YYYY-MM-DD"))}
+                        >
+                        <RangePicker format={'YYYY-MM-DD'} onChange={dates => setDates(dates)} disabledDate={current => {
+                            return current && current <= moment().subtract(1, 'days')}
+                        }/>
+                    </Form.Item>
+                    <Button type="primary" onClick={CreateAchievements}>Create Achievement</Button>
                 </Form>
             </TabPane>
         </Tabs>
