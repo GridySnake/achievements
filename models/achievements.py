@@ -115,10 +115,10 @@ class AchievementsGetInfo:
     async def get_achievement_info(achievement_id: str, conn):
         achievement = await conn.fetchrow(f"""
                                             select a.achievement_id:: varchar, a.name, a.description, agc.aggregate_name, 
-                                                c.parameter_id:: varchar, c.value, g.achi_condition_group_id, 
+                                                c.parameter_id:: varchar, c.value,
                                                 g.achi_condition_group_name, a.created_date::varchar, a.new, u.name as u_name, 
                                                 u.surname as u_surname, u.user_id, c.geo, c.condition_id, s.sphere_name, 
-                                                s.subsphere_name, c.test_url
+                                                s.subsphere_name, c.test_url, g.achi_condition_group_id
                                             from achi_conditions as c
                                             right join (select achievement_id, unnest(conditions) as conditions, name, 
                                                 user_id, description, created_date, new, subsphere_id from achievements) 
@@ -185,6 +185,23 @@ class AchievementsGetInfo:
         order by a.created_date desc
         """)
         return [dict(i) for i in achievements]
+
+    @staticmethod
+    async def is_achievement_owner(user_id: str, achievement_id: str, conn):
+        is_owner = await conn.fetchrow(f"""
+                                                select case when count(achievement_id) > 0 then true else false end 
+                                                    as owner
+                                                from achievements as a
+                                                left join communities as c on a.user_id = any(c.community_owner_id) 
+                                                    and user_type = 1
+                                                left join courses as co on co.course_owner_id = a.user_id 
+                                                    and user_type = 2
+                                                where a.achievement_id = {achievement_id} and ((a.user_id = {user_id} 
+                                                    and user_type = 0) or c.community_name is not null or 
+                                                        co.course_name is not null)
+                                                """)
+
+        return is_owner['owner']
 
     @staticmethod
     async def get_reached_achievements(user_id: str, conn):
@@ -467,6 +484,27 @@ class AchievementsDesireApprove:
         else:
             result = False
         return result
+
+    @staticmethod
+    async def is_desire_achievement(user_id: str, achievement_id: str, conn):
+        desire = await conn.fetchrow(f"""
+                select count(achievement_id) as count
+                from achievements as a
+                left join users_information as u on u.user_id = a.user_id and a.user_type = 0
+                left join communities as c on a.user_id = c.community_id and a.user_type = 1
+                left join courses as co on co.course_id = a.user_id and a.user_type = 2
+                left join users_information as u1 on a.achievement_id = any(u1.achievements_id) 
+                    or a.achievement_id = any(u1.achievements_desired_id)
+                where ({user_id} <> any(c.community_owner_id) or c.community_owner_id is null) and
+                      ({user_id} <> co.course_owner_id or co.course_owner_id is null) and
+                      (u1.user_id is null or u1.user_id <> {user_id}) and
+                      u.user_id <> {user_id} and a.achievement_id = {achievement_id}
+                """)
+        if desire['count'] > 0:
+            is_desired = True
+        else:
+            is_desired = False
+        return is_desired
 
     @staticmethod
     async def approve_achievement(user_active_id: str, user_passive_id: str, achievement_id: str, conn):

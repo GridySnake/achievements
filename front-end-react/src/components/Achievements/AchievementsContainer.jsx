@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useState, useRef} from "react";
 import {GetAnyInfo, GetSubspheresBySphere, GetConditionsByGroup, GetConditionsByService,
     GetConditionsByAggregation, GetUsersByType} from "../../api/GeneralApi";
 import {Avatar, Button, Form, Input, List, Select, Skeleton, Tabs, DatePicker} from "antd";
@@ -10,6 +10,7 @@ import { Radio } from 'antd';
 import makeAction from "../../api/PageActions";
 import {useNavigate} from "react-router";
 import {Option} from "antd/es/mentions";
+import { YMaps, Map, Placemark, SearchControl } from "react-yandex-maps";
 const { RangePicker } = DatePicker;
 const { TabPane } = Tabs;
 
@@ -38,8 +39,12 @@ const AchievementsContainer = () => {
     const [Users, setUsers] = useState(null);
     const [Test, setTest] = useState(null);
     const [Dates, setDates] = useState([null, null]);
-    const [AchievementId, setAchievementId] = useState(null);
+    const [coords, setCoords] = useState([null, null]);
+    const [text, setText] = useState(null);
+    const [mapCondition, setMapCondition] = useState(false);
     const navigate = useNavigate();
+    const searchRef = useRef(null);
+
     const url = '/achievements'
     const RadioOptions = [
       {label: 'User', value: 0},
@@ -152,6 +157,24 @@ const AchievementsContainer = () => {
         setUserType(value);
     };
 
+    // useEffect(() => {
+    // if (text && searchRef.current) {
+    //   searchRef.current.search(text);
+    //     }
+    // }, [text]);
+
+    useEffect(() => {
+        if (Aggregation) {
+            if (Group === 2 && parseInt(Aggregation) === 1) {
+                setMapCondition(true)
+            } else {
+                setMapCondition(false)
+            }
+        } else {
+            setMapCondition(false)
+        }
+    }, [Group, Aggregation])
+
     const CreateAchievements = () => {
         const send = {'name': AchievementName, 'description':AchievementDescription, 'user_type': UserType,
             'user_id': UserId, 'select_parameter': Parameter, 'value': Values, 'test_url': Test, 'answer_url': Answer,
@@ -161,6 +184,7 @@ const AchievementsContainer = () => {
         })
     };
 
+    console.log(Group, Aggregation)
 
     return (
         ToCreate?
@@ -415,6 +439,35 @@ const AchievementsContainer = () => {
                         :
                         <></>
                     }
+                    {/*{mapCondition?*/}
+                    {/*    // <YMaps>*/}
+                    {/*    //     <div>*/}
+                    {/*    //         <Map*/}
+                                    // onClick={e => setCoords(e._sourceEvent.originalEvent.coords)}
+                                // >
+                                    {/*<SearchControl*/}
+                                    {/*    instanceRef={(ref) => {*/}
+                                    {/*      if (ref) searchRef.current = ref;*/}
+                                    {/*    }}*/}
+                                    {/*    options={{*/}
+                                    {/*      float: "right",*/}
+                                    {/*      provider: "yandex#search",*/}
+                                    {/*      size: "large"*/}
+                                    {/*    }}*/}
+                                    {/*/>*/}
+                    {/*                {coords?*/}
+                    {/*                    <Placemark*/}
+                    {/*                    geometry={coords}*/}
+                    {/*                    />*/}
+                    {/*                    :*/}
+                    {/*                    <></>*/}
+                    {/*                }*/}
+                    {/*//             </Map>*/}
+                    {/*//         </div>*/}
+                    {/*//     </YMaps>*/}
+                    {/*//     :*/}
+                    {/*//     <></>*/}
+                    {/*// }*/}
                     {Answers?
                         <Form.Item
                             label="Achievement test"

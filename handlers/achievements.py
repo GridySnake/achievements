@@ -170,24 +170,29 @@ async def create_achievement(request):
     print(data)
     if data['user_type'] == 0:
         data['user_id'] = json.loads(request.cookies['user'])['user_id']
-    if data['dates']:
+    if data['dates'] != [None, None]:
         [data['from_date'], data['to_date']] = [i.split('T')[0] for i in data['dates']]
+    elif data['dates'][0] is None and data['dates'][1] is not None:
+        [data['from_date'], data['to_date']] = ['null', data['dates'][1].split('T')[0]]
+    else:
+        [data['from_date'], data['to_date']] = [None, None]
     async with pool.acquire() as conn:
         data['select_group'], data['select_aggregation'] = \
             await InfoGet.get_conditions_by_parameter(data['select_parameter'], conn=conn)
         data['sphere'] = await InfoGet.get_sphere_id_by_subsphere_id(data['select_subsphere'], conn=conn)
     data['geo'] = 'null'
     data['achievement_qr'] = 'null'
+    data['coords'] = ''
     if not data['test_url']:
         data['test_url'] = 'null'
         data['answers_url'] = 'null'
-    if data['select_group'] == '1':
+    if data['select_group'] == 1:
         token = hashlib.sha256(data['name'] + '_' + data['value'].replace(' ', '_').lower().encode('utf8')).hexdigest()
         img = qrcode.make(f"http://localhost:8080/verify_achievement/{token}")
         img.save(f'{str(BaseConfig.STATIC_DIR) + "/QR/" + str(token)}.png')
         data['achievement_qr'] = str(token)
-    elif data['select_group'] == '2':
-        if data['select_aggregation'] == '1':
+    elif data['select_group'] == 2:
+        if data['select_aggregation'] == 1:
             if data['coords'] != '' and data['value'] == '':
                 location = data['coords'].replace(' ', '|').replace(',', '|').split('|')
                 location = [float(i.replace('|', '')) for i in location if i != '']
@@ -199,16 +204,18 @@ async def create_achievement(request):
                 geolocator = Nominatim(user_agent="55")
                 location = geolocator.geocode(data['value'])
                 location = [location.latitude, location.longitude]
+                print(location)
             else:
                 location = data['coords'].replace(' ', '|').replace(',', '|').split('|')
                 location = [float(i.replace('|', '')) for i in location if i != '']
             data['geo'] = f'CIRCLE(POINT({location[0]}, {location[1]}), 10)'
+            print(data['geo'])
             data['achievement_qr'] = 'null'
-    elif data['select_group'] == '6':
+    elif data['select_group'] == 6:
         data['test_url'] = data['test_web']
         data['answers_url'] = ''.join(data['answers_web'].split('/')[:3]) + '/export?format=csv'
         data['value'] = data['value'].replace(',', '.')
-    elif data['select_group'] == '8':
+    elif data['select_group'] == 8:
         data['select_parameter'] = 'null'
         data['value'] = 'null'
     async with pool.acquire() as conn:
@@ -396,16 +403,12 @@ async def get_achievement_info(request):
         courses = await CoursesGetInfo.get_own_courses(user_id=user_id, conn=conn)
         achievement_id = str(request).split('/')[-1][:-2]
         achievement = await AchievementsGetInfo.get_achievement_info(achievement_id=achievement_id, conn=conn)
-        print(achievement_id)
-        print(achievement)
-        # is_owner =
-        if achievement['achi_condition_group_id'] == 7:
-            desire = await AchievementsDesireApprove.is_desire(user_id=user_id, achievement_desire_id=achievement_id,
-                                                               conn=conn)
-        else:
-            desire = False
-        return json_response({'achievement': achievement, 'desire': desire, 'communities': communities,
-                              'courses': courses})
+        is_owner = await AchievementsGetInfo.is_achievement_owner(user_id=user_id, achievement_id=achievement_id,
+                                                                  conn=conn)
+        desire = await AchievementsDesireApprove.is_desire_achievement(user_id=user_id,
+                                                                       achievement_id=achievement_id, conn=conn)
+        return json_response({'achievement': achievement, 'desire': desire, 'is_owner': is_owner, 'communities':
+                             communities, 'courses': courses})
 
 
 class AchievementInfoView(web.View):
