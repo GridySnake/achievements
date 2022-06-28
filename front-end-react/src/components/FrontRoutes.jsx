@@ -9,6 +9,7 @@ import ChatContainer from "./Chats/ChatContainer";
 import UserSettings from "./Personal Page/UserSettings";
 import AchievementsContainer from "./Achievements/AchievementsContainer";
 import AchievementContainer from "./Achievements/AchievementContainer";
+import CoursesContainer from "./Courses/CoursesContainer";
 
 // auth? <navbar + all> : <login + signup>
 const FrontRoutes = () => {
@@ -28,7 +29,8 @@ const FrontRoutes = () => {
                     <Route path="/user_settings" element={<UserSettings/>}/>
                     <Route path="/posts"/>
                     <Route path="/communities" key="communities" element={<CommunitiesContainer/>}/>
-                    <Route path="/courses"/>
+                    <Route path="/courses" key="courses" element={<CoursesContainer/>}/>
+                    <Route path="/courses/:id"/>
                     <Route path="/goals"/>
                 </Routes>
             </Router>

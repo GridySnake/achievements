@@ -178,13 +178,13 @@ const AchievementsContainer = () => {
     const CreateAchievements = () => {
         const send = {'name': AchievementName, 'description':AchievementDescription, 'user_type': UserType,
             'user_id': UserId, 'select_parameter': Parameter, 'value': Values, 'test_url': Test, 'answer_url': Answer,
-            'select_subsphere': Subsphere, 'dates': Dates}
+            'select_subsphere': Subsphere, 'dates': Dates, 'coords': coords}
         CreateAchievement(send, (data) => {
             navigate(`/achievement/${data}`)
         })
     };
 
-    console.log(Group, Aggregation)
+    console.log(coords)
 
     return (
         ToCreate?
@@ -439,12 +439,12 @@ const AchievementsContainer = () => {
                         :
                         <></>
                     }
-                    {/*{mapCondition?*/}
-                    {/*    // <YMaps>*/}
-                    {/*    //     <div>*/}
-                    {/*    //         <Map*/}
-                                    // onClick={e => setCoords(e._sourceEvent.originalEvent.coords)}
-                                // >
+                    {mapCondition?
+                        <YMaps>
+                            <div>
+                                <Map defaultState={{center: [55.734876, 37.59308], zoom: 12}}
+                                    onClick={e => setCoords(e._sourceEvent.originalEvent.coords)}
+                                >
                                     {/*<SearchControl*/}
                                     {/*    instanceRef={(ref) => {*/}
                                     {/*      if (ref) searchRef.current = ref;*/}
@@ -455,19 +455,19 @@ const AchievementsContainer = () => {
                                     {/*      size: "large"*/}
                                     {/*    }}*/}
                                     {/*/>*/}
-                    {/*                {coords?*/}
-                    {/*                    <Placemark*/}
-                    {/*                    geometry={coords}*/}
-                    {/*                    />*/}
-                    {/*                    :*/}
-                    {/*                    <></>*/}
-                    {/*                }*/}
-                    {/*//             </Map>*/}
-                    {/*//         </div>*/}
-                    {/*//     </YMaps>*/}
-                    {/*//     :*/}
-                    {/*//     <></>*/}
-                    {/*// }*/}
+                                    {coords?
+                                        <Placemark
+                                        geometry={coords}
+                                        />
+                                        :
+                                        <></>
+                                    }
+                                </Map>
+                            </div>
+                        </YMaps>
+                        :
+                        <></>
+                    }
                     {Answers?
                         <Form.Item
                             label="Achievement test"

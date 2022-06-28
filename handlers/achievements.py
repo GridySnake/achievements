@@ -412,21 +412,21 @@ async def get_achievement_info(request):
 
 
 class AchievementInfoView(web.View):
-    @aiohttp_jinja2.template('achievement_info.html')
-    async def get(self):
-
-        session = await get_session(self)
-        user_id = session['user']['id']
-        communities = await CommunityGetInfo.get_user_owner_communities(user_id=user_id)
-        courses = await CoursesGetInfo.get_own_courses(user_id=user_id)
-
-        location = str(self).split('/achievement/')[-1][:-2]
-        achievement = await AchievementsGetInfo.get_achievement_info(achievement_id=location)
-        if achievement['achi_condition_group_id'] == 7:
-            desire = await AchievementsDesireApprove.is_desire(user_id=user_id, achievement_desire_id=location)
-        else:
-            desire = False
-        return dict(achievement=achievement, desire=desire, communities=communities, courses=courses)
+#     @aiohttp_jinja2.template('achievement_info.html')
+#     async def get(self):
+#
+#         session = await get_session(self)
+#         user_id = session['user']['id']
+#         communities = await CommunityGetInfo.get_user_owner_communities(user_id=user_id)
+#         courses = await CoursesGetInfo.get_own_courses(user_id=user_id)
+#
+#         location = str(self).split('/achievement/')[-1][:-2]
+#         achievement = await AchievementsGetInfo.get_achievement_info(achievement_id=location)
+#         if achievement['achi_condition_group_id'] == 7:
+#             desire = await AchievementsDesireApprove.is_desire(user_id=user_id, achievement_desire_id=location)
+#         else:
+#             desire = False
+#         return dict(achievement=achievement, desire=desire, communities=communities, courses=courses)
 
     @aiohttp_jinja2.template('achievements_verify.html')
     async def post(self):
