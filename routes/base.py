@@ -70,7 +70,7 @@ def setup_routes(app):
     app.router.add_route('POST', '/create_user_chat', create_user_chat, name='create_user_chat')
     app.router.add_route('POST', '/add_community_member', CommunitiesInfoView.post, name='add_community_member')
     app.router.add_route('POST', '/remove_community_member', CommunitiesInfoView.post, name='remove_community_member')
-    app.router.add_route('GET', '/courses', CoursesView.get, name='courses')
+    app.router.add_route('GET', '/courses', get_courses, name='courses')
     app.router.add_route('GET', r'/chat/{i}', get_chat, name='chat')
     app.router.add_route('GET', r'/verify/{i}', Verify.get, name='verify_i')
     app.router.add_route('POST', r'/verify_achievement', AchievementsVerificationView.post, name='verify_achievement')

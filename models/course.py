@@ -16,12 +16,13 @@ class CoursesGetInfo:
     @staticmethod
     async def get_user_course_suggestions(user_id: str, conn):
         """
+        :param conn:
         :param user_id: str
         :return: list of asyncpg records: course_id, course_name, description, course_owner_id, sphere, online, free,
         new, course_owner_type, name, surname, community_name
         """
         courses = await conn.fetch(f"""
-                                        select c.course_id, c.course_name, c.description, c.course_owner_id, c.sphere_id,
+                                        select c.course_id:: varchar, c.course_name, c.description, c.course_owner_id,
                                             c.online, c.free, c.country_id, c.city_id, c.new, c.course_owner_type,
                                             ui.name, ui.surname, com.community_name, array_length(c.users, 1) as joined,
                                             s.sphere_name, s.subsphere_name
@@ -40,7 +41,7 @@ class CoursesGetInfo:
                                                 ) as s on c.course_id = s.course_id
                                         order by new desc
         """)
-        return courses
+        return [dict(i) for i in courses]
 
     @staticmethod
     async def get_course_info_by_value(course_id: str, value: str, conn):
@@ -54,13 +55,14 @@ class CoursesGetInfo:
     @staticmethod
     async def get_course_info(course_id: str, conn):
         """
+        :param conn:
         :param course_id: str
         :return: asyncpg record: course_id, course_name, description, course_owner_id, sphere, online, free,
         new, course_owner_type, name, surname, community_name, language
         """
         course = await conn.fetchrow(f"""
-                                        select c.course_id, c.course_name, c.description, c.course_owner_id, 
-                                            c.online, c.free, c.country_id, c.city_id, c.new, c.course_owner_type,
+                                        select c.course_id:: varchar, c.course_name, c.description, c.course_owner_id, 
+                                            c.online, c.free, c.new, c.course_owner_type,
                                             ui.name, ui.surname, com.community_name, array_length(c.users, 1) as joined,
                                             l.language_native, c.subsphere_id
                                         from (select * from courses where course_id = {course_id}) as c
@@ -82,13 +84,14 @@ class CoursesGetInfo:
     @staticmethod
     async def get_user_courses(user_id: str, conn):
         """
+        :param conn:
         :param user_id: str
         :return: asyncpg records: course_id, course_name, description, course_owner_id, sphere, online, free,
         new, course_owner_type, name, surname, community_name, language
         """
         courses = await conn.fetch(f"""
-                                       select c.course_id, c.course_name, c.description, c.course_owner_id,
-                                           c.online, c.free, c.country_id, c.city_id, c.new, c.course_owner_type,
+                                       select c.course_id:: varchar, c.course_name, c.description, c.course_owner_id:: varchar,
+                                           c.online, c.free, c.new, c.course_owner_type,
                                            ui.name, ui.surname, com.community_name, array_length(c.users, 1) as joined,
                                            l.language_native, s.sphere_name, s.subsphere_name
                                        from (select * from courses where {user_id} = any(users)) as c
@@ -105,18 +108,19 @@ class CoursesGetInfo:
                                                     group by c.course_id
                                                 ) as s on c.course_id = s.course_id
             """)
-        return courses
+        return [dict(i) for i in courses]
 
     @staticmethod
     async def get_own_courses(user_id: str, conn):
         """
+        :param conn:
         :param user_id: str
         :return: asyncpg records: course_id, course_name, description, course_owner_id, sphere, online, free,
         new, course_owner_type, name, surname, community_name, language
         """
         courses = await conn.fetch(f"""
-                                       select c.course_id, c.course_name, c.description, c.course_owner_id, c.sphere_id,
-                                          c.online, c.free, c.country_id, c.city_id, c.new, c.course_owner_type,
+                                       select c.course_id:: varchar, c.course_name, c.description, c.course_owner_id:: varchar, c.sphere_id,
+                                          c.online, c.free, c.new, c.course_owner_type,
                                           ui.name, ui.surname, com.community_name, array_length(c.users, 1) as joined,
                                           l.language_native, s.sphere_name, s.subsphere_name
                                        from (select * from courses where {user_id} = course_owner_id) as c
@@ -138,6 +142,7 @@ class CoursesGetInfo:
     @staticmethod
     async def is_user_in_course(course_id: str, user_id: str, conn):
         """
+        :param conn:
         :param course_id: str
         :param user_id: str
         :return: bool
@@ -176,7 +181,7 @@ class CoursesGetInfo:
     @staticmethod
     async def get_course_participants(course_id: str, conn):
         participants = await conn.fetch(f"""
-                                               select u.user_id, u.name, u.surname
+                                               select u.user_id:: varchar, u.name, u.surname
                                                from (select course_id, unnest(users) as users from courses) as c
                                                left join users_information as u on u.user_id = c.users
                                                where c.course_id = {course_id}
@@ -185,13 +190,13 @@ class CoursesGetInfo:
 
     @staticmethod
     async def user_requests(user_id: str, conn):
-        requests = await conn.fetch(f"""
-                                        select c.course_id, c.course_name
+        course_requests = await conn.fetch(f"""
+                                        select c.course_id:: varchar, c.course_name
                                         from courses as c
                                         where {user_id} = any(requests)
                                          and request_statuses[array_position(requests, {user_id})] = 1
                                     """)
-        return requests
+        return [dict(i) for i in course_requests]
 
     @staticmethod
     async def get_course_conditions(user_id: str, course_id: str, conn):
@@ -214,6 +219,29 @@ class CoursesGetInfo:
                                     """)
         return conditions
 
+    @staticmethod
+    async def get_assistant_courses(user_id, conn):
+        assistant_courses = await conn.fetch(f"""
+                                                select c.course_id:: varchar, c.course_name, c.description,
+                                          c.online, c.free, c.new, c.course_owner_type,
+                                          ui.name, ui.surname, com.community_name, array_length(c.users, 1) as joined,
+                                          l.language_native, s.sphere_name, s.subsphere_name
+                                       from (select * from courses where {user_id} = any(assistants)) as c
+                                       left join languages as l on l.language_id = c.language
+                                       left join users_information as ui on ui.user_id = c.course_owner_id
+                                          and c.course_owner_type = 0
+                                       left join communities as com on com.community_id = c.course_owner_id
+                                          and c.course_owner_type = 1
+                                        left join (
+                                            select c.course_id, array_agg(s.subsphere_name) as subsphere_name, 
+                                            array_agg(s.sphere_name) as sphere_name
+                                            from courses as c
+                                            left join spheres s on s.subsphere_id = any(c.subsphere_id)
+                                            group by c.course_id
+                                           ) s on c.course_id = s.course_id
+                                            """)
+        return [dict(i) for i in assistant_courses]
+
 
 class CoursesAction:
     """
@@ -233,6 +261,7 @@ class CoursesAction:
     @staticmethod
     async def join_course(course_id: str, user_id: str, conn):
         """
+        :param conn:
         :param course_id: str
         :param user_id: str
         :return: None
@@ -257,7 +286,6 @@ class CoursesAction:
                                insert into courses_events (event_id, course_id, user_id, status) 
                                values({event_id}, {course_id}, {user_id}, 1)
                              """)
-
 
     @staticmethod
     async def leave_course(course_id: str, user_id: str, conn):

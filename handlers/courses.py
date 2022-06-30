@@ -9,18 +9,37 @@ from models.goal import Goals
 from PIL import Image, ImageDraw
 from models.conditions import ConditionsGetInfo
 import json
+from aiohttp.web import json_response
+
+
+async def get_courses(request):
+    user_id = json.loads(request.cookies['user'])['user_id']
+    pool = request.app['pool']
+    async with pool.acquire() as conn:
+        own_courses = await CoursesGetInfo.get_own_courses(user_id=user_id, conn=conn)
+        # communities = await CommunityGetInfo.get_user_owner_communities(user_id=user_id)
+        # languages = await InfoGet.get_languages()
+        my_courses = await CoursesGetInfo.get_user_courses(user_id=user_id, conn=conn)
+        sug_courses = await CoursesGetInfo.get_user_course_suggestions(user_id=user_id, conn=conn)
+        assis_course = await CoursesGetInfo.get_assistant_courses(user_id=user_id, conn=conn)
+        requests = await CoursesGetInfo.user_requests(user_id=user_id, conn=conn)
+    # subspheres = await InfoGet.get_subspheres()
+    # conditions = await InfoGet.get_conditions(owner_type=2)
+    return json_response({'sug_courses': sug_courses, 'own_courses': own_courses, 'progress': my_courses,
+                          'assistant_courses': assis_course, 'requests': requests})
 
 
 class CoursesView(web.View):
 
     @aiohttp_jinja2.template('courses.html')
     async def get(self):
-        user_id = ''
+        user_id = json.loads(request.cookies['user'])['user_id']
         own_courses = await CoursesGetInfo.get_own_courses(user_id=user_id)
         communities = await CommunityGetInfo.get_user_owner_communities(user_id=user_id)
         languages = await InfoGet.get_languages()
         courses = await CoursesGetInfo.get_user_course_suggestions(user_id=user_id)
         my_courses = await CoursesGetInfo.get_user_courses(user_id=user_id)
+        sug_courses = await CoursesGetInfo.get_user_course_suggestions(user_id=user_id, conn=conn)
         requests = await CoursesGetInfo.user_requests(user_id=user_id)
         subspheres = await InfoGet.get_subspheres()
         conditions = await InfoGet.get_conditions(owner_type=2)

@@ -18,8 +18,8 @@ const CoursesContainer = () => {
 
     useEffect(() => {
         const  CoursesInfo = (Course) => {
-            setCourses(Course.courses)
-            setOwnCourses(Course.owner_courses)
+            setCourses(Course.sug_courses)
+            setOwnCourses(Course.own_courses)
             setAssistantCourses(Course.assistant_courses)
             setProgressCourses(Course.progress)
             setCompleteCourses(Course.complete)
@@ -34,40 +34,6 @@ const CoursesContainer = () => {
                 <List
                     itemLayout="horizontal"
                     dataSource={courses}
-                    renderItem={item => (
-                        <List.Item>
-                            <Skeleton avatar title={false} loading={item.loading} active>
-                                <List.Item.Meta
-                                    avatar={<Avatar src={StaticAvatars.StaticCourseAvatars + item.href}/>}
-                                    title={<a href={'/course/' + item.course_id}>{item.course_name}</a>}
-                                    description={item.sphere_name}
-                                />
-                            </Skeleton>
-                        </List.Item>
-                    )}
-                />
-            </TabPane>
-            <TabPane tab="Owned" key="Owned">
-                <List
-                    itemLayout="horizontal"
-                    dataSource={ownCourses}
-                    renderItem={item => (
-                        <List.Item>
-                            <Skeleton avatar title={false} loading={item.loading} active>
-                                <List.Item.Meta
-                                    avatar={<Avatar src={StaticAvatars.StaticCourseAvatars + item.href}/>}
-                                    title={<a href={'/course/' + item.course_id}>{item.course_name}</a>}
-                                    description={item.sphere_name}
-                                />
-                            </Skeleton>
-                        </List.Item>
-                    )}
-                />
-            </TabPane>
-            <TabPane tab="Assistant" key="Assistant">
-                <List
-                    itemLayout="horizontal"
-                    dataSource={assistantCourses}
                     renderItem={item => (
                         <List.Item>
                             <Skeleton avatar title={false} loading={item.loading} active>
@@ -102,6 +68,40 @@ const CoursesContainer = () => {
                 <List
                     itemLayout="horizontal"
                     dataSource={completeCourses}
+                    renderItem={item => (
+                        <List.Item>
+                            <Skeleton avatar title={false} loading={item.loading} active>
+                                <List.Item.Meta
+                                    avatar={<Avatar src={StaticAvatars.StaticCourseAvatars + item.href}/>}
+                                    title={<a href={'/course/' + item.course_id}>{item.course_name}</a>}
+                                    description={item.sphere_name}
+                                />
+                            </Skeleton>
+                        </List.Item>
+                    )}
+                />
+            </TabPane>
+            <TabPane tab="Owned" key="Owned">
+                <List
+                    itemLayout="horizontal"
+                    dataSource={ownCourses}
+                    renderItem={item => (
+                        <List.Item>
+                            <Skeleton avatar title={false} loading={item.loading} active>
+                                <List.Item.Meta
+                                    avatar={<Avatar src={StaticAvatars.StaticCourseAvatars + item.href}/>}
+                                    title={<a href={'/course/' + item.course_id}>{item.course_name}</a>}
+                                    description={item.sphere_name}
+                                />
+                            </Skeleton>
+                        </List.Item>
+                    )}
+                />
+            </TabPane>
+            <TabPane tab="Assistant" key="Assistant">
+                <List
+                    itemLayout="horizontal"
+                    dataSource={assistantCourses}
                     renderItem={item => (
                         <List.Item>
                             <Skeleton avatar title={false} loading={item.loading} active>
