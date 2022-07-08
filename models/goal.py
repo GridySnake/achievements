@@ -20,4 +20,4 @@ class Goals:
                 ) as u 
                 on u.desired_id = a.achievement_id
                 """)
-        return goals
+        return [dict(i) for i in goals]

@@ -79,7 +79,7 @@ class CoursesGetInfo:
                                                     group by c.course_id
                                                 ) as s on c.course_id = s.course_id
         """)
-        return course
+        return dict(course)
 
     @staticmethod
     async def get_user_courses(user_id: str, conn):
@@ -186,7 +186,7 @@ class CoursesGetInfo:
                                                left join users_information as u on u.user_id = c.users
                                                where c.course_id = {course_id}
                                             """)
-        return participants
+        return [dict(i) for i in participants]
 
     @staticmethod
     async def user_requests(user_id: str, conn):
@@ -217,7 +217,7 @@ class CoursesGetInfo:
                                                 ({user_id} <> any(cor.conditions_approved) or 
                                                 cor.conditions_approved = array[]::integer[])
                                     """)
-        return conditions
+        return [dict(i) for i in conditions]
 
     @staticmethod
     async def get_assistant_courses(user_id, conn):

@@ -29,6 +29,36 @@ async def get_courses(request):
                           'assistant_courses': assis_course, 'requests': requests})
 
 
+async def get_course_info(request):
+    course_id = str(request).split('/')[-1][:-2]
+    user_id = json.loads(request.cookies['user'])['user_id']
+    pool = request.app['pool']
+    async with pool.acquire() as conn:
+        goals = await Goals.get_goals(user_id=course_id, user_type=2, conn=conn)
+        course = await CoursesGetInfo.get_course_info(course_id=course_id, conn=conn)
+        in_course = await CoursesGetInfo.is_user_in_course(course_id=course_id, user_id=user_id, conn=conn)
+        participants = await CoursesGetInfo.get_course_participants(course_id=course_id, conn=conn)
+        owner = await CoursesGetInfo.is_owner(course_id=course_id, user_id=user_id, conn=conn)
+        subscribers = None
+        allow = True
+        conditions = False
+        if not in_course:
+            can_join = await ConditionsGetInfo.is_allowed_communicate_by_conditions(user_active_id=user_id,
+                                                                                    user_passive_id=course_id,
+                                                                                    owner_table='courses',
+                                                                                    owner_column='course_id',
+                                                                                    conn=conn)
+            if not can_join:
+                conditions = await CoursesGetInfo.get_course_conditions(user_id=user_id, course_id=course_id, conn=conn)
+                allow = False
+        if owner:
+            subscribers = await SubscribesGetInfo.get_user_subscribes_names(user_id=user_id, conn=conn)
+            subscribers = [i for i in subscribers if subscribers and
+                           i['user_id'] not in [j['user_id'] for j in participants if participants]]
+    return json_response({'course': course, 'in_course': in_course, 'owner': owner, 'subscribers': subscribers,
+                          'participants': participants, 'goals': goals, 'conditions': conditions, 'allow': allow})
+
+
 class CoursesView(web.View):
 
     @aiohttp_jinja2.template('courses.html')

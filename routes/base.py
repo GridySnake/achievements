@@ -82,7 +82,7 @@ def setup_routes(app):
                          name='cover_letter_interview_community')
     app.router.add_route('POST', '/course_action', CourseInfoView.post, name='course_action')
     app.router.add_route('POST', '/create_course', CoursesView.post, name='create_course')
-    app.router.add_route('GET', r'/course/{i}', CourseInfoView.get, name='course')
+    app.router.add_route('GET', r'/course/{i}', get_course_info, name='course')
     app.router.add_route('GET', r'/course/{i}/cover_letter_interview', ApproveConditionsView.get,
                          name='cover_letter_interview_course')
     app.router.add_route('GET', r'/course/{i}/course_content/{j}', CourseContent.get, name='course_content')
@@ -120,3 +120,4 @@ def setup_routes(app):
 
 def setup_static_routes(app):
     app.router.add_static('/static/', path=BaseConfig.STATIC_DIR, name='static')
+

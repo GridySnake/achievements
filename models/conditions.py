@@ -86,7 +86,7 @@ class ConditionsGetInfo:
                                                 status = 0
                                              order by cl.send_datetime desc
                                          """)
-        return cover_letters
+        return [dict(i) for i in cover_letters]
 
     @staticmethod
     async def get_interviews_requests(sender_id: str, sender_type: int, conn):
