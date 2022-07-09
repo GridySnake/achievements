@@ -334,8 +334,8 @@ class CoursesAction:
     async def add_member(course_id: str, users: list, status: list, conn):
         await conn.execute(f"""
                                 update courses
-                                    set requests = array_cat(requests, array[{users}]),
-                                        request_statuses = array_cat(request_statuses, array[{status}])
+                                    set requests = array_cat(requests, array[{','.join(users)}]),
+                                        request_statuses = array_cat(request_statuses, array[{','.join(status)}])
                                 where course_id = {course_id}
                             """)
 

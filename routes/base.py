@@ -80,7 +80,9 @@ def setup_routes(app):
     app.router.add_route('GET', r'/community/{i}', CommunitiesInfoView.get, name='community_info')
     app.router.add_route('GET', r'/community/{i}/cover_letter_interview', ApproveConditionsView.get,
                          name='cover_letter_interview_community')
-    app.router.add_route('POST', '/course_action', CourseInfoView.post, name='course_action')
+    app.router.add_route('POST', '/join_course', join_course, name='join_course')
+    app.router.add_route('POST', '/leave_course', leave_course, name='leave_course')
+    app.router.add_route('POST', '/add_course_member', add_course_member, name='add_course_member')
     app.router.add_route('POST', '/create_course', CoursesView.post, name='create_course')
     app.router.add_route('GET', r'/course/{i}', get_course_info, name='course')
     app.router.add_route('GET', r'/course/{i}/cover_letter_interview', ApproveConditionsView.get,
@@ -93,7 +95,6 @@ def setup_routes(app):
                          name='decline_invitation_community')
     app.router.add_route('POST', r'/accept_invitation_course/{i}', CoursesView.post, name='accept_invitation_course')
     app.router.add_route('POST', r'/decline_invitation_course/{i}', CoursesView.post, name='decline_invitation_course')
-    app.router.add_route('POST', '/add_course_member', CourseInfoView.post, name='add_course_member')
     app.router.add_route('POST', '/remove_course_member', CourseInfoView.post, name='remove_course_member')
     app.router.add_route('POST', '/add_payment_goal', CommunitiesInfoView.post, name='add_payment_goal')
     app.router.add_route('POST', '/approve_conditions', ApproveConditionsView.post, name='approve_conditions')

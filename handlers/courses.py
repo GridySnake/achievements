@@ -59,6 +59,38 @@ async def get_course_info(request):
                           'participants': participants, 'goals': goals, 'conditions': conditions, 'allow': allow})
 
 
+async def join_course(request):
+    data = await request.json()
+    course_id = data['course_id']
+    user_id = json.loads(request.cookies['user'])['user_id']
+    pool = request.app['pool']
+    async with pool.acquire() as conn:
+        await CoursesAction.join_course(course_id=course_id, user_id=user_id, conn=conn)
+    return json_response({'value': 200})
+
+
+async def leave_course(request):
+    data = await request.json()
+    course_id = data['course_id']
+    user_id = json.loads(request.cookies['user'])['user_id']
+    pool = request.app['pool']
+    async with pool.acquire() as conn:
+        await CoursesAction.leave_course(course_id=course_id, user_id=user_id, conn=conn)
+    return json_response({'value': 200})
+
+
+async def add_course_member(request):
+    data = await request.json()
+    print(data)
+    course_id = data['course_id']
+    pool = request.app['pool']
+    users = data['users']
+    status = ['1' for i in range(len(users))]
+    async with pool.acquire() as conn:
+        await CoursesAction.add_member(course_id=course_id, users=users, status=status, conn=conn)
+    return json_response({'value': 200})
+
+
 class CoursesView(web.View):
 
     @aiohttp_jinja2.template('courses.html')

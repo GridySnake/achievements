@@ -27,6 +27,10 @@ const CoursesContainer = () => {
         GetAnyInfo(CoursesInfo, url)
     }, [url])
 
+    const Learn = () => {
+
+    }
+
     return (
         courses ?
         <Tabs defaultActiveKey="Suggestions">
@@ -59,6 +63,7 @@ const CoursesContainer = () => {
                                     title={<a href={'/course/' + item.course_id}>{item.course_name}</a>}
                                     description={item.sphere_name}
                                 />
+                                <Button  type="primary" htmlType="button" onClick={() => Learn(item.course_id)}>Learn</Button>
                             </Skeleton>
                         </List.Item>
                     )}
