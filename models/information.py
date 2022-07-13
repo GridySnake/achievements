@@ -59,6 +59,14 @@ class InfoGet:
         return language['language_native']
 
     @staticmethod
+    async def get_currencies(conn):
+        currencies = await conn.fetch(f"""
+                                    select currency_id, currency_symbol
+                                    from currencies
+                                    """)
+        return [dict(i) for i in currencies]
+
+    @staticmethod
     async def get_spheres(conn):
         spheres = await conn.fetch(f"""
                             select distinct sphere_id, sphere_name

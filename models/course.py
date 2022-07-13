@@ -107,6 +107,7 @@ class CoursesGetInfo:
                                                     left join spheres s on s.subsphere_id = any(c.subsphere_id)
                                                     group by c.course_id
                                                 ) as s on c.course_id = s.course_id
+                                       where {user_id} <> all(completed)
             """)
         return [dict(i) for i in courses]
 
@@ -136,6 +137,30 @@ class CoursesGetInfo:
                                             left join spheres s on s.subsphere_id = any(c.subsphere_id)
                                             group by c.course_id
                                            ) s on c.course_id = s.course_id
+                                    """)
+        return [dict(i) for i in courses]
+
+    @staticmethod
+    async def get_completed_courses(user_id: str, conn):
+        courses = await conn.fetch(f""" 
+                                        select c.course_id:: varchar, c.course_name, c.description, c.course_owner_id:: varchar, c.sphere_id,
+                                          c.online, c.free, c.new, c.course_owner_type,
+                                          ui.name, ui.surname, com.community_name, array_length(c.users, 1) as joined,
+                                          l.language_native, s.sphere_name, s.subsphere_name
+                                          from (select * from courses where {user_id} = any(completed)) as c
+                                       left join languages as l on l.language_id = c.language
+                                       left join users_information as ui on ui.user_id = c.course_owner_id
+                                          and c.course_owner_type = 0
+                                       left join communities as com on com.community_id = c.course_owner_id
+                                          and c.course_owner_type = 1
+                                        left join (
+                                            select c.course_id, array_agg(s.subsphere_name) as subsphere_name, 
+                                            array_agg(s.sphere_name) as sphere_name
+                                            from courses as c
+                                            left join spheres s on s.subsphere_id = any(c.subsphere_id)
+                                            group by c.course_id
+                                           ) s on c.course_id = s.course_id
+                                          
                                     """)
         return [dict(i) for i in courses]
 
@@ -418,11 +443,11 @@ class CourseCreate:
         await conn.execute(f"""
                                 insert into courses (course_id, course_owner_id, users, course_owner_type, 
                                 description, level, online, create_date, free, new, 
-                                language, course_name, image_id, sphere_id, subsphere_id)
+                                language, course_name, image_id, sphere_id, subsphere_id, completed)
                                 values ({course_id}, {user_id}, ARRAY []::integer[], {data['type']}, '{data['description']}',
                                 {data['level']}, {data['online']}, statement_timestamp(), {data['free']}, true,
                                 {data['language']}, '{data['course_name']}', {image_id}, array[{data['sphere']}],
-                                array[{data['select_subsphere']}])
+                                array[{data['select_subsphere']}], ARRAY[]::integer[])
                             """)
         await conn.execute(f"""
                                insert into chats (chat_id, chat_type, participants, owner_id) values(

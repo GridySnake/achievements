@@ -19,6 +19,8 @@ const CourseContainer = () => {
     const [conditions, setConditions] = useState(null);
     const [inCourse, setInCourse] = useState(null);
     const [membersAdd, setMembersAdd] = useState(null);
+    const [AddMembersAllow, setAddMembersAllow] = useState(null);
+    const [change, setChange] = useState(null);
     const {id} = useParams();
     const {pathname} = useLocation();
     const url = `/course/${id}`
@@ -28,15 +30,18 @@ const CourseContainer = () => {
             setGoals(Course.goals)
             setOwner(Course.owner)
             setParticipants(Course.participants)
-            if (owner) {
+            if (Course.owner) {
                 setSubscribers(Course.subscribers)
+                if (Course.subscribers) {
+                    setAddMembersAllow(true)
+                }
             }
             setConditions(Course.conditions)
             setInCourse(Course.in_course)
             setCourse(Course.course)
         }
         GetAnyInfo(CourseInfo, url)
-    }, [url])
+    }, [url, change])
 
     const CreatorName = () => {
         if (course.course_owner_type === 0) {
@@ -54,24 +59,28 @@ const CourseContainer = () => {
         }
     }
 
-    const AddMembers = () => {
-        return !!(owner && participants);
-    }
-
     const Learn = () => {
 
     }
 
     const Join = () => {
-        makeAction('/join_course', {'course_id': id})
+        makeAction('/join_course', {'course_id': id}, (value) => {
+            setChange(value)
+        }
+        )
     }
 
     const Leave = () => {
-        makeAction('/leave_course', {'course_id': id})
+        makeAction('/leave_course', {'course_id': id}, (value) => {
+            setChange(value)
+        }
+        )
     }
 
     const Add = () => {
-        makeAction('/add_course_member', {'course_id': id, 'users': membersAdd})
+        makeAction('/add_course_member', {'course_id': id, 'users': membersAdd}, (value) => {
+            setChange(value)
+        })
         setMembersAdd(null)
     }
 
@@ -85,11 +94,15 @@ const CourseContainer = () => {
                 </Descriptions>
                 <Popover content={
                     participants.map((participant) => {
-                        return(<a href={'/user/' + participant.user_id}><p>{participant.name + ' ' + participant.surname}</p></a>)
+                        return(<a href={'/user/' + participant.user_id} key={participant.user_id}><p key={participant.user_id}>{participant.name + ' ' + participant.surname}</p></a>)
                     })
                     } title="Participants" trigger="click">
                     <Button type="primary" title="Participants" icon={<UserOutlined />} >
-                        {course.joined}
+                        {course.joined ?
+                            course.joined
+                            :
+                            0
+                        }
                     </Button>
                 </Popover>
                 {inCourse ?
@@ -100,7 +113,7 @@ const CourseContainer = () => {
                     :
                     <Button type="primary" onClick={Join}>Join</Button>
                 }
-                {AddMembers ?
+                {AddMembersAllow ?
                     <Popover content={
                         <Form
                             labelCol={{

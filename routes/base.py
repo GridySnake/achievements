@@ -93,8 +93,8 @@ def setup_routes(app):
                          name='accept_invitation_community')
     app.router.add_route('POST', r'/decline_invitation_community/{i}', CommunitiesView.post,
                          name='decline_invitation_community')
-    app.router.add_route('POST', r'/accept_invitation_course/{i}', CoursesView.post, name='accept_invitation_course')
-    app.router.add_route('POST', r'/decline_invitation_course/{i}', CoursesView.post, name='decline_invitation_course')
+    app.router.add_route('POST', '/accept_invitation_course', accept_course, name='accept_invitation_course')
+    app.router.add_route('POST', '/decline_invitation_course', decline_course, name='decline_invitation_course')
     app.router.add_route('POST', '/remove_course_member', CourseInfoView.post, name='remove_course_member')
     app.router.add_route('POST', '/add_payment_goal', CommunitiesInfoView.post, name='add_payment_goal')
     app.router.add_route('POST', '/approve_conditions', ApproveConditionsView.post, name='approve_conditions')
