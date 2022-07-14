@@ -113,6 +113,7 @@ class CoursesGetInfo:
 
     @staticmethod
     async def get_own_courses(user_id: str, conn):
+        # todo разделить на свои и коммьюнити или добавить сюда комьюнити, тут только свои
         """
         :param conn:
         :param user_id: str
@@ -418,16 +419,7 @@ class CourseCreate:
         if no_image:
             image_id = 'null'
         else:
-            image_id = await conn.fetchrow("""select max(image_id) from images""")
-            image_id = dict(image_id)['max']
-            if image_id is None:
-                image_id = 0
-            else:
-                image_id += 1
-            await conn.execute(f"""
-                                   insert into images (image_id, image_type, create_date, href)
-                                   values ({image_id}, 'course', statement_timestamp(), '{data['avatar']}')
-                                """)
+            image_id = data['avatar']
         course_id = await conn.fetchrow("""select max(course_id) from courses""")
         course_id = dict(course_id)['max']
         if course_id is None:
@@ -445,9 +437,9 @@ class CourseCreate:
                                 description, level, online, create_date, free, new, 
                                 language, course_name, image_id, sphere_id, subsphere_id, completed)
                                 values ({course_id}, {user_id}, ARRAY []::integer[], {data['type']}, '{data['description']}',
-                                {data['level']}, {data['online']}, statement_timestamp(), {data['free']}, true,
-                                {data['language']}, '{data['course_name']}', {image_id}, array[{data['sphere']}],
-                                array[{data['select_subsphere']}], ARRAY[]::integer[])
+                                {data['level']}, {bool(data['online'])}, statement_timestamp(), {bool(data['free'])}, true,
+                                {data['language']}, '{data['name']}', {image_id}, array[{data['sphere']}],
+                                array[{data['subsphere']}], ARRAY[]::integer[])
                             """)
         await conn.execute(f"""
                                insert into chats (chat_id, chat_type, participants, owner_id) values(

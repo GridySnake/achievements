@@ -46,7 +46,7 @@ async def login(request):
         return json_response({"error": "User is not found"})
 
 
-async def upload(request):
+async def upload_group_avatar(request):
     try:
         data = await request.multipart()
         d = await data.next()
@@ -59,6 +59,18 @@ async def upload(request):
     async with pool.acquire() as conn:
         image_id = await Images.create_image(path=d.filename, image_type='group', conn=conn)
     return json_response({'image_id': image_id})
+
+
+async def remove_image(request):
+    data = await request.json()
+    pool = request.app['pool']
+    async with pool.acquire() as conn:
+        pathname = await Images.remove_image(data['image_id'], conn=conn)
+    is_removed = False
+    os.remove(BaseConfig.STATIC_DIR + '/' + pathname['directory'] + '/' + pathname['href'])
+    if os.path.exists(BaseConfig.STATIC_DIR + '/' + pathname['directory'] + '/' + pathname['href']) is False:
+        is_removed = True
+    return json_response({'response': is_removed})
 
 
 class Signup(web.View):

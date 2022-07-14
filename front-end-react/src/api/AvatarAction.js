@@ -11,9 +11,9 @@ const UploadAvatar = (url, data, callback) => {
     })
 }
 
-const UploadStatic = (file, config, callback) => {
+const UploadStatic = (file, config, url, callback) => {
     console.log(file)
-    axiosInstance.post('/upload_group_avatar', file, config)
+    axiosInstance.post(url, file, config)
     .then(({data})  => {
         callback(data.image_id)
     })
@@ -22,4 +22,14 @@ const UploadStatic = (file, config, callback) => {
     })
 }
 
-export {UploadStatic}
+const RemoveStaticImage = (image_id, callback) => {
+    axiosInstance.post('/remove_image', image_id)
+    .then(({data})  => {
+        callback(data.response)
+    })
+    .catch(({response}) => {
+        console.log(response);
+    })
+}
+
+export {UploadStatic, RemoveStaticImage}

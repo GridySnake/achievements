@@ -1,11 +1,14 @@
 import React, {useState, useEffect} from "react";
-import {Avatar, Button, List, Skeleton, Tabs, Rate, Popconfirm, Form, Input, Radio, Select} from "antd";
+import {Avatar, Button, List, Skeleton, Tabs, Rate, Popconfirm, Form, Input, Radio, Select, Upload} from "antd";
 import {GetAnyInfo, GetSubspheresBySphere, GetUsersByType} from "../../api/GeneralApi";
 import StaticAvatars from "../StaticRoutes";
 import makeAction from "../../api/PageActions";
 import {Option} from "antd/es/mentions";
-import type {RadioChangeEvent} from "antd";
-
+import type {RadioChangeEvent, UploadProps} from "antd";
+import {CreateCourse} from "../../api/SendForms";
+import {useNavigate} from "react-router";
+import {InboxOutlined} from "@ant-design/icons";
+import {RemoveStaticImage, UploadStatic} from "../../api/AvatarAction";
 const { TabPane } = Tabs;
 
 const CoursesContainer = () => {
@@ -28,9 +31,17 @@ const CoursesContainer = () => {
     const [studyType, setStudyType] = useState(null);
     const [userId, setUserId] = useState(null);
     const [users, setUsers] = useState(null);
+    const [avatar, setAvatar] = useState(null);
+    const [language, setLanguage] = useState(null);
+    const [languages, setLanguages] = useState(null);
+    const [level, setLevel] = useState(null);
     const [price, setPrice] = useState(null);
     const [currencies, setCurrencies] = useState(null);
     const [currency, setCurrency] = useState(null);
+    const [progress, setProgress] = useState(0);
+    const [remove, setRemove] = useState(null);
+
+    const navigate = useNavigate();
 
     const url = '/courses'
 
@@ -52,6 +63,12 @@ const CoursesContainer = () => {
         {label: 'Online', value: 1}
     ]
 
+    const radioOptionsLevel = [
+        {label: 'Beginner', value: 0},
+        {label: 'Intermediate', value: 1},
+        {label: 'Advanced', value: 2}
+    ]
+
     useEffect(() => {
         const CoursesInfo = (Course) => {
             setOwnCourses(Course.own_courses)
@@ -61,6 +78,7 @@ const CoursesContainer = () => {
             setRequests(Course.requests)
             setSpheres(Course.create.spheres)
             setCurrencies(Course.create.currencies)
+            setLanguages(Course.create.languages)
             setCourses(Course.sug_courses)
         }
         GetAnyInfo(CoursesInfo, url)
@@ -125,8 +143,19 @@ const CoursesContainer = () => {
         setStudyType(value);
     };
 
-    const CreateCourse = () => {
-        console.log(courseName, courseDescription, userType, userId, sphere, subsphere, paymentType, price, currency, studyType)
+    const RadioChangeLevel = ({target: {value}}: RadioChangeEvent) => {
+        setLevel(value);
+    };
+
+    const CreateCourses = () => {
+        const send = {'name': courseName, 'description':courseDescription, 'type': userType,
+            'user_id': userId, 'sphere': sphere, 'subsphere': subsphere, 'free': paymentType,
+            'price': price, 'currency': currency, 'online': studyType, 'avatar': avatar, 'language': language,
+            'level': level
+        }
+        CreateCourse(send, (data) => {
+            navigate(`/course/${data}`)
+        })
     }
 
     const Delete = (course_id) => {
@@ -136,7 +165,62 @@ const CoursesContainer = () => {
     const Learn = () => {
 
     }
-    console.log()
+
+    const uploadImage = async options => {
+        const {file, onProgress} = options;
+    }
+    //     const fmData = new FormData();
+    //     const config = {
+    //         headers: { "content-type": "multipart/form-data" },
+    //         onUploadProgress: event => {
+    //             const percent = Math.floor((event.loaded / event.total) * 100);
+    //             setProgress(percent);
+    //             if (percent === 100) {
+    //                 setTimeout(() => setProgress(0), 1000);
+    //             }
+    //             onProgress({ percent: (event.loaded / event.total) * 100 });
+    //         }
+    //     };
+    //     fmData.append("image", file);
+    //     UploadStatic(fmData, config, '/upload_course_avatar', (data) => {
+    //         setImage(data)
+    // })
+    // };
+
+    const RemoveImage = () => {
+
+    }
+
+    const props: UploadProps = {
+        name: 'file',
+        action: 'http://localhost:8082/upload_course_avatar',
+      onChange(info) {
+        const { status } = info.file;
+        if (status !== 'uploading') {
+          console.log(info.file, info.fileList);
+        }
+        if (status === 'done') {
+          setAvatar(info.file.response.image_id)
+        } else if (status === 'error') {
+          console.log(`${info.file.name} file upload failed.`);
+        }
+      },
+        onRemove(e) {
+            RemoveStaticImage({avatar}, (data) => {
+                setRemove(data)
+            })
+            console.log('Dropped files', e.dataTransfer.files);
+            },
+        progress: {
+            strokeColor: {
+              '0%': '#108ee9',
+              '100%': '#87d068',
+            },
+            strokeWidth: 3,
+            format: percent => percent && `${parseFloat(percent.toFixed(2))}%`,
+        },
+    };
+    console.log(remove)
 
     return (
         courses ?
@@ -290,6 +374,25 @@ const CoursesContainer = () => {
                     >
                         <Input />
                     </Form.Item>
+                    {/*<Form.Item label="Course avatar" name="dragger" valuePropName="fileList"*/}
+                    {/*           getValueFromEvent={e => setAvatar(e.target)} noStyle>*/}
+                    {/*    <Upload.Dragger name="files" customRequest={uploadImage} multiple={false} progress={progress}*/}
+                    {/*        onRemove={RemoveImage}>*/}
+                    {/*        <p className="ant-upload-drag-icon">*/}
+                    {/*            <InboxOutlined />*/}
+                    {/*        </p>*/}
+                    {/*    </Upload.Dragger>*/}
+                    {/*</Form.Item>*/}
+                    <Form.Item label="Course avatar" name="dragger"
+                               noStyle>
+                        <Upload.Dragger name="files" {...props}
+                            headers={{'Access-Control-Allow-Origin': '*'}} withCredentials={true} maxCount={1}>
+                            <p className="ant-upload-drag-icon">
+                                <InboxOutlined />
+                            </p>
+                        </Upload.Dragger>
+                    </Form.Item>
+
                     <Form.Item
                         label="Course creator type"
                         name="course_creator_type"
@@ -371,6 +474,41 @@ const CoursesContainer = () => {
                         <></>
                     }
                     <Form.Item
+                        label="Course language"
+                        name="course_language"
+                        rules={[
+                          {
+                            required: true,
+                            message: 'Course language is required',
+                          }
+                        ]}>
+                        <Select defaultValue={null} onChange={e => setLanguage(e)}>
+                            {languages.map((language) => {
+                                return (
+                                    <Option value={language.language_id}>{language.language_native}</Option>
+                                )
+                            })
+                            }
+                        </Select>
+                    </Form.Item>
+                    <Form.Item
+                        label="Course level"
+                        name="course_level"
+                        rules={[
+                          {
+                            required: true,
+                            message: 'Course level is required',
+                          }
+                        ]}>
+                        <Radio.Group
+                            options={radioOptionsLevel}
+                            onChange={RadioChangeLevel}
+                            value={null}
+                            optionType="button"
+                            buttonStyle="solid"
+                          />
+                    </Form.Item>
+                    <Form.Item
                         label="Course payment type"
                         name="course_payment_type"
                         rules={[
@@ -425,7 +563,7 @@ const CoursesContainer = () => {
                             buttonStyle="solid"
                           />
                     </Form.Item>
-                    <Button type="primary" onClick={CreateCourse}>Create Course</Button>
+                    <Button type="primary" onClick={CreateCourses}>Create Course</Button>
                 </Form>
             </TabPane>
         </Tabs>:

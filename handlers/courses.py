@@ -9,7 +9,9 @@ from models.goal import Goals
 from PIL import Image, ImageDraw
 from models.conditions import ConditionsGetInfo
 import json
+from config.common import BaseConfig
 from aiohttp.web import json_response
+from models.images import Images
 
 
 async def get_courses(request):
@@ -27,11 +29,13 @@ async def get_courses(request):
         communities = await CommunityGetInfo.get_user_owner_communities(user_id=user_id, conn=conn)
         spheres = await InfoGet.get_spheres(conn=conn)
         currencies = await InfoGet.get_currencies(conn=conn)
+        languages = await InfoGet.get_languages(conn=conn)
     # subspheres = await InfoGet.get_subspheres()
     # conditions = await InfoGet.get_conditions(owner_type=2)
     return json_response({'sug_courses': sug_courses, 'own_courses': own_courses, 'progress': my_courses,
                           'complete': completed_courses, 'assistant_courses': assis_course, 'requests': requests,
-                          'create': {'communities': communities, 'spheres': spheres, 'currencies': currencies}})
+                          'create': {'communities': communities, 'spheres': spheres, 'currencies': currencies,
+                                     'languages': languages}})
 
 
 async def get_course_info(request):
@@ -115,6 +119,37 @@ async def decline_course(request):
     async with pool.acquire() as conn:
         await CoursesAction.accept_decline_request(user_id=user_id, action=action, course_id=course_id, conn=conn)
     return json_response({'value': f'declined_{course_id}'})
+
+
+async def upload_course_avatar(request):
+    try:
+        data = await request.multipart()
+        d = await data.next()
+        with open(os.path.join(BaseConfig.STATIC_DIR + '/course_avatar/' + d.filename), 'wb') as f:
+            chunk = await d.read_chunk()
+            f.write(chunk)
+    except:
+        return json_response({'image_id': None})
+    pool = request.app['pool']
+    async with pool.acquire() as conn:
+        image_id = await Images.create_image(path=d.filename, image_type='course', conn=conn)
+    return json_response({'image_id': image_id})
+
+
+async def create_course(request):
+    data = await request.json()
+    if data['type'] == 0:
+        user_id = json.loads(request.cookies['user'])['user_id']
+    else:
+        user_id = data['user_id']
+    pool = request.app['pool']
+    print(data)
+    no_image = False
+    if data['avatar'] is None:
+        no_image = True
+    async with pool.acquire() as conn:
+        course_id = await CourseCreate.create_course(user_id=user_id, data=data, no_image=no_image, conn=conn)
+    return json_response({'course': course_id})
 
 
 class CoursesView(web.View):
