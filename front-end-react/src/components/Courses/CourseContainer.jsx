@@ -5,10 +5,12 @@ import StaticAvatars from "../StaticRoutes";
 import {useLocation, useParams} from "react-router-dom";
 import {UserOutlined} from "@ant-design/icons";
 import makeAction from "../../api/PageActions";
+import {useNavigate} from "react-router";
 const { Option } = Select;
 const {Title} = Typography;
 const { Meta } = Card;
 const { TabPane } = Tabs;
+
 
 const CourseContainer = () => {
     const [course, setCourse] = useState(null);
@@ -23,7 +25,10 @@ const CourseContainer = () => {
     const [change, setChange] = useState(null);
     const {id} = useParams();
     const {pathname} = useLocation();
+
     const url = `/course/${id}`
+
+    const navigate = useNavigate();
 
     useEffect(() => {
         const  CourseInfo = (Course) => {
@@ -60,7 +65,7 @@ const CourseContainer = () => {
     }
 
     const Learn = () => {
-
+        navigate(`/study_course/${pathname.split('/')[2]}`)
     }
 
     const Join = () => {

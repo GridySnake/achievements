@@ -63,9 +63,10 @@ async def upload_group_avatar(request):
 
 async def remove_image(request):
     data = await request.json()
+    image_id = data['avatar']['response']['image_id']
     pool = request.app['pool']
     async with pool.acquire() as conn:
-        pathname = await Images.remove_image(data['image_id'], conn=conn)
+        pathname = await Images.remove_image(image_id=image_id, conn=conn)
     is_removed = False
     os.remove(BaseConfig.STATIC_DIR + '/' + pathname['directory'] + '/' + pathname['href'])
     if os.path.exists(BaseConfig.STATIC_DIR + '/' + pathname['directory'] + '/' + pathname['href']) is False:

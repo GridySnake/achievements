@@ -553,7 +553,16 @@ class CourseContentModel:
                                        from courses_content
                                        where course_id = {course_id} and content_page = {page}
                                     """)
-        return content
+        return [dict(i) for i in content]
+
+    @staticmethod
+    async def course_content_table(course_id: str, conn):
+        content = await conn.fetch(f"""
+                                           select content_type, content_name, content_description, is_title, is_subtitle
+                                           from courses_content
+                                           where course_id = {course_id}
+                                        """)
+        return [dict(i) for i in content]
 
     @staticmethod
     async def course_content_navigation(course_id: str, conn):
@@ -563,7 +572,7 @@ class CourseContentModel:
                                         where course_id = {course_id}
                                         order by content_page
                                     """)
-        return content
+        return [dict(i) for i in content]
 
     @staticmethod
     async def course_create_content(course_id: str, content: dict, conn):

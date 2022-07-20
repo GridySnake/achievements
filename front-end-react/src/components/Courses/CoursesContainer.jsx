@@ -162,8 +162,8 @@ const CoursesContainer = () => {
 
     }
 
-    const Learn = () => {
-
+    const Learn = (course_id) => {
+        navigate(`/study_course/${course_id}`)
     }
 
     const uploadImage = async options => {
@@ -200,16 +200,16 @@ const CoursesContainer = () => {
           console.log(info.file, info.fileList);
         }
         if (status === 'done') {
-          setAvatar(info.file.response.image_id)
+          setAvatar(info.file)
         } else if (status === 'error') {
           console.log(`${info.file.name} file upload failed.`);
         }
       },
-        onRemove(e) {
+        onRemove() {
             RemoveStaticImage({avatar}, (data) => {
                 setRemove(data)
             })
-            console.log('Dropped files', e.dataTransfer.files);
+            console.log('Dropped files');
             },
         progress: {
             strokeColor: {

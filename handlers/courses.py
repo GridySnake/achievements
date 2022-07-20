@@ -152,6 +152,19 @@ async def create_course(request):
     return json_response({'course': course_id})
 
 
+async def course_content(request):
+    user_id = json.loads(request.cookies['user'])['user_id']
+    pool = request.app['pool']
+    course_id = str(request).split('/')[-1][:-2]
+    #page = str(self).split('/course_content/')[-1][:-2]
+    async with pool.acquire() as conn:
+        count = await CourseContentModel.count_course_content(course_id=course_id, conn=conn)
+        content_table = await CourseContentModel.course_content_table(course_id=course_id, conn=conn)
+        navigation = await CourseContentModel.course_content_navigation(course_id=course_id, conn=conn)
+    return json_response({'count': count, 'content': content_table, 'navigation': navigation,
+                          'course_id': course_id})
+
+
 class CoursesView(web.View):
 
     @aiohttp_jinja2.template('courses.html')
