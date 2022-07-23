@@ -156,13 +156,20 @@ async def course_content(request):
     user_id = json.loads(request.cookies['user'])['user_id']
     pool = request.app['pool']
     course_id = str(request).split('/')[-1][:-2]
-    #page = str(self).split('/course_content/')[-1][:-2]
     async with pool.acquire() as conn:
-        count = await CourseContentModel.count_course_content(course_id=course_id, conn=conn)
-        content_table = await CourseContentModel.course_content_table(course_id=course_id, conn=conn)
+        # count = await CourseContentModel.count_course_content(course_id=course_id, conn=conn)
+        # content_table = await CourseContentModel.course_content_table(course_id=course_id, conn=conn)
         navigation = await CourseContentModel.course_content_navigation(course_id=course_id, conn=conn)
-    return json_response({'count': count, 'content': content_table, 'navigation': navigation,
-                          'course_id': course_id})
+    return json_response({'navigation': navigation})
+
+
+async def course_content_task(request):
+    pool = request.app['pool']
+    course_id = str(request).split('/')[-3]
+    page = str(request).split('/')[-1][:-2]
+    async with pool.acquire() as conn:
+        content = await CourseContentModel.course_content_page(course_id=course_id, page=page, conn=conn)
+    return json_response({'content': content})
 
 
 class CoursesView(web.View):

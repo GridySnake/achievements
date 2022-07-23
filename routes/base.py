@@ -118,6 +118,7 @@ def setup_routes(app):
     app.router.add_route('POST', '/upload_course_avatar', upload_course_avatar)
     app.router.add_route('POST', '/remove_image', remove_image)
     app.router.add_route('GET', r'/study_course/{i}', course_content)
+    app.router.add_route('GET', r'/study_course/{i}/task/{j}', course_content_task)
 
     setup_swagger(app)
 

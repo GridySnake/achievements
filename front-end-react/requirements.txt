@@ -7,3 +7,5 @@ react-slick
 slick-carousel
 moment
 react-yandex-maps
+react-player
+react-doc-viewer

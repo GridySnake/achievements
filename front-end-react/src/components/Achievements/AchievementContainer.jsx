@@ -6,7 +6,7 @@ import StaticQR from "../StaticRoutes";
 import makeAction from "../../api/PageActions";
 import {useNavigate} from "react-router";
 import {Option} from "antd/es/mentions";
-import { YMaps, Map, Placemark } from "react-yandex-maps";
+// import { YMaps, Map, Placemark } from "react-yandex-maps";
 import { Image } from 'antd';
 import {useLocation} from "react-router-dom";
 import { Descriptions } from 'antd';
@@ -110,15 +110,16 @@ const AchievementContainer = () => {
                     <></>
                 }
                 {geo ?
-                    <YMaps>
-                        <div>
-                            <Map defaultState={{center: geo[0], zoom: 12}}>
-                                <Placemark
-                                    geometry={geo[0]}
-                                />
-                            </Map>
-                        </div>
-                    </YMaps>
+                    <></>
+                    // <YMaps>
+                    //     <div>
+                    //         <Map defaultState={{center: geo[0], zoom: 12}}>
+                    //             <Placemark
+                    //                 geometry={geo[0]}
+                    //             />
+                    //         </Map>
+                    //     </div>
+                    // </YMaps>
                     :
                     <></>
                 }
