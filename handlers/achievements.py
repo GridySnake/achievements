@@ -187,7 +187,7 @@ async def create_achievement(request):
         data['test_url'] = 'null'
         data['answers_url'] = 'null'
     if data['select_group'] == 1:
-        token = hashlib.sha256(data['name'] + '_' + data['value'].replace(' ', '_').lower().encode('utf8')).hexdigest()
+        token = hashlib.sha256(data['name'].replace(' ', '_') + '_' + data['value'].replace(' ', '_').lower().encode('utf8')).hexdigest()
         img = qrcode.make(f"http://localhost:8080/verify_achievement/{token}")
         img.save(f'{str(BaseConfig.STATIC_DIR) + "/QR/" + str(token)}.png')
         data['achievement_qr'] = str(token)
