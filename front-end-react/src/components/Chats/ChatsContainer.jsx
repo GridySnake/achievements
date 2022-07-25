@@ -5,7 +5,7 @@ import { PlusOutlined, InboxOutlined } from '@ant-design/icons';
 import StaticAvatars from "../StaticRoutes";
 import {useNavigate} from "react-router";
 import {CreateGroupChat} from "../../api/SendForms";
-import {UploadStatic} from "../../api/Uploads";
+import {UploadStatic} from "../../api/AvatarAction";
 
 const { TabPane } = Tabs;
 
@@ -146,7 +146,7 @@ const ChatsContainer = () => {
       }
     };
     fmData.append("image", file);
-    UploadStatic(fmData, config, (data) => {
+    UploadStatic(fmData, config, '/upload_group_avatar', (data) => {
         setImage(data)
     })
   };
@@ -199,7 +199,7 @@ const ChatsContainer = () => {
                     New chat
                 </Button>
                 <Drawer
-                    title="Create a new account"
+                    title="Create a new chat"
                     width={720}
                     onClose={() => onClose()}
                     visible={visible}

@@ -1,8 +1,8 @@
 import axiosInstance from "./APIClient";
 
 
-const makeAction = (url, owner, callback) => {
-    axiosInstance.post(url, owner)
+const makeAction = (url, parameter, callback) => {
+    axiosInstance.post(url, parameter)
     .then(({data}) => {
         callback(data.value)
         console.log(data.value);

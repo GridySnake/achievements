@@ -11,6 +11,8 @@ import AchievementsContainer from "./Achievements/AchievementsContainer";
 import AchievementContainer from "./Achievements/AchievementContainer";
 import CoursesContainer from "./Courses/CoursesContainer";
 import CourseContainer from "./Courses/CourseContainer";
+import CourseContentTableContainer from "./Courses/CourseContentTableContainer";
+import CourseContentTaskContainer from "./Courses/CourseContentTaskContainer";
 
 // auth? <navbar + all> : <login + signup>
 const FrontRoutes = () => {
@@ -32,6 +34,8 @@ const FrontRoutes = () => {
                     <Route path="/communities" key="communities" element={<CommunitiesContainer/>}/>
                     <Route path="/courses" key="courses" element={<CoursesContainer/>}/>
                     <Route path="/course/:id" key="course:id" element={<CourseContainer/>}/>
+                    <Route path="/study_course/:id" key="study_course:id" element={<CourseContentTableContainer/>}/>
+                    <Route path="/study_course/:id/task/:task_id" key="study_course:id_task:task_id" element={<CourseContentTaskContainer/>}/>
                     <Route path="/goals"/>
                 </Routes>
             </Router>

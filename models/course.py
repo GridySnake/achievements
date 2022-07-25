@@ -107,11 +107,13 @@ class CoursesGetInfo:
                                                     left join spheres s on s.subsphere_id = any(c.subsphere_id)
                                                     group by c.course_id
                                                 ) as s on c.course_id = s.course_id
+                                       where {user_id} <> all(completed)
             """)
         return [dict(i) for i in courses]
 
     @staticmethod
     async def get_own_courses(user_id: str, conn):
+        # todo разделить на свои и коммьюнити или добавить сюда комьюнити, тут только свои
         """
         :param conn:
         :param user_id: str
@@ -136,6 +138,30 @@ class CoursesGetInfo:
                                             left join spheres s on s.subsphere_id = any(c.subsphere_id)
                                             group by c.course_id
                                            ) s on c.course_id = s.course_id
+                                    """)
+        return [dict(i) for i in courses]
+
+    @staticmethod
+    async def get_completed_courses(user_id: str, conn):
+        courses = await conn.fetch(f""" 
+                                        select c.course_id:: varchar, c.course_name, c.description, c.course_owner_id:: varchar, c.sphere_id,
+                                          c.online, c.free, c.new, c.course_owner_type,
+                                          ui.name, ui.surname, com.community_name, array_length(c.users, 1) as joined,
+                                          l.language_native, s.sphere_name, s.subsphere_name
+                                          from (select * from courses where {user_id} = any(completed)) as c
+                                       left join languages as l on l.language_id = c.language
+                                       left join users_information as ui on ui.user_id = c.course_owner_id
+                                          and c.course_owner_type = 0
+                                       left join communities as com on com.community_id = c.course_owner_id
+                                          and c.course_owner_type = 1
+                                        left join (
+                                            select c.course_id, array_agg(s.subsphere_name) as subsphere_name, 
+                                            array_agg(s.sphere_name) as sphere_name
+                                            from courses as c
+                                            left join spheres s on s.subsphere_id = any(c.subsphere_id)
+                                            group by c.course_id
+                                           ) s on c.course_id = s.course_id
+                                          
                                     """)
         return [dict(i) for i in courses]
 
@@ -334,8 +360,8 @@ class CoursesAction:
     async def add_member(course_id: str, users: list, status: list, conn):
         await conn.execute(f"""
                                 update courses
-                                    set requests = array_cat(requests, array[{users}]),
-                                        request_statuses = array_cat(request_statuses, array[{status}])
+                                    set requests = array_cat(requests, array[{','.join(users)}]),
+                                        request_statuses = array_cat(request_statuses, array[{','.join(status)}])
                                 where course_id = {course_id}
                             """)
 
@@ -393,16 +419,7 @@ class CourseCreate:
         if no_image:
             image_id = 'null'
         else:
-            image_id = await conn.fetchrow("""select max(image_id) from images""")
-            image_id = dict(image_id)['max']
-            if image_id is None:
-                image_id = 0
-            else:
-                image_id += 1
-            await conn.execute(f"""
-                                   insert into images (image_id, image_type, create_date, href)
-                                   values ({image_id}, 'course', statement_timestamp(), '{data['avatar']}')
-                                """)
+            image_id = data['avatar']
         course_id = await conn.fetchrow("""select max(course_id) from courses""")
         course_id = dict(course_id)['max']
         if course_id is None:
@@ -418,11 +435,11 @@ class CourseCreate:
         await conn.execute(f"""
                                 insert into courses (course_id, course_owner_id, users, course_owner_type, 
                                 description, level, online, create_date, free, new, 
-                                language, course_name, image_id, sphere_id, subsphere_id)
+                                language, course_name, image_id, sphere_id, subsphere_id, completed)
                                 values ({course_id}, {user_id}, ARRAY []::integer[], {data['type']}, '{data['description']}',
-                                {data['level']}, {data['online']}, statement_timestamp(), {data['free']}, true,
-                                {data['language']}, '{data['course_name']}', {image_id}, array[{data['sphere']}],
-                                array[{data['select_subsphere']}])
+                                {data['level']}, {bool(data['online'])}, statement_timestamp(), {bool(data['free'])}, true,
+                                {data['language']}, '{data['name']}', {image_id}, array[{data['sphere']}],
+                                array[{data['subsphere']}], ARRAY[]::integer[])
                             """)
         await conn.execute(f"""
                                insert into chats (chat_id, chat_type, participants, owner_id) values(
@@ -520,33 +537,43 @@ class CourseCreate:
 
 
 class CourseContentModel:
-    @staticmethod
-    async def count_course_content(course_id: str, conn):
-        content = await conn.fetchrow(f"""
-                                        select count(content_id)
-                                        from courses_content
-                                        where course_id = {course_id}
-                                    """)
-        return content['count']
+    # @staticmethod
+    # async def count_course_content(course_id: str, conn):
+    #     content = await conn.fetchrow(f"""
+    #                                     select count(content_id)
+    #                                     from courses_content
+    #                                     where course_id = {course_id}
+    #                                 """)
+    #     return content['count']
 
-    @staticmethod
-    async def course_content_page(course_id: str, page: str, conn):
-        content = await conn.fetchrow(f"""
-                                       select content_type, content_name, content_description, content_path
-                                       from courses_content
-                                       where course_id = {course_id} and content_page = {page}
-                                    """)
-        return content
+    # @staticmethod
+    # async def course_content_table(course_id: str, conn):
+    #     content = await conn.fetch(f"""
+    #                                        select content_type, content_name, content_description, title, subtitle
+    #                                        from courses_content
+    #                                        where course_id = {course_id}
+    #                                     """)
+    #     return [dict(i) for i in content]
 
     @staticmethod
     async def course_content_navigation(course_id: str, conn):
         content = await conn.fetch(f"""
-                                        select content_name, is_title, is_subtitle, content_page
+                                        select title, subtitle, content_name, content_page
                                         from courses_content
                                         where course_id = {course_id}
                                         order by content_page
                                     """)
-        return content
+        return [dict(i) for i in content]
+
+    @staticmethod
+    async def course_content_page(course_id: str, page: str, conn):
+        content = await conn.fetchrow(f"""
+                                            select title, subtitle, content_name, content_description, content_path,
+                                                content_type
+                                            from courses_content
+                                            where course_id = {course_id} and content_page = {page}
+                                        """)
+        return dict(content)
 
     @staticmethod
     async def course_create_content(course_id: str, content: dict, conn):
@@ -560,7 +587,7 @@ class CourseContentModel:
             content_id += 1
             await conn.execute(f"""
                                    insert into courses_content (content_id, content_name, content_description, 
-                                       content_type, content_path, is_title, is_subtitle, course_id, content_page) 
+                                       content_type, content_path, title, subtitle, course_id, content_page) 
                                        values({content_id}, '{content['name'][i]}', '{content['description'][i]}', 
                                        '{content_type_dict[content['type'][i]]}', '{content['path'][i]}', 
                                        {content['chapter'][i]}, {content['subchapter'][i]}, {course_id}, 

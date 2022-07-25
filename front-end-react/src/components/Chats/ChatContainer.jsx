@@ -26,7 +26,7 @@ const ChatContainer = () => {
     const [Update, setUpdate] = useState(false);
     const [Owner, setOwner] = useState(false);
     const [User, setUser] = useState(null);
-    const [Sender, setSender] = useState(null);
+    const [Sender, setSender] = useState(0);
     const navigate = useNavigate();
     const avatarPath = {0: StaticAvatars.StaticAvatars, 1: StaticAvatars.StaticGroupAvatars,
         2: StaticAvatars.StaticCommunityAvatars, 3: StaticAvatars.StaticCourseAvatars}
@@ -167,7 +167,7 @@ const ChatContainer = () => {
         if (Info.chat_type >= 2) {
             if (Owner) {
                 return (
-                    <Select defaultValue={0} onChange={e => setSender(e)}>
+                    <Select onChange={e => setSender(e)}>
                         <Option value={Info.chat_type-1}><Avatar src={avatarPath[Info.chat_type] + Info.href}/></Option>
                         <Option value={0}><Avatar src={StaticAvatars.StaticAvatars + User.href}/></Option>
                     </Select>

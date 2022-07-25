@@ -22,6 +22,7 @@ async def send_message(request):
     data = await request.json()
     from_type = data['sender_type']
     pool = request.app['pool']
+    print(data)
     if from_type == 0:
         from_user = json.loads(request.cookies['user'])['user_id']
     else:

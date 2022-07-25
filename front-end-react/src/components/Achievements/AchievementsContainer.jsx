@@ -79,7 +79,6 @@ const AchievementsContainer = () => {
     }
 
     const Show = (item) => {
-        console.log(item)
         makeAction('/show_achievement', {'achievement_id': item, 'user_type': 0}, (value) => {
             setGet(value)
         })
@@ -183,8 +182,6 @@ const AchievementsContainer = () => {
             navigate(`/achievement/${data}`)
         })
     };
-
-    console.log(coords)
 
     return (
         ToCreate?

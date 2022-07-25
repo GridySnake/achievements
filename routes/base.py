@@ -30,7 +30,7 @@ def setup_routes(app):
     app.router.add_route('POST', '/send_message', send_message, name='send_message')
     app.router.add_route('GET', '/my_subscribes', MySubscribesView.get, name='my_subscribes')
     app.router.add_route('GET', '/achievements', get_achievements, name='achievements')
-    app.router.add_route('POST', '/add_achievement', create_achievement, name='add_achievement')
+    app.router.add_route('POST', '/create_achievement', create_achievement, name='add_achievement')
     app.router.add_route('POST', '/user_info', change_user_info, name='user_info')
     app.router.add_route('GET', '/user_info', get_user_info, name='user_info')
     app.router.add_route('GET', r'/get_cities_by_country/{i}', get_cities_by_country, name='get_cities_by_country')
@@ -80,8 +80,10 @@ def setup_routes(app):
     app.router.add_route('GET', r'/community/{i}', CommunitiesInfoView.get, name='community_info')
     app.router.add_route('GET', r'/community/{i}/cover_letter_interview', ApproveConditionsView.get,
                          name='cover_letter_interview_community')
-    app.router.add_route('POST', '/course_action', CourseInfoView.post, name='course_action')
-    app.router.add_route('POST', '/create_course', CoursesView.post, name='create_course')
+    app.router.add_route('POST', '/join_course', join_course, name='join_course')
+    app.router.add_route('POST', '/leave_course', leave_course, name='leave_course')
+    app.router.add_route('POST', '/add_course_member', add_course_member, name='add_course_member')
+    app.router.add_route('POST', '/create_course', create_course, name='create_course')
     app.router.add_route('GET', r'/course/{i}', get_course_info, name='course')
     app.router.add_route('GET', r'/course/{i}/cover_letter_interview', ApproveConditionsView.get,
                          name='cover_letter_interview_course')
@@ -91,9 +93,8 @@ def setup_routes(app):
                          name='accept_invitation_community')
     app.router.add_route('POST', r'/decline_invitation_community/{i}', CommunitiesView.post,
                          name='decline_invitation_community')
-    app.router.add_route('POST', r'/accept_invitation_course/{i}', CoursesView.post, name='accept_invitation_course')
-    app.router.add_route('POST', r'/decline_invitation_course/{i}', CoursesView.post, name='decline_invitation_course')
-    app.router.add_route('POST', '/add_course_member', CourseInfoView.post, name='add_course_member')
+    app.router.add_route('POST', '/accept_invitation_course', accept_course, name='accept_invitation_course')
+    app.router.add_route('POST', '/decline_invitation_course', decline_course, name='decline_invitation_course')
     app.router.add_route('POST', '/remove_course_member', CourseInfoView.post, name='remove_course_member')
     app.router.add_route('POST', '/add_payment_goal', CommunitiesInfoView.post, name='add_payment_goal')
     app.router.add_route('POST', '/approve_conditions', ApproveConditionsView.post, name='approve_conditions')
@@ -113,7 +114,11 @@ def setup_routes(app):
                          name='cover_letter_interview_user')
     app.router.add_route('GET', '/communities', communities_page, name='communities_page')
     app.router.add_route('GET', '/auth', auth)
-    app.router.add_route('POST', '/upload_group_avatar', upload)
+    app.router.add_route('POST', '/upload_group_avatar', upload_group_avatar)
+    app.router.add_route('POST', '/upload_course_avatar', upload_course_avatar)
+    app.router.add_route('POST', '/remove_image', remove_image)
+    app.router.add_route('GET', r'/study_course/{i}', course_content)
+    app.router.add_route('GET', r'/study_course/{i}/task/{j}', course_content_task)
 
     setup_swagger(app)
 

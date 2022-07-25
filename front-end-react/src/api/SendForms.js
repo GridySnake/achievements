@@ -51,7 +51,7 @@ const ChangeUserSettings = (data, callback) => {
 };
 
 const CreateAchievement = (data, callback) => {
-    axiosInstance.post('/add_achievement', data)
+    axiosInstance.post('/create_achievement', data)
     .then(({data}) => {
         callback(data.achievement)
     })
@@ -60,4 +60,15 @@ const CreateAchievement = (data, callback) => {
     })
 };
 
-export {SendMessage, CreateGroupChat, AddChatMembers, RemoveChatMembers, ChangeUserSettings, CreateAchievement};
+const CreateCourse = (data, callback) => {
+    axiosInstance.post('/create_course', data)
+    .then(({data}) => {
+        callback(data.course)
+    })
+    .catch(({response}) => {
+        console.log(response);
+    })
+};
+
+export {SendMessage, CreateGroupChat, AddChatMembers, RemoveChatMembers, ChangeUserSettings, CreateAchievement,
+    CreateCourse};
