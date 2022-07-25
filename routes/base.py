@@ -111,7 +111,7 @@ def setup_routes(app):
     app.router.add_route('GET', r'/user/{i}', personal_page, name='personal_page')
     app.router.add_route('GET', r'/user/{i}/cover_letter_interview', ApproveConditionsView.get,
                          name='cover_letter_interview_user')
-    app.router.add_route('GET', '/communities', community_page, name='community_page')
+    app.router.add_route('GET', '/communities', communities_page, name='communities_page')
     app.router.add_route('GET', '/auth', auth)
     app.router.add_route('POST', '/upload_group_avatar', upload)
 

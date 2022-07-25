@@ -14,7 +14,7 @@ from models.conditions import ConditionsGetInfo
 from aiohttp.web import json_response
 
 
-async def community_page(request):
+async def communities_page(request):
     pool = request.app['pool']
     async with pool.acquire() as conn:
         conditions = await CommunityGetInfo.get_generate_conditions(conn=conn)
@@ -37,6 +37,79 @@ async def community_page(request):
                           # 'subspheres': subspheres,
                           # 'communities_recommend': communities_recommend,
                           # 'conditions_tj': conditions_to_join})
+
+
+async def community_page(request):
+    community_id = str(request).split('/')[-1][:-2]
+    pool = request.app['pool']
+    user_id = json.loads(request.cookies['user'])['user_id']
+    async with pool.acquire() as conn:
+        community = await CommunityGetInfo.get_community_info(community_id=community_id,
+                                                              conn=conn)
+        access = False
+        participants = await CommunityGetInfo.get_community_participants(community_id=community_id,
+                                                                         conn=conn)
+        participants_for_remove = None
+        subscribers = None
+        goals = await Goals.get_goals(user_id=community_id, user_type=1, conn=conn)
+        payment_goals = await CommunityWalletGoal.get_payment_goal(community_id=community_id,
+                                                                   conn=conn)
+        wallets = await Wallet.get_wallet(community_id=community_id,
+                                          conn=conn)
+        owner = await CommunityGetInfo.is_owner(user_id=user_id,
+                                                community_id=community_id,
+                                                conn=conn)
+        owners = await CommunityGetInfo.get_community_owners(community_id=community_id,
+                                                             conn=conn)
+        if owner:
+            access = True
+            conditions = False
+            is_in_community = True
+            allow = True
+            subscribers = await SubscribesGetInfo.get_user_subscribes_names(user_id=user_id,
+                                                                            conn=conn)
+            participants_for_remove = [i for i in participants if i['user_id'] != user_id]
+        else:
+            is_in_community = await CommunityGetInfo.user_in_community(community_id=community_id,
+                                                                       user_id=user_id,
+                                                                       conn=conn)
+            allow = True
+            conditions = False
+            if not is_in_community:
+                can_join = await ConditionsGetInfo.is_allowed_communicate_by_conditions(user_active_id=user_id,
+                                                                                        user_passive_id=community_id,
+                                                                                        owner_table=
+                                                                                        'communities',
+                                                                                        owner_column='community_id',
+                                                                                        conn=conn)
+                if not can_join:
+                    conditions = await CommunityGetInfo.get_community_conditions(user_id=user_id,
+                                                                                 community_id=community_id,
+                                                                                 conn=conn)
+                    allow = False
+
+        like, recommend, dislike = await LikesRecommendationsGetInfo.is_like_recommend(user_id=user_id, user_type=0,
+                                                                                       owner_id=community_id,
+                                                                                       owner_type=1,
+                                                                                       conn=conn)
+        return json_response({'community': community,
+                              'owners': owners,
+                              'access': access,
+                              'in_community': is_in_community,
+                              'subscribers': subscribers,
+                              'participants': participants,
+                              'participants_for_remove': participants_for_remove,
+                              'dislike': dislike,
+                              'goals': goals,
+                              'payment_goals': payment_goals,
+                              'wallets': wallets,
+                              'like': like,
+                              'recommend': recommend,
+                              'conditions': conditions,
+                              'allow': allow})
+
+
+
 
 
 class CommunitiesView(web.View):
@@ -153,9 +226,15 @@ class CommunitiesInfoView(web.View):
         like, recommend, dislike = await LikesRecommendationsGetInfo.is_like_recommend(user_id=user_id, user_type=0,
                                                                                        owner_id=community_id,
                                                                                        owner_type=1)
-        return dict(community=community, access=access, in_community=is_in_community, subscribers=subscribers,
-                    participants=participants, participants_for_remove=participants_for_remove, dislike=dislike,
-                    goals=goals, payment_goals=payment_goals, wallets=wallets, like=like, recommend=recommend,
+        return dict(community=community, access=access,
+                    in_community=is_in_community,
+                    subscribers=subscribers,
+                    participants=participants,
+                    participants_for_remove=participants_for_remove,
+                    dislike=dislike,
+                    goals=goals,
+                    payment_goals=payment_goals,
+                    wallets=wallets, like=like, recommend=recommend,
                     conditions=conditions, allow=allow)
 
     async def post(self):
