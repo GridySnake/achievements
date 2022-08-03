@@ -116,7 +116,9 @@ def setup_routes(app):
     app.router.add_route('GET', '/auth', auth)
     app.router.add_route('POST', '/upload_group_avatar', upload_group_avatar)
     app.router.add_route('POST', '/upload_course_avatar', upload_course_avatar)
+    app.router.add_route('POST', r'/upload_course_content/course_{i}', upload_course_content)
     app.router.add_route('POST', '/remove_image', remove_image)
+    app.router.add_route('POST', '/remove_image_course_content', remove_image_course_content)
     app.router.add_route('GET', r'/study_course/{i}', course_content)
     app.router.add_route('GET', r'/study_course/{i}/task/{j}', course_content_task)
 

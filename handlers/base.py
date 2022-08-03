@@ -63,13 +63,30 @@ async def upload_group_avatar(request):
 
 async def remove_image(request):
     data = await request.json()
-    image_id = data['avatar']['response']['image_id']
+    image_id = data['image_id']
     pool = request.app['pool']
     async with pool.acquire() as conn:
         pathname = await Images.remove_image(image_id=image_id, conn=conn)
     is_removed = False
     os.remove(BaseConfig.STATIC_DIR + '/' + pathname['directory'] + '/' + pathname['href'])
     if os.path.exists(BaseConfig.STATIC_DIR + '/' + pathname['directory'] + '/' + pathname['href']) is False:
+        is_removed = True
+    return json_response({'response': is_removed})
+
+
+async def remove_image_course_content(request):
+    data = await request.json()
+    print(data)
+    image_id = data['image_id']
+    course_id = data['id']
+    pool = request.app['pool']
+    async with pool.acquire() as conn:
+        pathname = await Images.remove_image(image_id=int(image_id), conn=conn)
+    is_removed = False
+    print(BaseConfig.STATIC_DIR + '/' + pathname['directory'] + '/' + f'course_{course_id}' + '/' + pathname['href'])
+    os.remove(BaseConfig.STATIC_DIR + '/' + pathname['directory'] + '/' + f'course_{course_id}' + '/' + pathname['href'])
+    if os.path.exists(BaseConfig.STATIC_DIR + '/' + pathname['directory'] + f'course_{course_id}' + '/' + '/'
+                      + pathname['href']) is False:
         is_removed = True
     return json_response({'response': is_removed})
 
