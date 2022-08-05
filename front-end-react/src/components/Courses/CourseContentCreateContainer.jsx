@@ -50,91 +50,90 @@ const CourseContentCreateContainer =() => {
     const [data, setData] = useState([
   {
     key: 0,
-    name: <Input type='text'/>,
-    age: 32,
-    address: (<Upload.Dragger name="files" {...props}
-                              headers={{'Access-Control-Allow-Origin': '*'}} withCredentials={true} maxCount={1}/>)
+    title: <Input type='text'/>,
+    description: <Input type='text'/>,
+    content: (<Upload.Dragger name="files" {...props}
+                              headers={{'Access-Control-Allow-Origin': '*'}} withCredentials={true} maxCount={1}/>),
+      chapter: <Input type='text'/>,
+      subchapter: <Input type='text'/>
   }
 ]);
-
+const Delete = (e) => {
+    console.log(e)
+    // console.log(e.nativeEvent.path[3].attributes[0].value)
+    const rowKey = parseInt(e.nativeEvent.path[3].attributes[0].value)
+    for (let value of data) {
+        if (value.key === rowKey) {
+            console.log(rowKey)
+            if (data.indexOf(value) === data.length - 1) {
+                console.log(data.pop())
+            } else {
+                console.log(data.splice(data.indexOf(value), 1))
+            }
+        }
+    }
+    }
     console.log(remove)
     const columns = [
   {
-    title: "Name",
-    dataIndex: "name",
-    key: "name",
+    title: "Title",
+    dataIndex: "title",
+    key: "title",
     render: (text) => <a>{text}</a>
   },
   {
-    title: "Age",
-    dataIndex: "age",
-    key: "age"
+    title: "Description",
+    dataIndex: "description",
+    key: "description",
+      render: () => (<Input type="text"/>
+      )
   },
   {
-    title: "Address",
-    dataIndex: "address",
-    key: "address",
+    title: "Content",
+    dataIndex: "content",
+    key: "content",
       render: () =>
           (<Upload.Dragger name="files" {...props}
                             headers={{'Access-Control-Allow-Origin': '*'}} withCredentials={true} maxCount={1}/>)
   },
   {
-    title: "Tags",
-    key: "tags",
-    dataIndex: "tags",
-      render: () =>
-          (<Input type="text"/>
+    title: "Chapter",
+    key: "chapter",
+    dataIndex: "chapter",
+      render: () => (<Input type="text"/>
       )
   },
   {
-    title: "Action",
-    key: "action",
-    render: (text, record) => (
-      <Space size="middle">
-        <a>Invite {record.name}</a>
-        <a>Delete</a>
-      </Space>
+    title: "Subchapter",
+    key: "subchapter",
+      dataIndex: "subchapter",
+    render: () => (<Input type="text"/>
+    )
+  },
+  {
+    title: "Delete",
+    key: "delete",
+      dataIndex: "delete",
+    render: () => (<Button onClick={e => Delete(e)}>Delete</Button>
     )
   }
 ];
 
 
+
 const rowRef = useRef(null);
-
-
-// const data = [
-//   {
-//     key: "1",
-//     name: "John Brown",
-//     age: 32,
-//     address: "New York No. 1 Lake Park",
-//     tags: ["nice", "developer"]
-//   },
-//   {
-//     key: "2",
-//     name: "Jim Green",
-//     age: 42,
-//     address: "London No. 1 Lake Park",
-//     tags: ["loser"]
-//   },
-//   {
-//     key: "3",
-//     name: "Joe Black",
-//     age: 32,
-//     address: "Sidney No. 1 Lake Park",
-//     tags: ["cool", "teacher"]
-//   }
-// ]
 
 console.log(data)
 const addRow = () => {
     const newData = {
     key: count+1,
-    name: <Input type="text"/>,
-    age: 31,
-    address: (<Upload.Dragger name="files" {...props}
+    title: <Input type="text"/>,
+    description: <Input type="text"/>,
+    content: (<Upload.Dragger name="files" {...props}
                             headers={{'Access-Control-Allow-Origin': '*'}} withCredentials={true} maxCount={1}/>),
-    tags: ["cool", "teacher1"]
+    chapter: <Input type="text"/>,
+        subchapter: <Input type="text"/>,
+        delete: <Button onClick={e => Delete(e)}>Delete</Button>
   }
     setData((pre) => {
       return [...pre, newData];
