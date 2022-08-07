@@ -16,6 +16,7 @@ from models.images import Images
 async def auth(request):
     user = request.cookies['user']
     payload = json.loads(user)
+    print(payload)
     return json_response(payload)
 
 

@@ -175,7 +175,7 @@ async def create_achievement(request):
     elif data['dates'][0] is None and data['dates'][1] is not None:
         [data['from_date'], data['to_date']] = ['null', data['dates'][1].split('T')[0]]
     else:
-        [data['from_date'], data['to_date']] = [None, None]
+        [data['from_date'], data['to_date']] = ['null', 'null']
     async with pool.acquire() as conn:
         data['select_group'], data['select_aggregation'] = \
             await InfoGet.get_conditions_by_parameter(data['select_parameter'], conn=conn)
@@ -187,9 +187,11 @@ async def create_achievement(request):
         data['test_url'] = 'null'
         data['answers_url'] = 'null'
     if data['select_group'] == 1:
-        token = hashlib.sha256(data['name'].replace(' ', '_') + '_' + data['value'].replace(' ', '_').lower().encode('utf8')).hexdigest()
-        img = qrcode.make(f"http://localhost:8080/verify_achievement/{token}")
-        img.save(f'{str(BaseConfig.STATIC_DIR) + "/QR/" + str(token)}.png')
+
+        token = hashlib.sha256(str(data['name'].replace(' ', '_').lower() +
+                                   '_' + data['value'].replace(' ', '_').lower()).encode('utf8')).hexdigest()
+        img = qrcode.make(f"http://localhost:3000/verify_achievement/{token}")
+        img.save(f'{str(BaseConfig.STATIC_DIR) + "/QR/" + data["value"]}.png')
         data['achievement_qr'] = str(token)
     elif data['select_group'] == 2:
         if data['select_aggregation'] == 1:
@@ -223,6 +225,200 @@ async def create_achievement(request):
     return json_response({'achievement': achievement_id})
 
 
+async def undesire_achievement(request):
+    pool = request.app['pool']
+    user_id = json.loads(request.cookies['user'])['user_id']
+    data = await request.json()
+    user_type = data['user_type']
+    achievement_id = data['achievement_id']
+    async with pool.acquire() as conn:
+        await AchievementsDesireApprove.undesire_achievement(user_id=user_id, user_type=user_type,
+                                                             achievement_desire_id=achievement_id, conn=conn)
+    return json_response({'value': {'desire': False}})
+
+
+async def verify_achievement(request):
+    pool = request.app['pool']
+    data = await request.json()
+    if str(request).split('/')[-1][:-2] == 'verify_achievement':
+        achievement_id = data['achievement_id']
+        qr_value = ''
+    else:
+        qr_value = data['qr_value']
+        async with pool.acquire() as conn:
+            achievement_id = await AchievementsGetInfo.get_achievement_by_token(token=qr_value, conn=conn)
+    user_type = data['user_type']
+    conditions_not_reached = None
+    if user_type == 0:
+        user_id = json.loads(request.cookies['user'])['user_id']
+    else:
+        user_id = data['user_id']
+    reach = []
+    async with pool.acquire() as conn:
+        conditions = await AchievementsGetInfo.get_achievement_conditions(achievement_id=achievement_id,
+                                                                          user_id=user_id, conn=conn)
+    groups = [i for i in set([i['condition_group_id'] for i in conditions])]
+    if 0 in groups:
+        # todo: equality implementation
+        user_conditions = [i for i in conditions if i['condition_group_id'] == 0]
+        for i in user_conditions:
+            result = False
+            if i['aggregate_id'] == 0:
+                async with pool.acquire() as conn:
+                    value = await UserGetInfo.get_user_info_by_count(user_id=user_id,
+                                                                     value=i['parameter_name'].replace(' ', '_'),
+                                                                     conn=conn)
+                if int(i['value']) <= value:
+                    result = True
+            elif i['aggregate_id'] == 1:
+                async with pool.acquire() as conn:
+                    value = await UserGetInfo.get_user_info_by_value(user_id=user_id,
+                                                                     value=i['parameter_name'].replace(' ', '_'),
+                                                                     conn=conn)
+                if i['value'] == value:
+                    result = True
+            reach.append(result)
+    if 1 in groups:
+        async with pool.acquire() as conn:
+            result = await AchievementsGiveVerify.qr_verify(value=qr_value, conn=conn)
+        reach.append(result)
+    if 2 in groups:
+        async with IpApiClient() as client:
+            loc = await client.location()
+        coord = (loc['lat'], loc['lon'])
+        geo_conditions = [i for i in conditions if i['condition_group_id'] == 2]
+        for i in geo_conditions:
+            coords_achi = i['geo']
+            r = coords_achi[-1]
+            distance = great_circle((coord[0], coord[1]), (coords_achi[0][0], coords_achi[0][1])).meters
+            # val = 'm'
+            if distance / 1000 <= r:
+                reach.append(True)
+            else:
+                reach.append(False)
+            # if distance > 1000:
+            # distance = distance/1000
+            # val = 'km'
+            # await AchievementsGiveVerify.location_verify(user_id=session['user']['id'], value=i['value'])
+            # distance = distance
+            # val = val
+    if 3 in groups:
+        service_conditions = [i for i in conditions if i['condition_group_id'] == 3]
+        for i in service_conditions:
+            i = dict(i)
+            i['parameter_name'] = i['parameter_name'].replace('     ', '__r__').replace(' ', '_')
+            service = ServicesConfig.service_classes[i['service_id']]
+            functions = [j for j in ServicesConfig.service_functions.keys() if
+                         service.__name__ in j and i['parameter_name'] in j][0]
+            result = False
+            if i['aggregate_id'] == 0:
+                if i['equality'] == 1:
+                    if ServicesConfig.service_functions[functions](i['services_username'],
+                                                                   (i['parameter_name']))[i['parameter_name']] >= \
+                            int(i['value']):
+                        result = True
+                elif i['equality'] == 0:
+                    if ServicesConfig.service_functions[functions](i['services_username'],
+                                                                   (i['parameter_name']))[i['parameter_name']] <= \
+                            int(i['value']):
+                        result = True
+            elif i['aggregate_id'] == 1:
+                if ServicesConfig.service_functions[functions](i['services_username'],
+                                                               (i['parameter_name']))[i['parameter_name']] == \
+                        i['value']:
+                    result = True
+            elif i['aggregate_id'] == 2:
+                if ServicesConfig.service_functions[functions](i['services_username'],
+                                                               (i['parameter_name']))[i['parameter_name']]:
+                    result = True
+            elif i['aggregate_id'] == 3:
+                if i['equality'] == 1:
+                    if ServicesConfig.service_functions[functions](i['services_username'],
+                                                                   (i['parameter_name']))[i['parameter_name']] >= \
+                            i['value']:
+                        result = True
+                elif i['equality'] == 0:
+                    if ServicesConfig.service_functions[functions](i['services_username'],
+                                                                   (i['parameter_name']))[i['parameter_name']] <= \
+                            i['value']:
+                        result = True
+            reach.append(result)
+    if 4 in groups:
+        community_conditions = [i for i in conditions if i['condition_group_id'] == 4]
+        for i in community_conditions:
+            if i['aggregate_id'] == 0:
+                async with pool.acquire() as conn:
+                    value = await CommunityGetInfo.get_community_info_by_value(community_id=user_id,
+                                                                               value=i['parameter_name'].replace(' ',
+                                                                                                                 '_'),
+                                                                               conn=conn)
+                if int(i['value']) >= value:
+                    reach.append(True)
+                else:
+                    reach.append(False)
+    if 5 in groups:
+        course_conditions = [i for i in conditions if i['condition_group_id'] == 5]
+        for i in course_conditions:
+            if i['aggregate_id'] == 0:
+                async with pool.acquire() as conn:
+                    value = await CoursesGetInfo.get_course_info_by_value(course_id=user_id,
+                                                                          value=i['parameter_name'].replace(' ', '_'),
+                                                                          conn=conn)
+                if int(i['value']) >= value:
+                    reach.append(True)
+                else:
+                    reach.append(False)
+    if 6 in groups:
+        test_conditions = [i for i in conditions if i['condition_group_id'] == 6]
+        for i in test_conditions:
+            async with pool.acquire() as conn:
+                data = await AchievementsDesireApprove.get_data_for_test(user_id=user_id,
+                                                                         condition_id=i['condition_id'], conn=conn)
+            percentage = None
+            if 'percentage' in i['parameter_name']:
+                percentage = True
+            result = test_result(email=data['email'], url=data['answers'], percentage=percentage)
+            if result:
+                if 'percentage' in i['parameter_name']:
+                    # todo: не знаем сколько всего, не считаем percentage
+                    pass
+                if result >= float(i['value']):
+                    reach.append(True)
+                else:
+                    reach.append(False)
+            else:
+                reach.append(False)
+    if 7 in groups:
+        approve_conditions = [i for i in conditions if i['condition_group_id'] == 7]
+        for i in approve_conditions:
+            async with pool.acquire() as conn:
+                result = await AchievementsGiveVerify.approve_verify(user_id=user_id, parameter_id=i['parameter_id'],
+                                                                     conn=conn)
+            reach.append(result)
+    if 8 in groups:
+        no_verify_conditions = [i for i in conditions if i['condition_group_id'] == 8]
+        for i in no_verify_conditions:
+            reach.append(True)
+    if False in reach:
+        decline = True
+        not_reached = [i for i, e in enumerate(reach) if e is False]
+        conditions_not_reached = [dict(i) for i in conditions if conditions.index(i) in not_reached]
+        async with pool.acquire() as conn:
+            await AchievementsDesireApprove.desire_achievement(user_id=user_id, user_type=user_type,
+                                                               achievement_desire_id=achievement_id, conn=conn)
+    else:
+        async with pool.acquire() as conn:
+            await AchievementsGiveVerify.give_achievement_to_user(user_id=user_id, achievement_id=achievement_id,
+                                                                  user_type=user_type, conn=conn)
+            if await AchievementsDesireApprove.is_desire_achievement(user_id=user_id,
+                                                                     achievement_id=achievement_id, conn=conn):
+                await AchievementsDesireApprove.undesire_achievement(user_id=user_id, user_type=user_type,
+                                                                     achievement_desire_id=achievement_id, conn=conn)
+        decline = False
+    return json_response({'value': {'desire': decline, 'conditions': conditions_not_reached,
+                                    'is_reached': not decline, 'achievement_id': achievement_id}})
+
+
 class AchievementsVerificationView(web.View):
 
     @aiohttp_jinja2.template('achievements_verify.html')
@@ -254,7 +450,6 @@ class AchievementsVerificationView(web.View):
         reach = []
 
         groups = [i for i in set([i['condition_group_id'] for i in conditions])]
-        print(conditions)
         if 0 in groups:
             # todo: equality implementation
             user_conditions = [i for i in conditions if i['condition_group_id'] == 0]
@@ -407,8 +602,10 @@ async def get_achievement_info(request):
                                                                   conn=conn)
         desire = await AchievementsDesireApprove.is_desire_achievement(user_id=user_id,
                                                                        achievement_id=achievement_id, conn=conn)
+        is_reached = await AchievementsGetInfo.is_reach_achievement(user_id=user_id, achievement_id=achievement_id,
+                                                                    conn=conn)
         return json_response({'achievement': achievement, 'desire': desire, 'is_owner': is_owner, 'communities':
-                             communities, 'courses': courses})
+                             communities, 'courses': courses, 'is_reached': is_reached})
 
 
 class AchievementInfoView(web.View):

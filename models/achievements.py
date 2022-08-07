@@ -28,7 +28,7 @@ class AchievementsGenerateData:
 
 class AchievementsGetInfo:
     @staticmethod
-    async def get_achievement_conditions(achievement_id: str, user_id: str, conn):
+    async def get_achievement_conditions(achievement_id, user_id, conn):
         conditions = await conn.fetch(f"""
                                           select agc.parameter_name, agc.condition_group_id, agc.aggregate_id, 
                                                 agc.service_id, ui.services_username, c.geo, c.value, c.equality, 
@@ -145,6 +145,15 @@ class AchievementsGetInfo:
         return achievements
 
     @staticmethod
+    async def get_achievement_by_token(token: str, conn):
+        achievement = await conn.fetchrow(f"""
+                select a.achievement_id
+                from achievements as a
+                where a.achievement_qr = '{token}'
+                """)
+        return achievement['achievement_id']
+
+    @staticmethod
     async def get_achievement_by_condition_value(value: str, conn):
         achievements = await conn.fetchrow(f"""
             select a.achievement_id
@@ -233,6 +242,15 @@ class AchievementsGetInfo:
                   u.user_id <> {user_id}
             """)
         return [dict(i) for i in achievements]
+
+    @staticmethod
+    async def is_reach_achievement(user_id, achievement_id, conn):
+        is_reached = await conn.fetchrow(f"""
+                                            select case when count(*) > 0 then true else false end as is_reached
+                                            from users_information
+                                            where user_id = {user_id} and {achievement_id} = any(achievements_id)
+                                        """)
+        return is_reached['is_reached']
 
     @staticmethod
     async def is_drop(achievement_id: int,  conn):
@@ -326,14 +344,14 @@ class AchievementsGiveVerify:
         #                            """)
 
     @staticmethod
-    async def qr_verify(user_id: str, value: str, conn):
+    async def qr_verify(value: str, conn):
         qr = await conn.fetchrow(f"""
                             select a.achievement_id
                             from achi_conditions as c
-                            inner join (select achievement_id, unnest(conditions) as conditions from achievements) as a 
-                                on a.conditions::integer = c.condition_id
+                            inner join (select achievement_id, unnest(conditions) as conditions, achievement_qr from 
+                            achievements) as a on a.conditions::integer = c.condition_id
                             left join achi_generate_conditions agc on c.parameter_id = agc.parameter_id
-                            where agc.condition_group_id = 1 and value = '{value}'
+                            where agc.condition_group_id = 1 and a.achievement_qr = '{value}'
             """)
             # await conn.execute(f"""
             #                     update users_information
@@ -473,6 +491,30 @@ class AchievementsDesireApprove:
                            """)
 
     @staticmethod
+    async def undesire_achievement(user_id: str, user_type: int, achievement_desire_id: str, conn):
+        if user_type == 0:
+            table = 'users_information'
+            column = 'user_id'
+        elif user_type == 1:
+            table = 'communities'
+            column = 'community_id'
+        elif user_type == 2:
+            table = 'courses'
+            column = 'course_id'
+        await conn.execute(f"""
+                               update {table}
+                                   set achievements_desired_id = achievements_desired_id[:(select 
+                                    array_position(ui.achievements_desired_id, 
+                                    {achievement_desire_id}) from {table} as ui where {column} = {user_id} and 
+                                    {achievement_desire_id} = any(achievements_desired_id))-1] ||
+                                    achievements_desired_id[(select array_position(ui.achievements_desired_id, 
+                                        {achievement_desire_id})
+                                    from {table} as ui where {column} = {user_id} and {achievement_desire_id} = 
+                                    any(achievements_desired_id))+1:]
+                                    where {column} = {user_id}
+                               """)
+
+    @staticmethod
     async def is_desire(user_id: str, achievement_desire_id: str, conn):
         data = await conn.fetchrow(f"""
                                        select count(achievements_desired_id)
@@ -493,11 +535,10 @@ class AchievementsDesireApprove:
                 left join users_information as u on u.user_id = a.user_id and a.user_type = 0
                 left join communities as c on a.user_id = c.community_id and a.user_type = 1
                 left join courses as co on co.course_id = a.user_id and a.user_type = 2
-                left join users_information as u1 on a.achievement_id = any(u1.achievements_id) 
-                    or a.achievement_id = any(u1.achievements_desired_id)
+                left join users_information as u1 on a.achievement_id = any(u1.achievements_desired_id)
                 where ({user_id} <> any(c.community_owner_id) or c.community_owner_id is null) and
                       ({user_id} <> co.course_owner_id or co.course_owner_id is null) and
-                      (u1.user_id is null or u1.user_id <> {user_id}) and
+                      (u1.user_id = {user_id}) and
                       u.user_id <> {user_id} and a.achievement_id = {achievement_id}
                 """)
         if desire['count'] > 0:

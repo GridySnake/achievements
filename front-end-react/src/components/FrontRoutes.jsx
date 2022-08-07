@@ -14,12 +14,15 @@ import CourseContainer from "./Courses/CourseContainer";
 import CourseContentTableContainer from "./Courses/CourseContentTableContainer";
 import CourseContentTaskContainer from "./Courses/CourseContentTaskContainer";
 import CourseContentCreateContainer from "./Courses/CourseContentCreateContainer";
+import MainNavbar from "./MainNavbar";
+import AchievementQRVerifyContainer from "./Achievements/AchievementQRVerifyContainer";
 
 // auth? <navbar + all> : <login + signup>
 const FrontRoutes = () => {
     return (
         <div>
             <Router>
+                {/*<MainNavbar/>*/}
                 <Routes>
                     <Route path="/signup" key="signup" element={<FormSignUp/>}/>
                     <Route path="/login" key="login" element={<FormLogin/>}/>
@@ -38,6 +41,7 @@ const FrontRoutes = () => {
                     <Route path="/study_course/:id" key="study_course:id" element={<CourseContentTableContainer/>}/>
                     <Route path="/study_course/:id/task/:task_id" key="study_course:id_task:task_id" element={<CourseContentTaskContainer/>}/>
                     <Route path="/course/:id/edit_content" key="_course_:id_edit_content" element={<CourseContentCreateContainer/>}/>
+                    <Route path="/verify_achievement/:qr" key="verify_achievement_qr:qr" element={<AchievementQRVerifyContainer/>}/>
                     <Route path="/goals"/>
                 </Routes>
             </Router>

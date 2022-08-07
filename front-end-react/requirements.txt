@@ -10,3 +10,5 @@ react-yandex-maps
 react-player
 react-doc-viewer?
 react-file-viewer?
+array-move?
+react-sortable-hoc?

@@ -17,10 +17,10 @@ const useProvideAuth = () => {
     const [user, setUser] = useState(null);
     const [authLoading, setAuthLoading] = useState(true);
 
-    useEffect((data) => {
+    useEffect(() => {
         setAuthLoading(true);
-        auth((data) => {setAuthLoading(false)});
-        setUser(data)
+        auth(setUser, () => {setAuthLoading(false)});
+
         return () => {
             cancel && cancel();
         }
@@ -34,4 +34,4 @@ const useProvideAuth = () => {
     }
 }
 
-export {AuthWrapper, useAuth, authContext}
+export {AuthWrapper, useAuth, authContext, useProvideAuth}
