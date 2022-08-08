@@ -6,6 +6,7 @@ import StaticAvatars from "../StaticRoutes";
 import AvatarsContainer from "./AvatarsContainer";
 import { useParams, useLocation } from 'react-router-dom'
 import makeAction from "../../api/PageActions";
+import GoalsApproveContainer from "./GoalsApproveContainer";
 
 const {Title} = Typography;
 
@@ -25,10 +26,12 @@ const PersonalPageContainer = () => {
     const {id} = useParams();
     const {pathname} = useLocation();
     const [pEvent, setpEvent] = useState(null);
+    const [approve, setApprove] = useState(null);
+    const [isApproved, setIsApproved] = useState(null);
+    const [owner, setOwner] = useState(null);
 
     useEffect(() => {
         const fillUserInfo = (PersonalPage) => {
-            setPersonalPage(PersonalPage)
             setLike(PersonalPage.actions[0])
             setDislike(PersonalPage.actions[1])
             setRecommend(PersonalPage.actions[2])
@@ -41,6 +44,10 @@ const PersonalPageContainer = () => {
             setFollowers(PersonalPage.statistics.followers)
             setFollowings(PersonalPage.statistics.followings)
             setpEvent(pointEvent(PersonalPage.myPage))
+            setApprove(PersonalPage.approve)
+            setIsApproved(PersonalPage.is_approved)
+            setOwner(PersonalPage.myPage)
+            setPersonalPage(PersonalPage)
         }
         GetPersonalPageInfo(fillUserInfo, id)
     }, [id])
@@ -117,7 +124,12 @@ const PersonalPageContainer = () => {
 
         }
     }
-
+    const props = {
+        'approve': approve,
+        'is_approved': isApproved,
+        'owner': owner,
+        'id': id
+    }
     return (
         PersonalPage ?
             <div>
@@ -170,6 +182,11 @@ const PersonalPageContainer = () => {
                     </Col>
                 </Row>
                 <Title level={3}>{PersonalPage.user.bio}</Title>
+                {approve ?
+                    <GoalsApproveContainer {...props}/>
+                    :
+                    <></>
+                }
                 <div>
                 {PersonalPage.posts.map((post) => {
                     return(

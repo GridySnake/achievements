@@ -27,14 +27,16 @@ async def personal_page(request):
         if user_id == location:
             my_page = True
             approve = await AchievementsGetInfo.get_users_approve_achievements(user_id=location, conn=conn)
+            is_approved = None
         else:
             friend = await SubscribesGetInfo.subscribe_each_other(user_active_id=user_id,
                                                                   user_passive_id=location, conn=conn)
-            approve = await AchievementsGetInfo.get_users_approve_achievements(user_id=location, user_active=user_id,
-                                                                               conn=conn)
+            approve = await AchievementsGetInfo.get_users_approve_achievements(user_id=location, conn=conn)
             actions = await LikesRecommendationsGetInfo.is_like_recommend(user_id=user_id, user_type=0,
                                                                           owner_id=location,
                                                                           owner_type=0, conn=conn)
+            is_approved = await AchievementsGetInfo.is_user_approved(user_id=location, user_active_id=user_id,
+                                                                     conn=conn)
             allow = True
             block = False
             if not friend:
@@ -54,4 +56,4 @@ async def personal_page(request):
     return json_response({'user': user, 'statistics': statistics, 'posts': posts, 'myPage': my_page,
                           'subscribes': subscribes, 'achievements': achievements, 'goals': goals,
                           'conditions': condition_to_chat, 'allow': allow, 'block': block, 'actions': actions,
-                          'approve': approve})
+                          'approve': approve, 'is_approved': is_approved})

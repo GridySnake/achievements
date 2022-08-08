@@ -54,7 +54,7 @@ const AchievementContainer = () => {
             }
             setDesire(Achievement_info.desire)
             setIsOwner(Achievement_info.is_owner)
-            setOwner(Achievement.u_name + ' ' + Achievement.u_surname)
+            setOwner(<a href={'/user/' + Achievement.user_id}>{Achievement.u_name + ' ' + Achievement.u_surname}</a>)
         }
         GetAnyInfo(setInfoAchievement, pathname)
     }, [pathname, desire])
@@ -152,7 +152,7 @@ const AchievementContainer = () => {
                     :
                     <></>
                 }
-                {!isOwner && !isReached && desire ?
+                {!isOwner && !isReached && desire && group !== 'User approvement' ?
                     <Button onClick={Verify}>Verify</Button>
                     :
                     <></>
