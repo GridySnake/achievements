@@ -14,31 +14,30 @@ import {useAuth, authContext} from "./hooks/AuthHooks";
 import MainNavbar from "./components/MainNavbar";
 
 function App() {
-    // console.log(useContext(authContext))
-    // console.log(authContext)
-    // const {user, authLoading} = useAuth();
-    // console.log(user)
-    // console.log(useAuth())
 
-  return (
-    <div style={{background: "#F1EDFE"}}>
-        {/*{user ?*/}
-        {/*<MainNavbar/>*/}
-        <AuthWrapper>
+    const {user} = useAuth();
 
-            <FrontRoutes/>
-        </AuthWrapper>
-            {/*:*/}
-            {/*<FormLogin/>*/}
-        {/*}*/}
+    return (
+        <div style={{background: "#F1EDFE", marginTop: 10}}>
+            {user ?
+                <>
+                    <MainNavbar {...user} style={{marginTop: 10}} />
+                    <FrontRoutes/>
+                </>
+                :
+                <>
+                    <MainNavbar {...user} style={{marginTop: 10}} />
+                    <FormLogin/>
+                </>
+            }
       {/*  <Backdrop*/}
       {/*  sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}*/}
       {/*  open={authLoading}*/}
       {/*>*/}
       {/*  <CircularProgress color="inherit" />*/}
       {/*</Backdrop>*/}
-    </div>
-  );
+        </div>
+    );
 }
 
 export default App;

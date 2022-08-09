@@ -240,16 +240,16 @@ async def undesire_achievement(request):
 async def verify_achievement(request):
     pool = request.app['pool']
     data = await request.json()
-    if str(request).split('/')[-1][:-2] == 'verify_achievement':
-        achievement_id = data['achievement_id']
-        qr_value = ''
-    else:
+    if 'qr' in str(request):
         qr_value = data['qr_value']
         async with pool.acquire() as conn:
             achievement_id = await AchievementsGetInfo.get_achievement_by_token(token=qr_value, conn=conn)
+    else:
+        achievement_id = data['achievement_id']
+        qr_value = ''
     user_type = data['user_type']
     conditions_not_reached = None
-    if user_type == 0:
+    if user_type == 0 and 'user_id' not in data.keys():
         user_id = json.loads(request.cookies['user'])['user_id']
     else:
         user_id = data['user_id']
@@ -418,6 +418,84 @@ async def verify_achievement(request):
         decline = False
     return json_response({'value': {'desire': decline, 'conditions': conditions_not_reached,
                                     'is_reached': not decline, 'achievement_id': achievement_id}})
+
+
+async def get_achievement_info(request):
+    user_id = json.loads(request.cookies['user'])['user_id']
+    pool = request.app['pool']
+    async with pool.acquire() as conn:
+        communities = await CommunityGetInfo.get_user_owner_communities(user_id=user_id, conn=conn)
+        courses = await CoursesGetInfo.get_own_courses(user_id=user_id, conn=conn)
+        achievement_id = str(request).split('/')[-1][:-2]
+        achievement = await AchievementsGetInfo.get_achievement_info(achievement_id=achievement_id, conn=conn)
+        is_owner = await AchievementsGetInfo.is_achievement_owner(user_id=user_id, achievement_id=achievement_id,
+                                                                  conn=conn)
+        desire = await AchievementsDesireApprove.is_desire_achievement(user_id=user_id,
+                                                                       achievement_id=achievement_id, conn=conn)
+        is_reached = await AchievementsGetInfo.is_reach_achievement(user_id=user_id, achievement_id=achievement_id,
+                                                                    conn=conn)
+        return json_response({'achievement': achievement, 'desire': desire, 'is_owner': is_owner, 'communities':
+                             communities, 'courses': courses, 'is_reached': is_reached})
+
+
+async def approve_achievement(request):
+    user_id = json.loads(request.cookies['user'])['user_id']
+    pool = request.app['pool']
+    data = await request.json()
+    async with pool.acquire() as conn:
+        await AchievementsDesireApprove.approve_achievement(user_active_id=user_id, user_passive_id=data['user_id'],
+                                                            achievement_id=data['achievement_id'], conn=conn)
+        approve = await AchievementsGetInfo.get_users_approve_achievements(user_id=data['user_id'],
+                                                                           parameter='achievements_desired_id',
+                                                                           conn=conn)
+        is_approved = await AchievementsGetInfo.is_user_approved(user_id=data['user_id'], user_active_id=user_id,
+                                                                 parameter='achievements_desired_id', conn=conn)
+        approve_got = await AchievementsGetInfo.get_users_approve_achievements(user_id=data['user_id'],
+                                                                               parameter='achievements_id', conn=conn)
+        is_approved_got = await AchievementsGetInfo.is_user_approved(user_id=data['user_id'], user_active_id=user_id,
+                                                                     parameter='achievements_id', conn=conn)
+    return json_response({'value': {'approve': approve, 'is_approved': is_approved, 'approve_got': approve_got,
+                                    'is_approved_got': is_approved_got}})
+
+
+async def disapprove_achievement(request):
+    user_id = json.loads(request.cookies['user'])['user_id']
+    pool = request.app['pool']
+    data = await request.json()
+    async with pool.acquire() as conn:
+        await AchievementsDesireApprove.disapprove_achievement(user_active_id=user_id, user_passive_id=data['user_id'],
+                                                               achievement_id=data['achievement_id'], conn=conn)
+        if data['type']:
+            print('lol')
+            conditions = await AchievementsGetInfo.get_achievement_conditions(achievement_id=data['achievement_id'],
+                                                                              user_id=user_id, conn=conn)
+            conditions = [i for i in conditions if i['condition_group_id'] == 7]
+            for i in conditions:
+                print(i)
+                if not await AchievementsGiveVerify.approve_verify(user_id=user_id,
+                                                                   achievement_id=data['achievement_id'],
+                                                                   parameter_id=i['parameter_id'], conn=conn):
+                    print(0)
+                    await AchievementsGiveVerify.take_away_achievement(user_id=user_id,
+                                                                       achievement_id=data['achievement_id'],
+                                                                       user_type=data['user_type'], conn=conn)
+                    print(1)
+                    await AchievementsDesireApprove.desire_achievement(user_id=user_id, user_type=data['user_type'],
+                                                                       achievement_desire_id=data['achievement_id'],
+                                                                       conn=conn)
+                    print(2)
+
+        approve = await AchievementsGetInfo.get_users_approve_achievements(user_id=data['user_id'],
+                                                                           parameter='achievements_desired_id',
+                                                                           conn=conn)
+        is_approved = await AchievementsGetInfo.is_user_approved(user_id=data['user_id'], user_active_id=user_id,
+                                                                 parameter='achievements_desired_id', conn=conn)
+        approve_got = await AchievementsGetInfo.get_users_approve_achievements(user_id=data['user_id'],
+                                                                               parameter='achievements_id', conn=conn)
+        is_approved_got = await AchievementsGetInfo.is_user_approved(user_id=data['user_id'], user_active_id=user_id,
+                                                                     parameter='achievements_id', conn=conn)
+    return json_response({'value': {'approve': approve, 'is_approved': is_approved, 'approve_got': approve_got,
+                                    'is_approved_got': is_approved_got}})
 
 
 class AchievementsVerificationView(web.View):
@@ -589,52 +667,6 @@ class AchievementsVerificationView(web.View):
             decline = False
         achievement = await AchievementsGetInfo.get_achievement_info(achievement_id)
         return dict(achievement=achievement, decline=decline, conditions_not_reached=conditions_not_reached)
-
-
-async def get_achievement_info(request):
-    user_id = json.loads(request.cookies['user'])['user_id']
-    pool = request.app['pool']
-    async with pool.acquire() as conn:
-        communities = await CommunityGetInfo.get_user_owner_communities(user_id=user_id, conn=conn)
-        courses = await CoursesGetInfo.get_own_courses(user_id=user_id, conn=conn)
-        achievement_id = str(request).split('/')[-1][:-2]
-        achievement = await AchievementsGetInfo.get_achievement_info(achievement_id=achievement_id, conn=conn)
-        is_owner = await AchievementsGetInfo.is_achievement_owner(user_id=user_id, achievement_id=achievement_id,
-                                                                  conn=conn)
-        desire = await AchievementsDesireApprove.is_desire_achievement(user_id=user_id,
-                                                                       achievement_id=achievement_id, conn=conn)
-        is_reached = await AchievementsGetInfo.is_reach_achievement(user_id=user_id, achievement_id=achievement_id,
-                                                                    conn=conn)
-        return json_response({'achievement': achievement, 'desire': desire, 'is_owner': is_owner, 'communities':
-                             communities, 'courses': courses, 'is_reached': is_reached})
-
-
-async def approve_achievement(request):
-    user_id = json.loads(request.cookies['user'])['user_id']
-    pool = request.app['pool']
-    data = await request.json()
-    async with pool.acquire() as conn:
-        await AchievementsDesireApprove.approve_achievement(user_active_id=user_id, user_passive_id=data['user_id'],
-                                                            achievement_id=data['achievement_id'], conn=conn)
-        approve = await AchievementsGetInfo.get_users_approve_achievements(user_id=data['user_id'],
-                                                                           conn=conn)
-        is_approved = await AchievementsGetInfo.is_user_approved(user_id=data['user_id'], user_active_id=user_id,
-                                                                 conn=conn)
-    return json_response({'value': {'approve': approve, 'is_approved': is_approved}})
-
-
-async def disapprove_achievement(request):
-    user_id = json.loads(request.cookies['user'])['user_id']
-    pool = request.app['pool']
-    data = await request.json()
-    async with pool.acquire() as conn:
-        await AchievementsDesireApprove.disapprove_achievement(user_active_id=user_id, user_passive_id=data['user_id'],
-                                                               achievement_id=data['achievement_id'], conn=conn)
-        approve = await AchievementsGetInfo.get_users_approve_achievements(user_id=data['user_id'],
-                                                                           conn=conn)
-        is_approved = await AchievementsGetInfo.is_user_approved(user_id=data['user_id'], user_active_id=user_id,
-                                                                 conn=conn)
-    return json_response({'value': {'approve': approve, 'is_approved': is_approved}})
 
 
 class AchievementInfoView(web.View):

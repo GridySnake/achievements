@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import FormLogin from "./FormLogin";
 import FormSignUp from "./FormSignUp";
 import PersonalPageContainer from "./Personal Page/PersonalPageContainer";
@@ -21,8 +21,6 @@ import AchievementQRVerifyContainer from "./Achievements/AchievementQRVerifyCont
 const FrontRoutes = () => {
     return (
         <div>
-            <Router>
-                {/*<MainNavbar/>*/}
                 <Routes>
                     <Route path="/signup" key="signup" element={<FormSignUp/>}/>
                     <Route path="/login" key="login" element={<FormLogin/>}/>
@@ -44,7 +42,6 @@ const FrontRoutes = () => {
                     <Route path="/verify_achievement/:qr" key="verify_achievement_qr:qr" element={<AchievementQRVerifyContainer/>}/>
                     <Route path="/goals"/>
                 </Routes>
-            </Router>
         </div>
 )
 }

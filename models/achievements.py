@@ -71,23 +71,24 @@ class AchievementsGetInfo:
         return [dict(i) for i in achievements]
 
     @staticmethod
-    async def get_users_approve_achievements(user_id: str, conn):
+    async def get_users_approve_achievements(user_id: str, parameter: str, conn):
         achievement = await conn.fetch(f"""
                                            select a.achievement_id, a.name, 
                                                 COUNT(aa.user_passive_id) as approve_count, 
-                                                ac.value::int as aprove_need,
+                                                ac.value::int as approve_need,
                                                 round(COUNT(aa.user_passive_id)::numeric / 
                                                     ac.value::int * 100, 2)::varchar 
                                                     as current_percentage,
-                                                round(1.0 / ac.value::int * 100, 2)::varchar as step_percentage 
+                                                round(1.0 / ac.value::int * 100, 2)::varchar as step_percentage,
+                                                Extract(minute FROM statement_timestamp() - max(datetime))::int as delta
                                             from achievements as a
                                             right join
                                             (
-                                                select unnest(achievements_desired_id) as achievements_desired_id
+                                                select unnest({parameter}) as {parameter}
                                                 from users_information
                                                 where user_id = {user_id}
                                             ) as u
-                                            on u.achievements_desired_id = a.achievement_id
+                                            on u.{parameter} = a.achievement_id
                                             left join approve_achievements as aa
                                                 on aa.achievement_id = a.achievement_id 
                                                 and aa.user_passive_id = {user_id}
@@ -104,18 +105,18 @@ class AchievementsGetInfo:
         return achievement
 
     @staticmethod
-    async def is_user_approved(user_id: str, user_active_id: str, conn):
+    async def is_user_approved(user_id: str, user_active_id: str, parameter: str, conn):
         achievement = await conn.fetch(f"""
                                                select case when count(aa.user_active_id) > 0 
                                                     then true else false end as approved
                                                 from achievements as a
                                                 right join
                                                 (
-                                                    select unnest(achievements_desired_id) as achievements_desired_id
+                                                    select unnest({parameter}) as {parameter}
                                                     from users_information
                                                     where user_id = {user_id}
                                                 ) as u
-                                                on u.achievements_desired_id = a.achievement_id
+                                                on u.{parameter} = a.achievement_id
                                                 left join approve_achievements as aa
                                                     on aa.achievement_id = a.achievement_id and
                                                     aa.user_active_id = {user_active_id}
@@ -326,6 +327,44 @@ class AchievementsGiveVerify:
                                    set reach_achievements = reach_achievements + 1
                                    where course_id = {user_id}
                                 """)
+
+    @staticmethod
+    async def take_away_achievement(user_id: str, achievement_id: str, user_type: int, conn):
+        if user_type == 0:
+            table = 'users_information'
+            column_user = 'user_id'
+            column = 'achievements_id'
+            table_1 = 'user_statistics'
+            column_1 = 'achievements'
+        elif user_type == 1:
+            table = 'communities'
+            column_user = 'community_id'
+            column = 'achievements_get_id'
+            table_1 = 'community_statistics'
+            column_1 = 'reach_achievements'
+        elif user_type == 2:
+            table = 'courses'
+            column_user = 'course_id'
+            column = 'achievements_get_id'
+            table_1 = 'course_statistics'
+            column_1 = 'reach_achievements'
+        await conn.execute(f"""
+                               update {table}
+                                   set {column} = {column}[:(select 
+                                    array_position(ui.{column}, 
+                                    {achievement_id}) from {table} as ui where {column_user} = {user_id} and 
+                                    {achievement_id} = any({column}))-1] ||
+                                    {column}[(select array_position(ui.{column}, 
+                                        {achievement_id})
+                                    from {table} as ui where {column_user} = {user_id} and {achievement_id} = 
+                                    any({column}))+1:]
+                                    where {column_user} = {user_id}
+                               """)
+        await conn.execute(f"""
+                               update {table_1}
+                               set {column_1} = {column_1} - 1
+                               where {column_user} = {user_id}
+                            """)
 
     # @staticmethod
     # async def user_info_achievements_verify(achievement_id: str, value: str):
@@ -553,14 +592,13 @@ class AchievementsDesireApprove:
         desire = await conn.fetchrow(f"""
                 select count(achievement_id) as count
                 from achievements as a
-                left join users_information as u on u.user_id = a.user_id and a.user_type = 0
-                left join communities as c on a.user_id = c.community_id and a.user_type = 1
-                left join courses as co on co.course_id = a.user_id and a.user_type = 2
+                left join users_information as u on u.user_id = a.user_id and a.user_type = 0 and u.user_id <> {user_id}
+                left join communities as c on a.user_id = c.community_id and a.user_type = 1 
+                    and ({user_id} <> any(c.community_owner_id) or c.community_owner_id is null)
+                left join courses as co on co.course_id = a.user_id and a.user_type = 2 
+                    and ({user_id} <> co.course_owner_id or co.course_owner_id is null)
                 left join users_information as u1 on a.achievement_id = any(u1.achievements_desired_id)
-                where ({user_id} <> any(c.community_owner_id) or c.community_owner_id is null) and
-                      ({user_id} <> co.course_owner_id or co.course_owner_id is null) and
-                      (u1.user_id = {user_id}) and
-                      u.user_id <> {user_id} and a.achievement_id = {achievement_id}
+                where u1.user_id = {user_id} and a.achievement_id = {achievement_id}
                 """)
         if desire['count'] > 0:
             is_desired = True
@@ -581,8 +619,8 @@ class AchievementsDesireApprove:
             id = 0
         await conn.execute(f"""
                                insert into approve_achievements (approvement_id, user_active_id, user_passive_id, 
-                                    achievement_id) values (
-                               {id}, {user_active_id}, {user_passive_id}, {achievement_id})
+                                    achievement_id, datetime) values (
+                               {id}, {user_active_id}, {user_passive_id}, {achievement_id}, statement_timestamp())
                        """)
 
     @staticmethod

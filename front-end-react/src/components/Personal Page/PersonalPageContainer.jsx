@@ -28,10 +28,21 @@ const PersonalPageContainer = () => {
     const [pEvent, setpEvent] = useState(null);
     const [approve, setApprove] = useState(null);
     const [isApproved, setIsApproved] = useState(null);
+    const [approveGot, setApproveGot] = useState(null);
+    const [isApprovedGot, setIsApprovedGot] = useState(null);
     const [owner, setOwner] = useState(null);
+    const [reload, setReload] = useState(0);
 
     useEffect(() => {
         const fillUserInfo = (PersonalPage) => {
+            if (PersonalPage.need_verify) {
+                PersonalPage.need_verify.map((achievement) => {
+                    makeAction('/verify_achievement', {'achievement_id': achievement,
+                        'user_id': id, 'user_type': 0}, (value) => {
+                        setReload(reload+1)
+                    })
+                })
+            }
             setLike(PersonalPage.actions[0])
             setDislike(PersonalPage.actions[1])
             setRecommend(PersonalPage.actions[2])
@@ -47,10 +58,13 @@ const PersonalPageContainer = () => {
             setApprove(PersonalPage.approve)
             setIsApproved(PersonalPage.is_approved)
             setOwner(PersonalPage.myPage)
+            setApproveGot(PersonalPage.approve_got)
+            setIsApprovedGot(PersonalPage.is_approved_got)
             setPersonalPage(PersonalPage)
+
         }
         GetPersonalPageInfo(fillUserInfo, id)
-    }, [id])
+    }, [id, reload])
 
     const CardReturn = (post) => {
         if (post.href) {
@@ -127,6 +141,8 @@ const PersonalPageContainer = () => {
     const props = {
         'approve': approve,
         'is_approved': isApproved,
+        'approve_got': approveGot,
+        'is_approved_got': isApprovedGot,
         'owner': owner,
         'id': id
     }
@@ -182,7 +198,7 @@ const PersonalPageContainer = () => {
                     </Col>
                 </Row>
                 <Title level={3}>{PersonalPage.user.bio}</Title>
-                {approve ?
+                {approve || approveGot ?
                     <GoalsApproveContainer {...props}/>
                     :
                     <></>
