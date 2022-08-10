@@ -65,8 +65,8 @@ async def personal_page(request):
                 else:
                     block = True
         if approve:
-            verify = [i['achievement_id'] for i in approve if i['approve_count'] >= i['approve_need'] and
-                      int(i['delta']) >= 5]
+            verify = [i['achievement_id'] for i in approve if int(i['current_percentage'].split('.')[0]) == 100 and
+                      int(i['delta']) >= 1]
             if len(verify) > 0:
                 need_verify = verify
 

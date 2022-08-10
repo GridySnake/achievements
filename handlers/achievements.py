@@ -466,24 +466,20 @@ async def disapprove_achievement(request):
         await AchievementsDesireApprove.disapprove_achievement(user_active_id=user_id, user_passive_id=data['user_id'],
                                                                achievement_id=data['achievement_id'], conn=conn)
         if data['type']:
-            print('lol')
             conditions = await AchievementsGetInfo.get_achievement_conditions(achievement_id=data['achievement_id'],
-                                                                              user_id=user_id, conn=conn)
+                                                                              user_id=data['user_id'], conn=conn)
             conditions = [i for i in conditions if i['condition_group_id'] == 7]
             for i in conditions:
-                print(i)
-                if not await AchievementsGiveVerify.approve_verify(user_id=user_id,
+                if not await AchievementsGiveVerify.approve_verify(user_id=data['user_id'],
                                                                    achievement_id=data['achievement_id'],
                                                                    parameter_id=i['parameter_id'], conn=conn):
-                    print(0)
-                    await AchievementsGiveVerify.take_away_achievement(user_id=user_id,
+                    await AchievementsGiveVerify.take_away_achievement(user_id=data['user_id'],
                                                                        achievement_id=data['achievement_id'],
                                                                        user_type=data['user_type'], conn=conn)
-                    print(1)
-                    await AchievementsDesireApprove.desire_achievement(user_id=user_id, user_type=data['user_type'],
+                    await AchievementsDesireApprove.desire_achievement(user_id=data['user_id'],
+                                                                       user_type=data['user_type'],
                                                                        achievement_desire_id=data['achievement_id'],
                                                                        conn=conn)
-                    print(2)
 
         approve = await AchievementsGetInfo.get_users_approve_achievements(user_id=data['user_id'],
                                                                            parameter='achievements_desired_id',
