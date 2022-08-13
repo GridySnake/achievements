@@ -18,11 +18,11 @@ function App() {
     const {user} = useAuth();
 
     return (
-        <div style={{background: "#F1EDFE", marginTop: 10}}>
+        <div style={{background: "#F1EDFE"}}>
             {user ?
                 <>
-                    <MainNavbar {...user} style={{marginTop: 10}} />
-                    <FrontRoutes/>
+                    <MainNavbar {...user} style={{marginBottom: 200}}/>
+                    <FrontRoutes {...user} style={{marginTop: 200}} />
                 </>
                 :
                 <>

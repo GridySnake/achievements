@@ -190,7 +190,7 @@ async def create_achievement(request):
 
         token = hashlib.sha256(str(data['name'].replace(' ', '_').lower() +
                                    '_' + data['value'].replace(' ', '_').lower()).encode('utf8')).hexdigest()
-        img = qrcode.make(f"http://localhost:3000/verify_achievement/{token}")
+        img = qrcode.make(f"http://localhost:3000/verify_achievement_qr/{token}")
         img.save(f'{str(BaseConfig.STATIC_DIR) + "/QR/" + data["value"]}.png')
         data['achievement_qr'] = str(token)
     elif data['select_group'] == 2:
@@ -244,6 +244,9 @@ async def verify_achievement(request):
         qr_value = data['qr_value']
         async with pool.acquire() as conn:
             achievement_id = await AchievementsGetInfo.get_achievement_by_token(token=qr_value, conn=conn)
+    elif 'geo' in str(request):
+        lat, lon = data['lat'], data['lon']
+        achievement_id = data['achievement_id']
     else:
         achievement_id = data['achievement_id']
         qr_value = ''
@@ -283,14 +286,11 @@ async def verify_achievement(request):
             result = await AchievementsGiveVerify.qr_verify(value=qr_value, conn=conn)
         reach.append(result)
     if 2 in groups:
-        async with IpApiClient() as client:
-            loc = await client.location()
-        coord = (loc['lat'], loc['lon'])
         geo_conditions = [i for i in conditions if i['condition_group_id'] == 2]
         for i in geo_conditions:
             coords_achi = i['geo']
             r = coords_achi[-1]
-            distance = great_circle((coord[0], coord[1]), (coords_achi[0][0], coords_achi[0][1])).meters
+            distance = great_circle((lat, lon), (coords_achi[0][0], coords_achi[0][1])).meters
             # val = 'm'
             if distance / 1000 <= r:
                 reach.append(True)
@@ -490,6 +490,7 @@ async def disapprove_achievement(request):
                                                                                parameter='achievements_id', conn=conn)
         is_approved_got = await AchievementsGetInfo.is_user_approved(user_id=data['user_id'], user_active_id=user_id,
                                                                      parameter='achievements_id', conn=conn)
+
     return json_response({'value': {'approve': approve, 'is_approved': is_approved, 'approve_got': approve_got,
                                     'is_approved_got': is_approved_got}})
 

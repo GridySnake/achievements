@@ -1,0 +1,897 @@
+.aCHIDiv {
+  top: 0;
+  left: 0;
+  display: inline-block;
+}
+.aCHI,
+.aCHIDiv,
+.logoDiv {
+  position: absolute;
+}
+.logoDiv {
+  top: 83px;
+  left: 955px;
+  width: 252px;
+  height: 129px;
+  font-size: 110px;
+}
+.aCHI {
+  top: 132px;
+  left: 66px;
+  display: inline-block;
+}
+.layer1Icon {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  max-width: 100%;
+  max-height: 100%;
+}
+.layer2Div,
+.logoDiv1 {
+  position: absolute;
+  top: -10px;
+  left: -66px;
+  width: 383px;
+  height: 383px;
+}
+.logoDiv1 {
+  height: 36.03%;
+  width: 13.13%;
+  top: 0;
+  right: 43.44%;
+  bottom: 63.97%;
+  left: 43.44%;
+  font-size: 110px;
+}
+.rectangleDiv {
+  position: absolute;
+  height: 74.02%;
+  width: 100%;
+  top: 25.98%;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: #9d86f6;
+}
+.achiCreativeDiv {
+  position: absolute;
+  height: 7.82%;
+  width: 7.34%;
+  top: 61.17%;
+  right: 74.84%;
+  bottom: 31.01%;
+  left: 17.81%;
+  display: inline-block;
+}
+.aboutDiv,
+.supportDiv {
+  height: 10.06%;
+  text-align: right;
+}
+.supportDiv {
+  position: absolute;
+  width: 4.43%;
+  top: 56.7%;
+  right: 16.56%;
+  bottom: 33.24%;
+  left: 79.01%;
+  display: inline-block;
+}
+.aboutDiv {
+  width: 3.33%;
+  top: 57.54%;
+  right: 25.63%;
+  bottom: 32.4%;
+  left: 71.04%;
+}
+.aboutDiv,
+.div,
+.fAQDiv {
+  position: absolute;
+  display: inline-block;
+}
+.fAQDiv {
+  height: 10.06%;
+  width: 3.33%;
+  top: 56.7%;
+  right: 8.59%;
+  bottom: 33.24%;
+  left: 88.07%;
+  text-align: right;
+}
+.div {
+  height: 7.82%;
+  width: 2.81%;
+  top: 74.58%;
+  right: 78.18%;
+  bottom: 17.6%;
+  left: 19.01%;
+}
+.bxbxCopyrightIcon {
+  position: absolute;
+  height: 6.7%;
+  width: 1.25%;
+  top: 61.73%;
+  right: 82.66%;
+  bottom: 31.56%;
+  left: 16.09%;
+  max-width: 100%;
+  max-height: 100%;
+  overflow: hidden;
+}
+.lineDiv,
+.lineDiv1 {
+  position: absolute;
+  height: 0.84%;
+  width: 28.59%;
+  top: 40.08%;
+  right: 35.7%;
+  bottom: 59.08%;
+  left: 35.7%;
+  border-top: 3px solid #000;
+  box-sizing: border-box;
+}
+.lineDiv1 {
+  top: 61.87%;
+  bottom: 37.29%;
+}
+.sUPPORTOURCOMMUNITY {
+  position: absolute;
+  height: 11.17%;
+  width: 26.72%;
+  top: 44.97%;
+  right: 35.78%;
+  bottom: 43.85%;
+  left: 37.5%;
+  font-size: 36px;
+  display: inline-block;
+}
+.groupIcon {
+  position: absolute;
+  height: 7.51%;
+  width: 1.73%;
+  top: 71.79%;
+  right: 52.02%;
+  bottom: 20.7%;
+  left: 46.25%;
+  max-width: 100%;
+  max-height: 100%;
+}
+.akarIconsfacebookFill,
+.biinstagramIcon,
+.cibvkIcon {
+  position: absolute;
+  height: 10.61%;
+  width: 1.98%;
+  top: 70.11%;
+  right: 40.1%;
+  bottom: 19.27%;
+  left: 57.92%;
+  max-width: 100%;
+  max-height: 100%;
+  overflow: hidden;
+}
+.biinstagramIcon,
+.cibvkIcon {
+  right: 45.83%;
+  left: 52.19%;
+}
+.biinstagramIcon {
+  right: 57.92%;
+  left: 40.1%;
+}
+.footerDiv {
+  position: absolute;
+  top: 1662px;
+  left: 0;
+  width: 1920px;
+  height: 358px;
+}
+.e529a00d39108817f5cb7aea883a2Div,
+.e529a00d39108817f5cb7aea883a3Div {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 22px;
+  background-color: #fff;
+  width: 445px;
+  height: 1261px;
+}
+.e529a00d39108817f5cb7aea883a3Div {
+  top: 103px;
+  left: 478px;
+  width: 655px;
+  height: 464px;
+}
+.e529a00d39108817f5cb7aea883a1Icon {
+  position: absolute;
+  top: 27px;
+  left: 20px;
+  border-radius: 50px;
+  width: 405px;
+  height: 540px;
+  object-fit: cover;
+}
+.cGameStudios,
+.employeeDiv,
+.lilyMironova23,
+.sPetersburgRussia {
+  position: absolute;
+  left: 47px;
+  line-height: 32px;
+  display: inline-block;
+}
+.lilyMironova23 {
+  top: 606px;
+  font-size: 36px;
+}
+.cGameStudios,
+.employeeDiv,
+.sPetersburgRussia {
+  top: 650px;
+}
+.cGameStudios,
+.employeeDiv {
+  top: 1189px;
+  left: 315px;
+}
+.cGameStudios {
+  top: 1157px;
+  left: 234px;
+}
+.ellipseIcon {
+  position: relative;
+  width: 5px;
+  height: 5px;
+  flex-shrink: 0;
+}
+.sleekDotDiv,
+.sleekDotDiv1,
+.sleekDotDiv2 {
+  position: absolute;
+  top: 546px;
+  left: 222px;
+  border-radius: 73px;
+  display: flex;
+  flex-direction: row;
+  padding: 2.5px 2px;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+}
+.sleekDotDiv1,
+.sleekDotDiv2 {
+  left: 234px;
+}
+.sleekDotDiv2 {
+  left: 246px;
+}
+.bgDiv {
+  position: relative;
+  border-radius: 99px;
+  background-color: #fbe635;
+  width: 24px;
+  height: 5px;
+  flex-shrink: 0;
+}
+.sleekDotDiv3 {
+  position: absolute;
+  top: 546px;
+  left: 191px;
+  border-radius: 73px;
+  display: flex;
+  flex-direction: row;
+  padding: 2.5px 2px;
+  box-sizing: border-box;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+.hiImLilyLoremIpsumDolo {
+  position: absolute;
+  top: 723px;
+  left: 48px;
+  line-height: 39.5px;
+  color: rgba(0, 0, 0, 0.57);
+  display: flex;
+  align-items: center;
+  width: 377px;
+  height: 378px;
+}
+.bxbeenHereIcon {
+  position: absolute;
+  top: 1150px;
+  left: 177px;
+  width: 39px;
+  height: 39px;
+  overflow: hidden;
+}
+.groupDiv {
+  position: absolute;
+  top: 200px;
+  left: 242px;
+  width: 1133px;
+  height: 1261px;
+}
+.e529a00d39108817f5cb7aea883a3Div1,
+.e529a00d39108817f5cb7aea883a4Div {
+  position: absolute;
+  top: 303px;
+  left: 1395px;
+  border-radius: 22px;
+  background-color: #221f1f;
+  width: 405px;
+  height: 335px;
+}
+.e529a00d39108817f5cb7aea883a4Div {
+  top: 672px;
+  background-color: #fff;
+  height: 95px;
+}
+.rectangleIcon {
+  position: absolute;
+  top: 168px;
+  left: 1463px;
+  width: 270.56px;
+  height: 270.56px;
+  object-fit: cover;
+}
+.image4Icon,
+.image4Icon1,
+.image5Icon,
+.image6Icon,
+.image7Icon {
+  position: absolute;
+  height: 92.29%;
+  width: 16.57%;
+  top: 4.86%;
+  right: 83.43%;
+  bottom: 2.85%;
+  left: 0;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: cover;
+}
+.image4Icon,
+.image4Icon1,
+.image6Icon,
+.image7Icon {
+  height: 98.79%;
+  width: 16.39%;
+  top: 0;
+  right: 20.85%;
+  bottom: 1.21%;
+  left: 62.76%;
+}
+.image4Icon,
+.image4Icon1,
+.image6Icon {
+  height: 93.68%;
+  width: 16.85%;
+  top: 5.69%;
+  right: 41.1%;
+  bottom: 0.62%;
+  left: 42.05%;
+}
+.image4Icon,
+.image4Icon1 {
+  height: 95.54%;
+  width: 17.03%;
+  top: 3.25%;
+  right: 61.73%;
+  bottom: 1.21%;
+  left: 21.24%;
+}
+.image4Icon1 {
+  height: 93.5%;
+  width: 17.01%;
+  top: 6.5%;
+  right: 0;
+  bottom: 0;
+  left: 82.99%;
+}
+.goalsDiv,
+.groupDiv1 {
+  position: absolute;
+  height: 4.45%;
+  width: 23.75%;
+  top: 31.02%;
+  right: 36.56%;
+  bottom: 64.52%;
+  left: 39.69%;
+}
+.goalsDiv {
+  height: 1.58%;
+  width: 5.26%;
+  top: 28.9%;
+  right: 57.24%;
+  bottom: 69.52%;
+  left: 37.5%;
+  text-align: right;
+  display: inline-block;
+}
+.rectangleDiv1 {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: 50px;
+  background-color: #fff;
+}
+.communitiesDiv,
+.feedDiv,
+.friendsDiv,
+.messagesDiv {
+  position: absolute;
+  height: 45.71%;
+  width: 18.08%;
+  top: 32.86%;
+  right: 75.12%;
+  bottom: 21.43%;
+  left: 6.8%;
+  display: inline-block;
+}
+.communitiesDiv,
+.feedDiv,
+.friendsDiv {
+  width: 12.36%;
+  right: 54.56%;
+  left: 33.08%;
+}
+.communitiesDiv,
+.feedDiv {
+  width: 23.03%;
+  right: 23.34%;
+  left: 53.63%;
+}
+.feedDiv {
+  width: 8.81%;
+  right: 6.34%;
+  left: 84.85%;
+}
+.ellipseIcon3,
+.ellipseIcon4,
+.ellipseIcon5,
+.ellipseIcon6 {
+  position: absolute;
+  height: 10%;
+  width: 1.08%;
+  top: 18.57%;
+  right: 84.08%;
+  bottom: 71.43%;
+  left: 14.84%;
+  max-width: 100%;
+  max-height: 100%;
+}
+.ellipseIcon4,
+.ellipseIcon5,
+.ellipseIcon6 {
+  right: 60.28%;
+  left: 38.64%;
+}
+.ellipseIcon5,
+.ellipseIcon6 {
+  right: 34.31%;
+  left: 64.61%;
+}
+.ellipseIcon6 {
+  right: 10.66%;
+  left: 88.25%;
+}
+.leftBarDiv {
+  position: absolute;
+  top: 75px;
+  left: 159px;
+  width: 647px;
+  height: 70px;
+  color: #8a8a8a;
+}
+.akarIconsarrowForwardThick {
+  position: absolute;
+  top: 653px;
+  left: 1281px;
+  width: 41px;
+  height: 41px;
+  overflow: hidden;
+  display: none;
+}
+.tablerarrowLeftIcon,
+.tablerarrowLeftIcon1,
+.tablerarrowLeftIcon2 {
+  position: absolute;
+  top: 650px;
+  left: 1277px;
+  width: 50px;
+  height: 50px;
+  overflow: hidden;
+}
+.tablerarrowLeftIcon1,
+.tablerarrowLeftIcon2 {
+  top: 435px;
+}
+.tablerarrowLeftIcon2 {
+  top: 555px;
+  left: 1699px;
+}
+.currentAchievementsDiv {
+  position: absolute;
+  height: 1.58%;
+  width: 14.74%;
+  top: 17.22%;
+  right: 48.44%;
+  bottom: 81.2%;
+  left: 36.82%;
+  text-align: right;
+  display: inline-block;
+}
+.trendingNowDiv {
+  position: absolute;
+  height: 2.28%;
+  width: 12.34%;
+  top: 18.26%;
+  right: 12.19%;
+  bottom: 79.47%;
+  left: 75.47%;
+  font-size: 36px;
+  font-weight: 800;
+  color: #fbe635;
+  display: inline-block;
+}
+.drinkWithIrishman,
+.tillDiv,
+.tillDiv1 {
+  position: absolute;
+  height: 1.39%;
+  width: 10.68%;
+  top: 20.24%;
+  right: 47.92%;
+  bottom: 78.38%;
+  left: 41.41%;
+  display: inline-block;
+}
+.tillDiv,
+.tillDiv1 {
+  width: 1.35%;
+  right: 45.21%;
+  left: 53.44%;
+}
+.tillDiv1 {
+  top: 22.91%;
+  bottom: 75.71%;
+}
+.div1,
+.div2 {
+  width: 5.26%;
+  text-align: right;
+}
+.div1 {
+  position: absolute;
+  height: 1.39%;
+  top: 20.24%;
+  right: 38.13%;
+  bottom: 78.38%;
+  left: 56.61%;
+  color: #194c74;
+  display: inline-block;
+}
+.div2 {
+  top: 22.27%;
+  right: 8.91%;
+  bottom: 76.35%;
+  left: 85.83%;
+  color: #fff;
+}
+.div2,
+.div3,
+.findAliensDiv,
+.saveTheDragon {
+  position: absolute;
+  height: 1.39%;
+  display: inline-block;
+}
+.div3 {
+  width: 5.26%;
+  top: 24.59%;
+  right: 8.91%;
+  bottom: 74.02%;
+  left: 85.83%;
+  color: #fff;
+  text-align: right;
+}
+.findAliensDiv,
+.saveTheDragon {
+  width: 8.96%;
+  top: 22.91%;
+  right: 49.64%;
+  bottom: 75.71%;
+  left: 41.41%;
+}
+.findAliensDiv {
+  width: 5.99%;
+  top: 22.27%;
+  right: 18.33%;
+  bottom: 76.35%;
+  left: 75.68%;
+  color: #fff;
+}
+.declarePeaceDiv {
+  width: 7.92%;
+  top: 24.59%;
+  right: 16.41%;
+  bottom: 74.02%;
+  left: 75.68%;
+  color: #fff;
+}
+.declarePeaceDiv,
+.div4,
+.findMoreDiv,
+.youHave3More {
+  position: absolute;
+  height: 1.39%;
+  display: inline-block;
+}
+.youHave3More {
+  width: 9.17%;
+  top: 25.78%;
+  right: 38.13%;
+  bottom: 72.84%;
+  left: 52.71%;
+  color: rgba(0, 0, 0, 0.29);
+}
+.div4,
+.findMoreDiv {
+  width: 5.31%;
+  top: 34.88%;
+  right: 8.33%;
+  bottom: 63.73%;
+  left: 86.35%;
+  color: #5b5b5b;
+}
+.div4 {
+  width: 5.26%;
+  top: 22.91%;
+  right: 38.13%;
+  bottom: 75.71%;
+  left: 56.61%;
+  color: #194c74;
+  text-align: right;
+}
+.tablergaugeIcon {
+  position: absolute;
+  top: 373px;
+  left: 1708px;
+  width: 36px;
+  height: 36px;
+  overflow: hidden;
+}
+.coursesDiv {
+  position: absolute;
+  height: 45.71%;
+  width: 23.46%;
+  top: 27.14%;
+  right: 28.15%;
+  bottom: 27.14%;
+  left: 48.4%;
+  display: inline-block;
+}
+.ellipseIcon7,
+.ellipseIcon8,
+.groupIcon1,
+.groupIcon2 {
+  position: absolute;
+  height: 39.07%;
+  width: 6.51%;
+  top: 30%;
+  right: 82.13%;
+  bottom: 30.93%;
+  left: 11.36%;
+  max-width: 100%;
+  max-height: 100%;
+}
+.ellipseIcon7,
+.ellipseIcon8,
+.groupIcon2 {
+  height: 40%;
+  width: 6.91%;
+  right: 63.21%;
+  bottom: 30%;
+  left: 29.88%;
+}
+.ellipseIcon7,
+.ellipseIcon8 {
+  height: 10%;
+  width: 1.73%;
+  top: 18.57%;
+  right: 39.75%;
+  bottom: 71.43%;
+  left: 58.52%;
+}
+.ellipseIcon8 {
+  height: 122.86%;
+  width: 21.23%;
+  top: -14.29%;
+  right: -1.48%;
+  bottom: -8.57%;
+  left: 80.25%;
+}
+.mSpan {
+  color: #f76d7d;
+}
+.lMTxtSpan {
+  line-break: anywhere;
+  width: 100%;
+}
+.lMB {
+  position: absolute;
+  height: 72.86%;
+  width: 12.59%;
+  top: 11.43%;
+  right: 0.99%;
+  bottom: 15.71%;
+  left: 86.42%;
+  line-height: 39.5px;
+  display: flex;
+  align-items: center;
+  color: #fbe635;
+}
+.rightBarDiv {
+  position: absolute;
+  top: 75px;
+  left: 1395px;
+  width: 405px;
+  height: 70px;
+  color: #8a8a8a;
+}
+.e529a00d39108817f5cb7aea883a8Div {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: 22px;
+  background-color: #fff;
+}
+.groupIcon3,
+.groupIcon4 {
+  position: absolute;
+  height: 74.4%;
+  width: 42.55%;
+  top: 3.53%;
+  right: 18.72%;
+  bottom: 22.08%;
+  left: 38.73%;
+  max-width: 100%;
+  max-height: 100%;
+}
+.groupIcon4 {
+  height: 62.79%;
+  width: 24.65%;
+  top: 12.83%;
+  right: 48.21%;
+  bottom: 24.37%;
+  left: 27.14%;
+}
+.interestsDiv {
+  position: absolute;
+  height: 5.01%;
+  width: 26.3%;
+  top: 7.51%;
+  right: 86.9%;
+  bottom: 87.48%;
+  left: -13.2%;
+  display: inline-block;
+}
+.bubblesDiv {
+  position: absolute;
+  top: 817px;
+  left: 720px;
+  width: 1076px;
+  height: 639px;
+  text-align: right;
+}
+.rectangleIcon1,
+.rectangleIcon2,
+.rectangleIcon3,
+.rectangleIcon4,
+.rectangleIcon5 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 220.5px;
+  width: 51px;
+  height: 51px;
+  object-fit: cover;
+}
+.rectangleIcon2,
+.rectangleIcon3,
+.rectangleIcon4,
+.rectangleIcon5 {
+  left: 33px;
+}
+.rectangleIcon3,
+.rectangleIcon4,
+.rectangleIcon5 {
+  left: 70px;
+}
+.rectangleIcon4,
+.rectangleIcon5 {
+  left: 106px;
+  border-radius: 155.5px;
+}
+.rectangleIcon5 {
+  left: 141px;
+  border-radius: 108.5px;
+}
+.rectangleIcon10,
+.rectangleIcon6,
+.rectangleIcon7,
+.rectangleIcon8,
+.rectangleIcon9 {
+  position: absolute;
+  top: 694px;
+  left: 1424px;
+  border-radius: 220.5px;
+  width: 51px;
+  height: 51px;
+  object-fit: cover;
+}
+.rectangleIcon10,
+.rectangleIcon7,
+.rectangleIcon8,
+.rectangleIcon9 {
+  left: 1457px;
+}
+.rectangleIcon10,
+.rectangleIcon8,
+.rectangleIcon9 {
+  left: 1494px;
+}
+.rectangleIcon10,
+.rectangleIcon9 {
+  left: 1530px;
+  border-radius: 155.5px;
+}
+.rectangleIcon10 {
+  left: 1565px;
+  border-radius: 108.5px;
+}
+.groupDiv2,
+.unionDiv {
+  width: 192px;
+  height: 51px;
+}
+.unionDiv {
+  position: relative;
+  background: linear-gradient(
+    -89.8deg,
+    #fff,
+    rgba(241, 237, 254, 0.85) 12.81%,
+    rgba(196, 196, 196, 0) 41.98%,
+    rgba(196, 196, 196, 0)
+  );
+}
+.groupDiv2 {
+  position: absolute;
+  top: 694px;
+  left: 1424px;
+}
+.personalPageDiv {
+  position: relative;
+  background-color: #f1edfe;
+  width: 100%;
+  height: 2021px;
+  overflow: hidden;
+  text-align: left;
+  font-size: 24px;
+  color: #000;
+  font-family: Roboto;
+}

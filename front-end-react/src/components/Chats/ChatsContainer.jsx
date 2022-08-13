@@ -119,9 +119,9 @@ const ChatsContainer = () => {
     // const props = {
     //     customRequest: ({file}) => UploadStatic(file),
     // beforeUpload: file => {
-    //   const isPNG = file.type === 'image/png';
+    //   const isPNG = file.type === 'image/front_png';
     //   if (!isPNG) {
-    //     console.log(`${file.name} is not a png file`);
+    //     console.log(`${file.name} is not a front_png file`);
     //   }
     //   return isPNG || Upload.LIST_IGNORE;
     // },

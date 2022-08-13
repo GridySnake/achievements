@@ -16,6 +16,8 @@ import CourseContentTaskContainer from "./Courses/CourseContentTaskContainer";
 import CourseContentCreateContainer from "./Courses/CourseContentCreateContainer";
 import MainNavbar from "./MainNavbar";
 import AchievementQRVerifyContainer from "./Achievements/AchievementQRVerifyContainer";
+import AchievementGeoContainer from "./Achievements/AchievementGeoContainer";
+import {PersonalPage} from "./style";
 
 // auth? <navbar + all> : <login + signup>
 const FrontRoutes = () => {
@@ -39,11 +41,13 @@ const FrontRoutes = () => {
                     <Route path="/study_course/:id" key="study_course:id" element={<CourseContentTableContainer/>}/>
                     <Route path="/study_course/:id/task/:task_id" key="study_course:id_task:task_id" element={<CourseContentTaskContainer/>}/>
                     <Route path="/course/:id/edit_content" key="_course_:id_edit_content" element={<CourseContentCreateContainer/>}/>
-                    <Route path="/verify_achievement/:qr" key="verify_achievement_qr:qr" element={<AchievementQRVerifyContainer/>}/>
+                    <Route path="/verify_achievement_qr/:qr" key="verify_achievement_qr:qr" element={<AchievementQRVerifyContainer/>}/>
                     <Route path="/goals"/>
+                    <Route path="/verify_achievement_geo/:achievement_id" key='verify_achievement_geo:achievement_id' element={<AchievementGeoContainer/>}/>
+                    <Route path='/1' key='1' element={<PersonalPage/>}/>
                 </Routes>
         </div>
 )
 }
 
-export default FrontRoutes
+export default FrontRoutes;

@@ -10,6 +10,7 @@ import {Option} from "antd/es/mentions";
 import { Image } from 'antd';
 import {useLocation} from "react-router-dom";
 import { Descriptions } from 'antd';
+import AchievementGeoContainer from "./AchievementGeoContainer";
 
 const AchievementContainer = () => {
     const [group, setGroup] = useState(null);
@@ -32,7 +33,9 @@ const AchievementContainer = () => {
     const [coords, setCoords] = useState(false);
     const [isReached, setIsReached] = useState(false);
     const {pathname} = useLocation();
-    const {id} = useParams()
+    const navigate = useNavigate();
+    const {id} = useParams();
+
     useEffect(() => {
         const setInfoAchievement = (Achievement_info) => {
             const Achievement = Achievement_info.achievement
@@ -48,7 +51,7 @@ const AchievementContainer = () => {
             setTest(Achievement.test_url)
             setIsReached(Achievement_info.is_reached)
             if (Achievement.achi_condition_group_id === 1) {
-                setQr(StaticQR.StaticQR + Achievement.value + '.png')
+                setQr(StaticQR.StaticQR + Achievement.value + '.front_png')
             } else {
                 setValues(Achievement.value)
             }
@@ -78,19 +81,40 @@ const AchievementContainer = () => {
                 setDesire(value.desire)
         })
         } else {
-            makeAction('/verify_achievement', {'achievement_id': id, 'user_type': 0}, (value) => {
+            if (group === 'Geolocation') {
+                makeAction('/verify_achievement_geo', {'achievement_id': id, 'user_type': 0,
+                    'lat': geopos.props.children[1], 'lon': geopos.props.children[2],
+                    'accuracy': geopos.props.children[3]}, (value) => {
+                    setIsReached(value.is_reached)
+                    setDesire(value.desire)
+                })
+            } else {
+                makeAction('/verify_achievement', {'achievement_id': id, 'user_type': 0}, (value) => {
                 setDesire(value.desire)
                 setIsReached(value.is_reached)
-        })
+            })
+            }
         }
     }
 
     const Verify = () => {
-        makeAction('/verify_achievement', {'achievement_id': id, 'user_type': 0}, (value) => {
-            setIsReached(value.is_reached)
-            setDesire(value.desire)
-        })
+        if (group === 'Geolocation') {
+                makeAction('/verify_achievement_geo', {'achievement_id': id, 'user_type': 0,
+                    'lat': geopos.props.children[1], 'lon': geopos.props.children[2],
+                    'accuracy': geopos.props.children[3]}, (value) => {
+                    setIsReached(value.is_reached)
+                    setDesire(value.desire)
+                })
+            } else {
+            makeAction('/verify_achievement', {'achievement_id': id, 'user_type': 0}, (value) => {
+                setIsReached(value.is_reached)
+                setDesire(value.desire)
+            })
+        }
     }
+
+    const geopos = AchievementGeoContainer()
+    console.log(geopos.props.children[1])
 
     return (
         owner?
@@ -144,6 +168,7 @@ const AchievementContainer = () => {
                     //         </Map>
                     //     </div>
                     // </YMaps>
+
                     :
                     <></>
                 }
@@ -167,7 +192,7 @@ const AchievementContainer = () => {
                 }
             </>
             :
-            <>1</>
+            <></>
     )
 }
 

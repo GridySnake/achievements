@@ -77,6 +77,8 @@ def setup_routes(app):
     app.router.add_route('GET', r'/verify/{i}', Verify.get, name='verify_i')
     app.router.add_route('POST', '/verify_achievement', verify_achievement,
                          name='verify_achievement')
+    app.router.add_route('POST', '/verify_achievement_geo', verify_achievement,
+                         name='verify_achievement_geo')
     app.router.add_route('POST', '/verify_achievement_qr', verify_achievement,
                          name='verify_achievement_qr')
     app.router.add_route('GET', r'/achievement/{i}', get_achievement_info, name='achievement')

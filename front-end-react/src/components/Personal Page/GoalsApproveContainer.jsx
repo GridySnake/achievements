@@ -9,6 +9,8 @@ const GoalsApproveContainer = (props) => {
     const [isApprovedGot, setIsApprovedGot] = useState(props.is_approved_got);
     const [approveDataGot, setApproveDataGot] = useState(props.approve_got);
     const id = props.id
+    console.log(approveDataGot)
+    console.log(approveData)
 
     const increase = (achievement_id, user_id) => {
         makeAction('/approve', {'achievement_id': achievement_id, 'user_id': user_id}, (value) => {
@@ -23,71 +25,81 @@ const GoalsApproveContainer = (props) => {
         makeAction('/disapprove', {'achievement_id': achievement_id, 'user_id': user_id, 'type': type,
             'user_type': 0},
             (value) => {
-            setIsApproved(value.is_approved)
-            setApproveData(value.approve)
-            setIsApprovedGot(value.is_approved_got)
-            setApproveDataGot(value.approve_got)
+                console.log(value.is_approved)
+                console.log(value.approve)
+                console.log(value.is_approved_got)
+                console.log(value.approve_got)
+                setIsApproved(value.is_approved)
+                setApproveData(value.approve)
+                setIsApprovedGot(value.is_approved_got)
+                setApproveDataGot(value.approve_got)
         })
     };
 
     return (
-        id?
+        id && (approveData || approveDataGot) ?
             <div>
-                {approveData ?
+                {approveData !== null ?
                     <div>
                         <p>Goals</p>
-                        {approveData.map((goal, index) => {
-                            return (
-                                <>
-                                    <a href={`/achievement/${goal.achievement_id}`}>{goal.name}</a>
-                                    <Progress type="circle" percent={goal.current_percentage}/>
-                                    {props.owner ?
-                                        <></>
-                                        :
-                                        <Button.Group>
-                                            <Button onClick={() => decline(goal.achievement_id, id, false)}
-                                                    icon={<MinusOutlined/>}
-                                                    disabled={!isApproved[index].approved}/>
-                                            <Button onClick={() => increase(goal.achievement_id, id)}
-                                                    icon={<PlusOutlined/>}
-                                                    disabled={isApproved[index].approved}/>
-                                        </Button.Group>
-                                    }
-                                </>
-                            )
-                        })
+                        {approveData ?
+                            approveData.map((goal, index) => {
+                                return (
+                                    <>
+                                        <a href={`/achievement/${goal.achievement_id}`}>{goal.name}</a>
+                                        <Progress type="circle" percent={goal.current_percentage}/>
+                                        {props.owner ?
+                                            <></>
+                                            :
+                                            <Button.Group>
+                                                <Button onClick={() => decline(goal.achievement_id, id, false)}
+                                                        icon={<MinusOutlined/>}
+                                                        disabled={!isApproved[index].approved}/>
+                                                <Button onClick={() => increase(goal.achievement_id, id)}
+                                                        icon={<PlusOutlined/>}
+                                                        disabled={isApproved[index].approved}/>
+                                            </Button.Group>
+                                        }
+                                    </>
+                                )
+                            })
+                            :
+                            <></>
                         }
                     </div>
                     :
                     <></>
                 }
-                {approveDataGot ?
+                {approveDataGot !== null ?
                     <div>
                         <p>Achievements</p>
-                        {approveDataGot.map((goal, index) => {
-                            return (
-                                <>
-                                    <a href={`/achievement/${goal.achievement_id}`}>{goal.name}</a>
-                                    <Progress type="circle" percent={goal.current_percentage}/>
-                                    {props.owner ?
-                                        <></>
-                                        :
-                                        <Button.Group>
-                                            <Button onClick={() => decline(goal.achievement_id, id, true)}
-                                                    icon={<MinusOutlined/>}
-                                                    disabled={!isApprovedGot[index].approved}/>
-                                            <Button onClick={() => increase(goal.achievement_id, id)}
-                                                    icon={<PlusOutlined/>}
-                                                    disabled={isApprovedGot[index].approved}/>
-                                        </Button.Group>
-                                    }
-                                </>
-                            )
-                        })
+                        {approveDataGot ?
+                                approveDataGot.map((goal, index) => {
+                                return (
+                                    <>
+                                        <a href={`/achievement/${goal.achievement_id}`}>{goal.name}</a>
+                                        <Progress type="circle" percent={goal.current_percentage}/>
+                                        {props.owner ?
+                                            <></>
+                                            :
+                                            <Button.Group>
+                                                <Button onClick={() => decline(goal.achievement_id, id, true)}
+                                                        icon={<MinusOutlined/>}
+                                                        disabled={!isApprovedGot[index].approved}/>
+                                                <Button onClick={() => increase(goal.achievement_id, id)}
+                                                        icon={<PlusOutlined/>}
+                                                        disabled={isApprovedGot[index].approved}/>
+                                            </Button.Group>
+                                        }
+                                    </>
+                                )
+                            })
+                            :
+                            <></>
                         }
                     </div>
-                :
-                <></>
+                    :
+                    <></>
                 }
             </div>
             :

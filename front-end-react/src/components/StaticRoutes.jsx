@@ -7,6 +7,7 @@ const StaticCoverLetters = "http://localhost:8082/static/cover_letter/"
 const StaticGroupAvatars = "http://localhost:8082/static/group_avatar/"
 const StaticPosts = "http://localhost:8082/static/image_posts/"
 const StaticQR = "http://localhost:8082/static/QR/"
+const StaticFrontPng = "http://localhost:8082/static/front_png/"
 
 export default {StaticAvatars, StaticCommunityAvatars, StaticConditions, StaticCourseAvatars, StaticCourseContent,
-    StaticCoverLetters, StaticGroupAvatars, StaticPosts, StaticQR}
+    StaticCoverLetters, StaticGroupAvatars, StaticPosts, StaticQR, StaticFrontPng}
