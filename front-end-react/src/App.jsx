@@ -11,23 +11,26 @@ import {AuthWrapper} from "./hooks/AuthHooks";
 // import Backdrop from '@mui/material/Backdrop';
 // import CircularProgress from '@mui/material/CircularProgress';
 import {useAuth, authContext} from "./hooks/AuthHooks";
-import MainNavbar from "./components/MainNavbar";
+import NavbarContainer from "./components/NavbarContainer";
+import FooterContainer from "./components/FooterContainer";
 
 function App() {
 
     const {user} = useAuth();
-
+    console.log(user)
     return (
         <div style={{background: "#F1EDFE"}}>
             {user ?
                 <>
-                    <MainNavbar {...user} style={{marginBottom: 200}}/>
-                    <FrontRoutes {...user} style={{marginTop: 200}} />
+                    <NavbarContainer {...user}/>
+                    <FrontRoutes {...user}/>
+                    <FooterContainer/>
                 </>
                 :
                 <>
-                    <MainNavbar {...user} style={{marginTop: 10}} />
+                    <NavbarContainer {...user} style={{marginTop: 10}} />
                     <FormLogin/>
+                    <FooterContainer/>
                 </>
             }
       {/*  <Backdrop*/}

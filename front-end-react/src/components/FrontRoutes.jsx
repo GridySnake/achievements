@@ -14,7 +14,7 @@ import CourseContainer from "./Courses/CourseContainer";
 import CourseContentTableContainer from "./Courses/CourseContentTableContainer";
 import CourseContentTaskContainer from "./Courses/CourseContentTaskContainer";
 import CourseContentCreateContainer from "./Courses/CourseContentCreateContainer";
-import MainNavbar from "./MainNavbar";
+import NavbarContainer from "./NavbarContainer";
 import AchievementQRVerifyContainer from "./Achievements/AchievementQRVerifyContainer";
 import AchievementGeoContainer from "./Achievements/AchievementGeoContainer";
 import {PersonalPage} from "./style";

@@ -1,44 +1,107 @@
 import React from "react";
-import {Link} from "react-router-dom";
-import {Menu, Button} from "antd";
-import {useAuth} from "../hooks/AuthHooks";
+import {useLocation} from "react-router-dom";
+import {Menu} from "antd";
 import styles from "./css/PersonalPage.module.css";
 import StaticFrontPng from './StaticRoutes'
 
-const MainNavbar = () => {
-    const {user} = useAuth();
-    const StaticFront = StaticFrontPng.StaticFrontPng
+const NavbarContainer = (user) => {
 
+    const StaticFront = StaticFrontPng.StaticFrontPng
+    const {pathname} = useLocation();
+    const initials = user.initials
+    console.log(pathname)
+
+    const LeftBarLinks = ['/chats', '/subscribes', '/communities', '/feed']
+
+    const LeftBarValues = [
+            {'link': '/chats', 'value': 'Messages', 'color': '#8A8A8A', 'className': styles.messagesDiv},
+            {'link': '/subscribes', 'value': 'Subscribes', 'color': '#8A8A8A', 'className': styles.friendsDiv},
+            {'link': '/communities', 'value': 'Communities', 'color': '#8A8A8A', 'className': styles.communitiesDiv},
+            {'link': '/feed', 'value': 'Feed', 'color': '#8A8A8A', 'className': styles.feedDiv}
+        ]
+
+    const page = LeftBarLinks.indexOf(pathname)
+
+    const AchievementsPNG = () => {
+        if (pathname === '/achievements') {
+            return StaticFront + "achievements_active.png"
+        } else {
+            return StaticFront + "achievements_default.png"
+        }
+    }
+
+    const GoalsPNG = () => {
+        if (pathname === '/goals') {
+            return StaticFront + "goals_active.png"
+        } else {
+            return StaticFront + "goals_default.png"
+        }
+    }
+
+    const leftBarEllipseV = [styles.ellipseIcon3, styles.ellipseIcon4, styles.ellipseIcon5, styles.ellipseIcon6]
+
+    const LeftBarEllipseStyleFunc = () => {
+        const LeftBarEllipseStyle = [false, false, false, false]
+        if (page === -1) {
+            return LeftBarEllipseStyle
+        } else {
+            LeftBarEllipseStyle.splice(page, 1, true)
+            return LeftBarEllipseStyle
+        }
+    }
+    const leftBarEllipseS = LeftBarEllipseStyleFunc()
+
+    console.log(initials)
     return (
-        user?
+        initials && user?
             // <Menu>
             <div className={styles.personalPageDiv}>
-                <img src="../../../static/front_png/goals.png"/>
                 <div className={styles.logoDiv}>
-                    <div className={styles.aCHIDiv}><a href={`/user/${user.user_id}`}>ACHI</a></div>
+                    <div className={styles.aCHIDiv}><a href={`/user/${user.user_id}`}><img src={StaticFront + 'logo.png'}/></a></div>
                 </div>
-                <div className={styles.leftBarDiv} style={{background: "#F1EDFE"}}>
+                <div className={styles.leftBarDiv}>
                     <div className={styles.rectangleDiv1} />
-                    <div className={styles.messagesDiv}><a href={"/chats"}>Messages</a></div>
-                    <div className={styles.friendsDiv}><a href={"/subscribes"}>Subscribes</a></div>
-                    <div className={styles.communitiesDiv}><a href={"/communities"}>Communities</a></div>
-                    <div className={styles.feedDiv}><a href={"/feed"}>Feed</a></div>
-                    <img className={styles.ellipseIcon3} alt="" />
-                    <img className={styles.ellipseIcon4} alt="" />
-                    <img className={styles.ellipseIcon5} alt="" />
-                    <img className={styles.ellipseIcon6} alt="" />
+                    {LeftBarValues.map((leftBar, index) => {
+                        if (page === index) {
+                            return (<div className={leftBar.className}><a href={leftBar.link}
+                                                                          style={{color: '#F76D7D'}}>{leftBar.value}</a>
+                            </div>)
+                        } else {
+                            return (<div className={leftBar.className}><a href={leftBar.link}
+                                                                          style={{color: leftBar.color}}>{leftBar.value}</a>
+                                </div>)
+                        }
+                    })
+                    }
+                    {leftBarEllipseV.map((ellipse, index) => {
+                        if (leftBarEllipseS[index] === true) {
+                            return (<img className={ellipse} src={StaticFront + 'ellipse_active.png'}/>)
+                        }
+                    })}
+                    {/*<img className={styles.ellipseIcon3} alt="" />*/}
+                    {/*<img className={styles.ellipseIcon4} alt="" />*/}
+                    {/*<img className={styles.ellipseIcon5} alt="" />*/}
+                    {/*<img className={styles.ellipseIcon6} alt="" />*/}
                 </div>
                 <div className={styles.rightBarDiv}>
                     <div className={styles.rectangleDiv1} />
-                    <div className={styles.coursesDiv}><a href={"/courses"}>Courses</a></div>
-                    <img className={styles.groupIcon1} src={StaticFront + "achievements.png"} />
-                    <img className={styles.groupIcon2} src={StaticFront + "goals.png"}/>
-                    <img className={styles.ellipseIcon7} />
+                    {pathname === '/courses' ?
+                        <div className={styles.coursesDiv}><a href={"/courses"} style={{color: '#F76D7D'}}>Courses</a></div>
+                        :
+                        <div className={styles.coursesDiv}><a href={"/courses"} style={{color: '#8A8A8A'}}>Courses</a></div>
+                    }
+                    <a href={"/achievements"}><img className={styles.groupIcon1} src={AchievementsPNG()} /></a>
+                    <a href={"/goals"}><img className={styles.groupIcon2} src={GoalsPNG()}/></a>
+                    {pathname === '/courses' ?
+                        <img className={styles.ellipseIcon7} src={StaticFront + 'ellipse_active.png'}/>
+                        :
+                        <></>
+                    }
                     <img className={styles.ellipseIcon8} src={StaticFront + "ellipse_name.png"} />
                     <b className={styles.lMB}>
                         <span className={styles.lMTxtSpan}>
-                            <span>L</span>
-                            <span className={styles.mSpan}>M</span>
+                            <span>{initials[0]}</span>
+                            <span className={styles.mSpan}>{initials[1]}</span>
                         </span>
                     </b>
                 </div>
@@ -81,4 +144,4 @@ const MainNavbar = () => {
     )
 }
 
-export default MainNavbar;
+export default NavbarContainer;

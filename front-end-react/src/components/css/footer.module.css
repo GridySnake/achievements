@@ -1,0 +1,182 @@
+.aCHI {
+  position: absolute;
+  top: 132px;
+  left: 66px;
+  display: inline-block;
+}
+.layer1Icon {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  max-width: 100%;
+  max-height: 100%;
+}
+.layer2Div,
+.logoDiv {
+  position: absolute;
+  top: -10px;
+  left: -66px;
+  width: 383px;
+  height: 383px;
+}
+.logoDiv {
+  height: 36.03%;
+  width: 13.13%;
+  top: 0;
+  right: 43.44%;
+  bottom: 63.97%;
+  left: 43.44%;
+  font-size: 110px;
+}
+.rectangleDiv {
+  position: absolute;
+  height: 74.02%;
+  width: 100%;
+  top: 25.98%;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: #9d86f6;
+}
+.achiCreativeDiv {
+  position: absolute;
+  height: 7.82%;
+  width: 7.34%;
+  top: 61.17%;
+  right: 74.84%;
+  bottom: 31.01%;
+  left: 17.81%;
+  display: inline-block;
+}
+.aboutDiv,
+.supportDiv {
+  height: 10.06%;
+  text-align: right;
+}
+.supportDiv {
+  position: absolute;
+  width: 4.43%;
+  top: 56.7%;
+  right: 16.56%;
+  bottom: 33.24%;
+  left: 79.01%;
+  display: inline-block;
+}
+.aboutDiv {
+  width: 3.33%;
+  top: 57.54%;
+  right: 25.63%;
+  bottom: 32.4%;
+  left: 71.04%;
+}
+.aboutDiv,
+.div,
+.fAQDiv {
+  position: absolute;
+  display: inline-block;
+}
+.fAQDiv {
+  height: 10.06%;
+  width: 3.33%;
+  top: 56.7%;
+  right: 8.59%;
+  bottom: 33.24%;
+  left: 88.07%;
+  text-align: right;
+}
+.div {
+  height: 7.82%;
+  width: 2.81%;
+  top: 74.58%;
+  right: 78.18%;
+  bottom: 17.6%;
+  left: 19.01%;
+}
+.bxbxCopyrightIcon {
+  position: absolute;
+  height: 6.7%;
+  width: 1.25%;
+  top: 61.73%;
+  right: 82.66%;
+  bottom: 31.56%;
+  left: 16.09%;
+  max-width: 100%;
+  max-height: 100%;
+  overflow: hidden;
+}
+.lineDiv,
+.lineDiv1 {
+  position: absolute;
+  height: 0.84%;
+  width: 28.59%;
+  top: 40.08%;
+  right: 35.7%;
+  bottom: 59.08%;
+  left: 35.7%;
+  border-top: 3px solid #000;
+  box-sizing: border-box;
+}
+.lineDiv1 {
+  top: 61.87%;
+  bottom: 37.29%;
+}
+.sUPPORTOURCOMMUNITY {
+  position: absolute;
+  height: 11.17%;
+  width: 26.72%;
+  top: 44.97%;
+  right: 35.78%;
+  bottom: 43.85%;
+  left: 37.5%;
+  font-size: 36px;
+  display: inline-block;
+}
+.groupIcon {
+  position: absolute;
+  height: 7.51%;
+  width: 1.73%;
+  top: 71.79%;
+  right: 52.02%;
+  bottom: 20.7%;
+  left: 46.25%;
+  max-width: 100%;
+  max-height: 100%;
+}
+.akarIconsfacebookFill,
+.biinstagramIcon,
+.cibvkIcon {
+  position: absolute;
+  height: 10.61%;
+  width: 1.98%;
+  top: 70.11%;
+  right: 40.1%;
+  bottom: 19.27%;
+  left: 57.92%;
+  max-width: 100%;
+  max-height: 100%;
+  overflow: hidden;
+}
+.biinstagramIcon,
+.cibvkIcon {
+  right: 45.83%;
+  left: 52.19%;
+}
+.biinstagramIcon {
+  right: 57.92%;
+  left: 40.1%;
+}
+.footerDiv {
+  position: absolute;
+  top: 1662px;
+  left: 0;
+  width: 1920px;
+  height: 358px;
+  text-align: left;
+  font-size: 24px;
+  color: #000;
+  font-family: Roboto;
+}

@@ -135,6 +135,16 @@ class UserGetInfo:
                                         """)
         return [dict(i) for i in users]
 
+    @staticmethod
+    async def get_initials(user_id: int, conn):
+        initials = await conn.fetchrow(f"""
+                                        select concat(substring(name from 1 for 1), substring(surname from 1 for 1)) 
+                                            as initials
+                                        from users_information
+                                        where user_id = {user_id}
+                                        """)
+        return initials['initials']
+
 
 class UserCreate:
     @staticmethod

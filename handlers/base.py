@@ -33,6 +33,8 @@ async def login(request):
     #     return web.HTTPFound(location=self.app.router['verify'].url_for())
     if user and user['password'] == hashlib.sha256(data['password'].encode('utf8')).hexdigest():
         del user['password']
+        async with pool.acquire() as conn:
+            user['initials'] = await UserGetInfo.get_initials(user_id=user['user_id'], conn=conn)
         payload = json.dumps(user)
         resp = json_response(user)
         resp.set_cookie(
