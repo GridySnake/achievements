@@ -13,6 +13,7 @@ import CoursesContainer from "./Courses/CoursesContainer";
 import CourseContainer from "./Courses/CourseContainer";
 import CourseContentTableContainer from "./Courses/CourseContentTableContainer";
 import CourseContentTaskContainer from "./Courses/CourseContentTaskContainer";
+import CommunityContainer from "./Communities/CommunityContainer";
 
 // auth? <navbar + all> : <login + signup>
 const FrontRoutes = () => {
@@ -37,6 +38,7 @@ const FrontRoutes = () => {
                     <Route path="/study_course/:id" key="study_course:id" element={<CourseContentTableContainer/>}/>
                     <Route path="/study_course/:id/task/:task_id" key="study_course:id_task:task_id" element={<CourseContentTaskContainer/>}/>
                     <Route path="/goals"/>
+                    <Route path="/community/:id" key="community:id" element={<CommunityContainer/>}/>
                 </Routes>
             </Router>
         </div>

@@ -29,7 +29,8 @@ async def communities_page(request):
         communities_recommend = await CommunityGetInfo.get_some_communities(user_id=user_id, conn=conn)
         conditions_to_join = await InfoGet.get_conditions(owner_type=1, conn=conn)
     return json_response({'communities': communities,
-                          'owner_communities': owner_communities,})
+                          'owner_communities': owner_communities,
+                          'communities_recommend': communities_recommend})
                           # 'conditions': conditions,
                           # 'community_types': community_types,
                           # 'dropdown_community': dropdown_community,
@@ -41,16 +42,17 @@ async def communities_page(request):
 
 async def community_page(request):
     community_id = str(request).split('/')[-1][:-2]
+    # print(community_id)
     pool = request.app['pool']
     user_id = json.loads(request.cookies['user'])['user_id']
+    access = False
+    participants_for_remove = None
+    subscribers = None
     async with pool.acquire() as conn:
         community = await CommunityGetInfo.get_community_info(community_id=community_id,
                                                               conn=conn)
-        access = False
         participants = await CommunityGetInfo.get_community_participants(community_id=community_id,
                                                                          conn=conn)
-        participants_for_remove = None
-        subscribers = None
         goals = await Goals.get_goals(user_id=community_id, user_type=1, conn=conn)
         payment_goals = await CommunityWalletGoal.get_payment_goal(community_id=community_id,
                                                                    conn=conn)
@@ -92,6 +94,8 @@ async def community_page(request):
                                                                                        owner_id=community_id,
                                                                                        owner_type=1,
                                                                                        conn=conn)
+        # print(allow)
+        # print(community)
         return json_response({'community': community,
                               'owners': owners,
                               'access': access,
@@ -108,6 +112,29 @@ async def community_page(request):
                               'conditions': conditions,
                               'allow': allow})
 
+
+async def join_community(request):
+    data = await request.json()
+    community_id = data['community_id']
+    user_id = json.loads(request.cookies['user'])['user_id']
+    pool = request.app['pool']
+    async with pool.acquire() as conn:
+        await CommunityAvatarAction.leave_join(community_id=community_id,
+                                               method='join', user_id=user_id,
+                                               conn=conn)
+    return json_response({'value': f'join_{community_id}'})
+
+
+async def leave_community(request):
+    data = await request.json()
+    community_id = data['community_id']
+    user_id = json.loads(request.cookies['user'])['user_id']
+    pool = request.app['pool']
+    async with pool.acquire() as conn:
+        await CommunityAvatarAction.leave_join(community_id=community_id,
+                                               method='leave', user_id=user_id,
+                                               conn=conn)
+    return json_response({'value': f'leave_{community_id}'})
 
 
 
