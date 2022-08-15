@@ -13,6 +13,7 @@ import {AuthWrapper} from "./hooks/AuthHooks";
 import {useAuth, authContext} from "./hooks/AuthHooks";
 import NavbarContainer from "./components/NavbarContainer";
 import FooterContainer from "./components/FooterContainer";
+import styles from "./components/css/PersonalPage.module.css";
 
 function App() {
 
@@ -21,10 +22,12 @@ function App() {
     return (
         <div style={{background: "#F1EDFE"}}>
             {user ?
+                // <div className={styles.personalPageDiv}>
                 <>
                     <NavbarContainer {...user}/>
                     <FrontRoutes {...user}/>
                     <FooterContainer/>
+                {/*// </div>*/}
                 </>
                 :
                 <>

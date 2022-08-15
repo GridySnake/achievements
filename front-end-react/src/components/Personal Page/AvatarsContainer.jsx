@@ -3,6 +3,7 @@ import StaticAvatars from "../StaticRoutes";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import styles from '../css/avatarPP.module.css'
 
 const AvatarsContainer = ({user}) => {
     const settings = {
@@ -14,14 +15,16 @@ const AvatarsContainer = ({user}) => {
     lazyLoad: true
   };
   return (
-    <div>
-      <Slider {...settings}>
-          {user.href.map((item, inx) => (
-        <div key={inx}>
-          <img src={StaticAvatars.StaticAvatars + item} style={{width: "405px", height: "540px"}}/>
-        </div>))}
-      </Slider>
-    </div>
+      user.href?
+          <div className={styles.avatarSlider}>
+          <Slider  {...settings} >
+              {user.href.map((item, inx) => (
+              <img key={inx} src={StaticAvatars.StaticAvatars + item}/>
+              ))}
+          </Slider>
+              </div>
+          :
+          <></>
   );
     // return (
     //     <div>

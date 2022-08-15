@@ -3,6 +3,7 @@ import {useLocation} from "react-router-dom";
 import {Menu} from "antd";
 import styles from "./css/PersonalPage.module.css";
 import StaticFrontPng from './StaticRoutes'
+import { Helmet } from "react-helmet";
 
 const NavbarContainer = (user) => {
 
@@ -56,6 +57,9 @@ const NavbarContainer = (user) => {
         initials && user?
             // <Menu>
             <div className={styles.personalPageDiv}>
+                <Helmet>
+                    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+                </Helmet>
                 <div className={styles.logoDiv}>
                     <div className={styles.aCHIDiv}><a href={`/user/${user.user_id}`}><img src={StaticFront + 'logo.png'}/></a></div>
                 </div>

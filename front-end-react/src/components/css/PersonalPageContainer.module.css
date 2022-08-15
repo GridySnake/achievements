@@ -1,0 +1,82 @@
+.groupDivInfo {
+  position: absolute;
+  top: 200px;
+  left: 242px;
+  width: 1133px;
+  height: 1261px;
+}
+
+.nameAge {
+  top: 606px;
+  font-size: 36px;
+  position: absolute;
+  left: 47px;
+  line-height: 32px;
+  display: inline-block;
+}
+
+.cityCountry {
+  top: 650px;
+  position: absolute;
+  left: 47px;
+  line-height: 32px;
+  display: inline-block;
+}
+
+.bio {
+  position: absolute;
+  top: 723px;
+  left: 48px;
+  line-height: 39.5px;
+  color: rgba(0, 0, 0, 0.57);
+  display: flex;
+  align-items: center;
+  width: 377px;
+  height: 378px;
+}
+
+.Div2, .Div3 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 22px;
+  background-color: #fff;
+  width: 445px;
+  height: 1261px;
+}
+
+.Div3 {
+  top: 103px;
+  left: 478px;
+  width: 655px;
+  height: 464px;
+}
+
+.employeeIcon {
+  position: absolute;
+  top: 1150px;
+  left: 177px;
+  width: 39px;
+  height: 39px;
+  overflow: hidden;
+}
+
+
+
+.avatarSlider {
+  position: absolute;
+  width: 405px;
+  height: 540px;
+  left: 262px;
+  top: 227px;
+  border-radius: 50px;
+}
+
+.avatarImg {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  left: 262px;
+  top: 227px;
+  border-radius: 50px;
+}
