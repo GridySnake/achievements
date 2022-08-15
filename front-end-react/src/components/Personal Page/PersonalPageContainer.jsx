@@ -6,8 +6,11 @@ import StaticAvatars from "../StaticRoutes";
 import AvatarsContainer from "./AvatarsContainer";
 import { useParams, useLocation } from 'react-router-dom'
 import makeAction from "../../api/PageActions";
+import GoalsApproveContainer from "./GoalsApproveContainer";
+import styles from '../css/PersonalPageContainer.module.css'
+import StaticFrontPng from "../StaticRoutes";
 
-const {Title} = Typography;
+const StaticFront = StaticFrontPng.StaticFrontPng
 
 const PersonalPageContainer = () => {
     const [PersonalPage, setPersonalPage] = useState(null);
@@ -25,10 +28,23 @@ const PersonalPageContainer = () => {
     const {id} = useParams();
     const {pathname} = useLocation();
     const [pEvent, setpEvent] = useState(null);
+    const [approve, setApprove] = useState(null);
+    const [isApproved, setIsApproved] = useState(null);
+    const [approveGot, setApproveGot] = useState(null);
+    const [isApprovedGot, setIsApprovedGot] = useState(null);
+    const [owner, setOwner] = useState(null);
+    const [reload, setReload] = useState(0);
 
     useEffect(() => {
         const fillUserInfo = (PersonalPage) => {
-            setPersonalPage(PersonalPage)
+            if (PersonalPage.need_verify) {
+                PersonalPage.need_verify.map((achievement) => {
+                    makeAction('/verify_achievement', {'achievement_id': achievement,
+                        'user_id': id, 'user_type': 0}, (value) => {
+                        setReload(reload+1)
+                    })
+                })
+            }
             setLike(PersonalPage.actions[0])
             setDislike(PersonalPage.actions[1])
             setRecommend(PersonalPage.actions[2])
@@ -41,9 +57,16 @@ const PersonalPageContainer = () => {
             setFollowers(PersonalPage.statistics.followers)
             setFollowings(PersonalPage.statistics.followings)
             setpEvent(pointEvent(PersonalPage.myPage))
+            setApprove(PersonalPage.approve)
+            setIsApproved(PersonalPage.is_approved)
+            setOwner(PersonalPage.myPage)
+            setApproveGot(PersonalPage.approve_got)
+            setIsApprovedGot(PersonalPage.is_approved_got)
+            setPersonalPage(PersonalPage)
+
         }
         GetPersonalPageInfo(fillUserInfo, id)
-    }, [id])
+    }, [id, reload])
 
     const CardReturn = (post) => {
         if (post.href) {
@@ -117,39 +140,48 @@ const PersonalPageContainer = () => {
 
         }
     }
+    const props = {
+        'approve': approve,
+        'is_approved': isApproved,
+        'approve_got': approveGot,
+        'is_approved_got': isApprovedGot,
+        'owner': owner,
+        'id': id
+    }
 
     return (
         PersonalPage ?
             <div>
-                <Col span={12}>
-                    <Title level={2}>{PersonalPage.user.name + ' ' + PersonalPage.user.surname}</Title>
-                    <Title level={2}>{PersonalPage.user.birthday}</Title>
-                </Col>
-                <Row>
-                    <Col span={12}>
-                        <AvatarsContainer user={PersonalPage.user} />
-                    </Col>
-                    <Col span={12}>
-                        <Row>
-                            <Button type="primary" htmlType="button" onClick={MakeLike} style={{background: likeColor,
+                <div className={styles.groupDivInfo}>
+                    <div className={styles.Div2} />
+                    <div className={styles.Div3} />
+                    <b className={styles.nameAge}>{PersonalPage.user.name + ' ' + PersonalPage.user.surname + ', ' + PersonalPage.user.age}</b>
+                    <div className={styles.cityCountry}>{PersonalPage.user.city + ', ' + PersonalPage.user.country}</div>
+                    <div className={styles.bio}>
+                        {PersonalPage.user.bio}
+                        <img className={styles.employeeIcon} alt="" src={StaticFront + 'employee.png'} />
+                    </div>
+                    <AvatarsContainer user={PersonalPage.user} />
+                </div>
+                <Button type="primary" htmlType="button" onClick={MakeLike} style={{background: likeColor,
                                 pointerEvents: pEvent}}
                                     icon={<LikeOutlined />} title="Likes">
                                 {likes}
-                            </Button>
-                            <Button type="primary" htmlType="button" onClick={MakeDislike} title="Dislikes"
+                </Button>
+                <Button type="primary" htmlType="button" onClick={MakeDislike} title="Dislikes"
                                     style={{background: dislikeColor, pointerEvents: pEvent}} icon={<DislikeOutlined />}>
                                 {dislikes}
-                            </Button>
-                            <Button type="primary" htmlType="button" onClick={MakeRecommend} title="Recommendations"
+                </Button>
+                <Button type="primary" htmlType="button" onClick={MakeRecommend} title="Recommendations"
                                     style={{background: recommendColor, pointerEvents: pEvent}} icon={<CheckCircleOutlined />}>
                                 {recommends}
-                            </Button>
-                            <Button type="primary" title="Followers" style={{pointerEvents: "none"}} icon={<TeamOutlined />}>
+                </Button>
+                <Button type="primary" title="Followers" style={{pointerEvents: "none"}} icon={<TeamOutlined />}>
                                 {followers}
-                            </Button>
-                            <Button type="primary" title="Followings" style={{pointerEvents: "none"}} icon={<UserOutlined />}>
+                </Button>
+                <Button type="primary" title="Followings" style={{pointerEvents: "none"}} icon={<UserOutlined />}>
                                 {followings}
-                            </Button>
+                </Button>
                             {/*<Button type="primary" htmlType="button" onClick={MakeDislike}>*/}
                             {/*    <StatisticContainer title='Dislikes' values={PersonalPage.statistics.dislikes}*/}
                             {/*                    icon={<DislikeOutlined />} action={PersonalPage.actions}*/}
@@ -166,10 +198,12 @@ const PersonalPageContainer = () => {
                             {/*                    icon={<TeamOutlined />} />*/}
                             {/*<StatisticContainer title='Followings' values={PersonalPage.statistics.followings}*/}
                             {/*                    icon={<UserOutlined />} />*/}
-                        </Row>
-                    </Col>
-                </Row>
-                <Title level={3}>{PersonalPage.user.bio}</Title>
+
+                {approve || approveGot ?
+                    <GoalsApproveContainer {...props}/>
+                    :
+                    <></>
+                }
                 <div>
                 {PersonalPage.posts.map((post) => {
                     return(

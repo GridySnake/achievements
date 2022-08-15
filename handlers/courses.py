@@ -136,6 +136,22 @@ async def upload_course_avatar(request):
     return json_response({'image_id': image_id})
 
 
+async def upload_course_content(request):
+    try:
+        data = await request.multipart()
+        course_id = str(request).split('/')[-1][:-2]
+        d = await data.next()
+        with open(os.path.join(BaseConfig.STATIC_DIR + f'/course_content/{course_id}/' + d.filename), 'wb') as f:
+            chunk = await d.read_chunk()
+            f.write(chunk)
+    except:
+        return json_response({'image_id': None})
+    pool = request.app['pool']
+    async with pool.acquire() as conn:
+        image_id = await Images.create_image(path=d.filename, image_type='course_content', conn=conn)
+    return json_response({'image_id': image_id})
+
+
 async def create_course(request):
     data = await request.json()
     if data['type'] == 0:

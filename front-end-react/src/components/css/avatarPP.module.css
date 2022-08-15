@@ -1,0 +1,17 @@
+.avatarSlider {
+  position: absolute;
+  width: 405px;
+  height: 540px;
+  left: 21px;
+  top: 20px;
+  border-radius: 50px;
+}
+
+.avatarImg {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  left: 262px;
+  top: 227px;
+  border-radius: 50px;
+}

@@ -28,7 +28,7 @@ class AchievementsGenerateData:
 
 class AchievementsGetInfo:
     @staticmethod
-    async def get_achievement_conditions(achievement_id: str, user_id: str, conn):
+    async def get_achievement_conditions(achievement_id, user_id, conn):
         conditions = await conn.fetch(f"""
                                           select agc.parameter_name, agc.condition_group_id, agc.aggregate_id, 
                                                 agc.service_id, ui.services_username, c.geo, c.value, c.equality, 
@@ -71,40 +71,61 @@ class AchievementsGetInfo:
         return [dict(i) for i in achievements]
 
     @staticmethod
-    async def get_users_approve_achievements(user_id: str, conn, user_active: str = None):
-        if user_active is not None:
-            achievement = await conn.fetch(f"""
-                                               select a.achievement_id, a.name, COUNT(aa.user_passive_id) as approve
+    async def get_users_approve_achievements(user_id: str, parameter: str, conn):
+        achievement = await conn.fetch(f"""
+                                           select a.achievement_id, a.name, 
+                                                COUNT(aa.user_passive_id) as approve_count, 
+                                                ac.value::int as approve_need,
+                                                round(COUNT(aa.user_passive_id)::numeric / 
+                                                    ac.value::int * 100, 2)::varchar 
+                                                    as current_percentage,
+                                                round(1.0 / ac.value::int * 100, 2)::varchar as step_percentage,
+                                                Extract(minute FROM statement_timestamp() - max(datetime))::int as delta
+                                            from achievements as a
+                                            right join
+                                            (
+                                                select unnest({parameter}) as {parameter}
+                                                from users_information
+                                                where user_id = {user_id}
+                                            ) as u
+                                            on u.{parameter} = a.achievement_id
+                                            left join approve_achievements as aa
+                                                on aa.achievement_id = a.achievement_id 
+                                                and aa.user_passive_id = {user_id}
+                                            right join achi_conditions as ac on ac.condition_id = any(a.conditions)
+                                            right join achi_generate_conditions as agc
+                                                on agc.parameter_id = ac.parameter_id and agc.condition_group_id = 7
+                                            where a.achievement_id is not null
+                                            group by a.achievement_id, a.name, ac.value
+                        """)
+        if len(achievement) > 0:
+            achievement = [dict(i) for i in achievement]
+        else:
+            achievement = None
+        return achievement
+
+    @staticmethod
+    async def is_user_approved(user_id: str, user_active_id: str, parameter: str, conn):
+        achievement = await conn.fetch(f"""
+                                               select case when count(aa.user_active_id) > 0 
+                                                    then true else false end as approved
                                                 from achievements as a
-                                                right join 
+                                                right join
                                                 (
-                                                    select unnest(achievements_desired_id) as achievements_desired_id 
-                                                    from users_information 
+                                                    select unnest({parameter}) as {parameter}
+                                                    from users_information
                                                     where user_id = {user_id}
-                                                ) as u 
-                                                on u.achievements_desired_id = a.achievement_id
-                                                left join approve_achievements as aa 
-                                                    on aa.achievement_id = a.achievement_id 
-                                                    and aa.user_active_id = {user_active}
+                                                ) as u
+                                                on u.{parameter} = a.achievement_id
+                                                left join approve_achievements as aa
+                                                    on aa.achievement_id = a.achievement_id and
+                                                    aa.user_active_id = {user_active_id}
                                                 right join achi_conditions as ac on ac.condition_id = any(a.conditions)
-                                                right join achi_generate_conditions as agc 
+                                                right join achi_generate_conditions as agc
                                                     on agc.parameter_id = ac.parameter_id and agc.condition_group_id = 7
                                                 where a.achievement_id is not null
-                                                group by a.achievement_id, a.name
+                                                group by a.achievement_id
                             """)
-        else:
-            achievement = await conn.fetch(f"""
-                                                select a.achievement_id, a.name
-                                                from achievements as a
-                                                right join (select unnest(achievements_desired_id) 
-                                                    as achievements_desired_id 
-                                                from users_information where user_id = {user_id}) as u 
-                                                on u.achievements_desired_id = a.achievement_id
-                                                right join achi_conditions as ac on ac.condition_id = any(a.conditions)
-                                                right join achi_generate_conditions as agc 
-                                                   on agc.parameter_id = ac.parameter_id and agc.condition_group_id = 7
-                                                where a.achievement_id is not null
-                """)
         if len(achievement) > 0:
             achievement = [dict(i) for i in achievement]
         else:
@@ -143,6 +164,15 @@ class AchievementsGetInfo:
                 where c.condition_id = {condition_id}
                 """)
         return achievements
+
+    @staticmethod
+    async def get_achievement_by_token(token: str, conn):
+        achievement = await conn.fetchrow(f"""
+                select a.achievement_id
+                from achievements as a
+                where a.achievement_qr = '{token}'
+                """)
+        return achievement['achievement_id']
 
     @staticmethod
     async def get_achievement_by_condition_value(value: str, conn):
@@ -235,6 +265,15 @@ class AchievementsGetInfo:
         return [dict(i) for i in achievements]
 
     @staticmethod
+    async def is_reach_achievement(user_id, achievement_id, conn):
+        is_reached = await conn.fetchrow(f"""
+                                            select case when count(*) > 0 then true else false end as is_reached
+                                            from users_information
+                                            where user_id = {user_id} and {achievement_id} = any(achievements_id)
+                                        """)
+        return is_reached['is_reached']
+
+    @staticmethod
     async def is_drop(achievement_id: int,  conn):
         drop = await conn.fetchrow(f"""
                 select 
@@ -289,6 +328,44 @@ class AchievementsGiveVerify:
                                    where course_id = {user_id}
                                 """)
 
+    @staticmethod
+    async def take_away_achievement(user_id: str, achievement_id: str, user_type: int, conn):
+        if user_type == 0:
+            table = 'users_information'
+            column_user = 'user_id'
+            column = 'achievements_id'
+            table_1 = 'user_statistics'
+            column_1 = 'achievements'
+        elif user_type == 1:
+            table = 'communities'
+            column_user = 'community_id'
+            column = 'achievements_get_id'
+            table_1 = 'community_statistics'
+            column_1 = 'reach_achievements'
+        elif user_type == 2:
+            table = 'courses'
+            column_user = 'course_id'
+            column = 'achievements_get_id'
+            table_1 = 'course_statistics'
+            column_1 = 'reach_achievements'
+        await conn.execute(f"""
+                               update {table}
+                                   set {column} = {column}[:(select 
+                                    array_position(ui.{column}, 
+                                    {achievement_id}) from {table} as ui where {column_user} = {user_id} and 
+                                    {achievement_id} = any({column}))-1] ||
+                                    {column}[(select array_position(ui.{column}, 
+                                        {achievement_id})
+                                    from {table} as ui where {column_user} = {user_id} and {achievement_id} = 
+                                    any({column}))+1:]
+                                    where {column_user} = {user_id}
+                               """)
+        await conn.execute(f"""
+                               update {table_1}
+                               set {column_1} = {column_1} - 1
+                               where {column_user} = {user_id}
+                            """)
+
     # @staticmethod
     # async def user_info_achievements_verify(achievement_id: str, value: str):
     #     
@@ -326,14 +403,14 @@ class AchievementsGiveVerify:
         #                            """)
 
     @staticmethod
-    async def qr_verify(user_id: str, value: str, conn):
+    async def qr_verify(value: str, conn):
         qr = await conn.fetchrow(f"""
                             select a.achievement_id
                             from achi_conditions as c
-                            inner join (select achievement_id, unnest(conditions) as conditions from achievements) as a 
-                                on a.conditions::integer = c.condition_id
+                            inner join (select achievement_id, unnest(conditions) as conditions, achievement_qr from 
+                            achievements) as a on a.conditions::integer = c.condition_id
                             left join achi_generate_conditions agc on c.parameter_id = agc.parameter_id
-                            where agc.condition_group_id = 1 and value = '{value}'
+                            where agc.condition_group_id = 1 and a.achievement_qr = '{value}'
             """)
             # await conn.execute(f"""
             #                     update users_information
@@ -404,22 +481,23 @@ class AchievementsGiveVerify:
                             """)
 
     @staticmethod
-    async def approve_verify(user_id: str, parameter_id: str, conn):
+    async def approve_verify(user_id: str, achievement_id: str, parameter_id: str, conn):
         achievements = await conn.fetchrow(f"""
                                                 select case when a.achievement_id is null then false
                                                         else true
                                                         end as approve
-                                                from (select achievement_id, conditions from achievements) as a
-                                                right join achi_conditions as c on c.condition_id = any(a.conditions)
+                                                from (select achievement_id, conditions from achievements 
+                                                    where achievement_id = {achievement_id}) as a
+                                                left join achi_conditions as c on c.condition_id = any(a.conditions) 
+                                                    and c.parameter_id = {parameter_id}
                                                 left join (
                                                     select a.achievement_id, COUNT(aa.user_passive_id) as approve_count
                                                 from achievements as a
-                                                left join approve_achievements as aa on aa.achievement_id = a.achievement_id
+                                                left join approve_achievements as aa 
+                                                    on aa.achievement_id = a.achievement_id
                                                     where aa.user_passive_id = {user_id}
                                                 group by a.achievement_id) as q on q.achievement_id = a.achievement_id
-                                                left join achi_generate_conditions agc on c.parameter_id = agc.parameter_id
-                                                where agc.condition_group_id = 7 and c.value::integer <= q.approve_count
-                                                    and c.parameter_id = {parameter_id}
+                                                where c.value::integer <= q.approve_count
                                              """)
         if achievements is None:
             achievements = False
@@ -473,6 +551,30 @@ class AchievementsDesireApprove:
                            """)
 
     @staticmethod
+    async def undesire_achievement(user_id: str, user_type: int, achievement_desire_id: str, conn):
+        if user_type == 0:
+            table = 'users_information'
+            column = 'user_id'
+        elif user_type == 1:
+            table = 'communities'
+            column = 'community_id'
+        elif user_type == 2:
+            table = 'courses'
+            column = 'course_id'
+        await conn.execute(f"""
+                               update {table}
+                                   set achievements_desired_id = achievements_desired_id[:(select 
+                                    array_position(ui.achievements_desired_id, 
+                                    {achievement_desire_id}) from {table} as ui where {column} = {user_id} and 
+                                    {achievement_desire_id} = any(achievements_desired_id))-1] ||
+                                    achievements_desired_id[(select array_position(ui.achievements_desired_id, 
+                                        {achievement_desire_id})
+                                    from {table} as ui where {column} = {user_id} and {achievement_desire_id} = 
+                                    any(achievements_desired_id))+1:]
+                                    where {column} = {user_id}
+                               """)
+
+    @staticmethod
     async def is_desire(user_id: str, achievement_desire_id: str, conn):
         data = await conn.fetchrow(f"""
                                        select count(achievements_desired_id)
@@ -490,15 +592,13 @@ class AchievementsDesireApprove:
         desire = await conn.fetchrow(f"""
                 select count(achievement_id) as count
                 from achievements as a
-                left join users_information as u on u.user_id = a.user_id and a.user_type = 0
-                left join communities as c on a.user_id = c.community_id and a.user_type = 1
-                left join courses as co on co.course_id = a.user_id and a.user_type = 2
-                left join users_information as u1 on a.achievement_id = any(u1.achievements_id) 
-                    or a.achievement_id = any(u1.achievements_desired_id)
-                where ({user_id} <> any(c.community_owner_id) or c.community_owner_id is null) and
-                      ({user_id} <> co.course_owner_id or co.course_owner_id is null) and
-                      (u1.user_id is null or u1.user_id <> {user_id}) and
-                      u.user_id <> {user_id} and a.achievement_id = {achievement_id}
+                left join users_information as u on u.user_id = a.user_id and a.user_type = 0 and u.user_id <> {user_id}
+                left join communities as c on a.user_id = c.community_id and a.user_type = 1 
+                    and ({user_id} <> any(c.community_owner_id) or c.community_owner_id is null)
+                left join courses as co on co.course_id = a.user_id and a.user_type = 2 
+                    and ({user_id} <> co.course_owner_id or co.course_owner_id is null)
+                left join users_information as u1 on a.achievement_id = any(u1.achievements_desired_id)
+                where u1.user_id = {user_id} and a.achievement_id = {achievement_id}
                 """)
         if desire['count'] > 0:
             is_desired = True
@@ -519,9 +619,17 @@ class AchievementsDesireApprove:
             id = 0
         await conn.execute(f"""
                                insert into approve_achievements (approvement_id, user_active_id, user_passive_id, 
-                                    achievement_id) values (
-                               {id}, {user_active_id}, {user_passive_id}, {achievement_id})
+                                    achievement_id, datetime) values (
+                               {id}, {user_active_id}, {user_passive_id}, {achievement_id}, statement_timestamp())
                        """)
+
+    @staticmethod
+    async def disapprove_achievement(user_active_id: str, user_passive_id: str, achievement_id: str, conn):
+        await conn.execute(f"""
+                                delete from approve_achievements 
+                                where user_passive_id = {user_passive_id} and user_active_id = {user_active_id} 
+                                    and achievement_id = {achievement_id}
+                           """)
 
     @staticmethod
     async def get_data_for_test(user_id: str, condition_id: str, conn):

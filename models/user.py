@@ -25,11 +25,15 @@ class UserGetInfo:
     @staticmethod
     async def get_user_by_id(user_id: str, conn):
         user = await conn.fetchrow(f"""
-                                        select name, surname, bio, birthday::varchar, array_agg(i.href) as href
+                                        select name, surname, age, bio, birthday::varchar, array_agg(i.href) as href,
+                                            array_to_string(array_agg(distinct co.country_name_native), '') as country, 
+                                            array_to_string(array_agg(distinct ci.city_name), '') as city
                                         from users_information as ui
                                         left join (select image_id, image_type, href from images order by create_date 
                                             desc) as i on i.image_id = any(ui.image_id)
                                             and image_type='user'
+                                        left join countries as co on co.country_id = ui.country_id
+                                        left join cities as ci on ci.city_id = ui.city_id
                                         where user_id = {user_id}
                                         group by user_id
                                     """)
@@ -134,6 +138,16 @@ class UserGetInfo:
                                                 where {user_id} = {where[user_type]}
                                         """)
         return [dict(i) for i in users]
+
+    @staticmethod
+    async def get_initials(user_id: int, conn):
+        initials = await conn.fetchrow(f"""
+                                        select concat(substring(name from 1 for 1), substring(surname from 1 for 1)) 
+                                            as initials
+                                        from users_information
+                                        where user_id = {user_id}
+                                        """)
+        return initials['initials']
 
 
 class UserCreate:

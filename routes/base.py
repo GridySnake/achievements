@@ -51,11 +51,15 @@ def setup_routes(app):
     app.router.add_route('POST', '/unblock', unblock, name='unblock')
     app.router.add_route('POST', '/verify_message_to_achi', AchievementInfoView.post, name='verify_message_to_achi')
     app.router.add_route('POST', '/desire', desire_achievement, name='desire')
+    app.router.add_route('POST', '/undesire', undesire_achievement, name='undesire')
     app.router.add_route('POST', '/drop_achievement', drop_achievement, name='drop_achievement')
     app.router.add_route('POST', '/show_achievement', show_achievement, name='show_achievement')
     app.router.add_route('POST', '/hide_achievement', hide_achievement, name='hide_achievement')
     app.router.add_route('POST', '/approve', AchievementDesireView.post, name='approve')
     # app.router.add_route('GET', '/community', CommunitiesView.get, name='community')
+    app.router.add_route('POST', '/approve', approve_achievement, name='approve')
+    app.router.add_route('POST', '/disapprove', disapprove_achievement, name='disapprove')
+    app.router.add_route('GET', '/community', CommunitiesView.get, name='community')
     app.router.add_route('POST', '/create_community', CommunitiesView.post, name='create_community')
     app.router.add_route('POST', '/save_community_avatar', CommunitiesInfoView.post, name='save_community_avatar')
     app.router.add_route('POST', '/leave_community', leave_community, name='leave_community')
@@ -73,9 +77,12 @@ def setup_routes(app):
     app.router.add_route('GET', '/courses', get_courses, name='courses')
     app.router.add_route('GET', r'/chat/{i}', get_chat, name='chat')
     app.router.add_route('GET', r'/verify/{i}', Verify.get, name='verify_i')
-    app.router.add_route('POST', r'/verify_achievement', AchievementsVerificationView.post, name='verify_achievement')
-    app.router.add_route('POST', r'/verify_achievement/{i}', AchievementsVerificationView.post,
-                         name='qr_verify_achievement')
+    app.router.add_route('POST', '/verify_achievement', verify_achievement,
+                         name='verify_achievement')
+    app.router.add_route('POST', '/verify_achievement_geo', verify_achievement,
+                         name='verify_achievement_geo')
+    app.router.add_route('POST', '/verify_achievement_qr', verify_achievement,
+                         name='verify_achievement_qr')
     app.router.add_route('GET', r'/achievement/{i}', get_achievement_info, name='achievement')
     app.router.add_route('GET', r'/community/{i}', community_page, name='community')
     app.router.add_route('GET', r'/community/{i}/cover_letter_interview', ApproveConditionsView.get,
@@ -116,7 +123,9 @@ def setup_routes(app):
     app.router.add_route('GET', '/auth', auth)
     app.router.add_route('POST', '/upload_group_avatar', upload_group_avatar)
     app.router.add_route('POST', '/upload_course_avatar', upload_course_avatar)
+    app.router.add_route('POST', r'/upload_course_content/course_{i}', upload_course_content)
     app.router.add_route('POST', '/remove_image', remove_image)
+    app.router.add_route('POST', '/remove_image_course_content', remove_image_course_content)
     app.router.add_route('GET', r'/study_course/{i}', course_content)
     app.router.add_route('GET', r'/study_course/{i}/task/{j}', course_content_task)
 

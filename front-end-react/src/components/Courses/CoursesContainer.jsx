@@ -200,7 +200,7 @@ const CoursesContainer = () => {
           console.log(info.file, info.fileList);
         }
         if (status === 'done') {
-          setAvatar(info.file)
+          setAvatar(info.file.xhr.response.split(': ')[1].split('}')[0])
         } else if (status === 'error') {
           console.log(`${info.file.name} file upload failed.`);
         }

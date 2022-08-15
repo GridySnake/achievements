@@ -16,7 +16,7 @@ engine = create_engine(BaseConfig.database_url)
 #                          """)
 
 # engine.execute("""insert INTO avatars (avatar_id, user_id, url) values(
-#                             0, 0, 'C:/Users/kunil/PycharmProjects/social-network/static/avatars/номер.png')""")
+#                             0, 0, 'C:/Users/kunil/PycharmProjects/social-network/static/avatars/номер.front_png')""")
 
 # engine.execute(f"""
 #                         insert INTO posts (post_id, user_id, message, date_created) values(

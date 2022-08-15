@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import FormLogin from "./FormLogin";
 import FormSignUp from "./FormSignUp";
 import PersonalPageContainer from "./Personal Page/PersonalPageContainer";
@@ -14,12 +14,16 @@ import CourseContainer from "./Courses/CourseContainer";
 import CourseContentTableContainer from "./Courses/CourseContentTableContainer";
 import CourseContentTaskContainer from "./Courses/CourseContentTaskContainer";
 import CommunityContainer from "./Communities/CommunityContainer";
+import CourseContentCreateContainer from "./Courses/CourseContentCreateContainer";
+import NavbarContainer from "./NavbarContainer";
+import AchievementQRVerifyContainer from "./Achievements/AchievementQRVerifyContainer";
+import AchievementGeoContainer from "./Achievements/AchievementGeoContainer";
+import {PersonalPage} from "./style";
 
 // auth? <navbar + all> : <login + signup>
 const FrontRoutes = () => {
     return (
         <div>
-            <Router>
                 <Routes>
                     <Route path="/signup" key="signup" element={<FormSignUp/>}/>
                     <Route path="/login" key="login" element={<FormLogin/>}/>
@@ -37,12 +41,15 @@ const FrontRoutes = () => {
                     <Route path="/course/:id" key="course:id" element={<CourseContainer/>}/>
                     <Route path="/study_course/:id" key="study_course:id" element={<CourseContentTableContainer/>}/>
                     <Route path="/study_course/:id/task/:task_id" key="study_course:id_task:task_id" element={<CourseContentTaskContainer/>}/>
+                    <Route path="/course/:id/edit_content" key="_course_:id_edit_content" element={<CourseContentCreateContainer/>}/>
+                    <Route path="/verify_achievement_qr/:qr" key="verify_achievement_qr:qr" element={<AchievementQRVerifyContainer/>}/>
                     <Route path="/goals"/>
                     <Route path="/community/:id" key="community:id" element={<CommunityContainer/>}/>
+                    <Route path="/verify_achievement_geo/:achievement_id" key='verify_achievement_geo:achievement_id' element={<AchievementGeoContainer/>}/>
+                    <Route path='/1' key='1' element={<PersonalPage/>}/>
                 </Routes>
-            </Router>
         </div>
 )
 }
 
-export default FrontRoutes
+export default FrontRoutes;

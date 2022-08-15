@@ -1,0 +1,91 @@
+.groupNeedsToUseAutolayout,
+.rightBarNeedsToUseAutola {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border: 4px solid red;
+  box-sizing: border-box;
+  width: 405px;
+  height: 70px;
+}
+.groupNeedsToUseAutolayout {
+  top: 22px;
+  left: 47px;
+  width: 24.36px;
+  height: 25.35px;
+}
+.vectorNeedsToBeARasteriz,
+.vectorNeedsToBeARasteriz1,
+.vectorNeedsToBeARasteriz2 {
+  position: absolute;
+  top: 22px;
+  left: 50.68px;
+  border: 4px solid red;
+  box-sizing: border-box;
+  width: 17px;
+  height: 17px;
+}
+.vectorNeedsToBeARasteriz1,
+.vectorNeedsToBeARasteriz2 {
+  top: 34.75px;
+  left: 59.18px;
+  width: 12.18px;
+  height: 12.59px;
+}
+.vectorNeedsToBeARasteriz2 {
+  left: 47px;
+}
+.groupNeedsToUseAutolayout1,
+.vectorNeedsToBeARasteriz4,
+.vectorNeedsToBeARasteriz5 {
+  position: absolute;
+  top: 22px;
+  left: 122px;
+  border: 4px solid red;
+  box-sizing: border-box;
+  width: 26px;
+  height: 26px;
+}
+.vectorNeedsToBeARasteriz4,
+.vectorNeedsToBeARasteriz5 {
+  top: 33.56px;
+  left: 133.56px;
+  width: 2.89px;
+  height: 2.89px;
+}
+.vectorNeedsToBeARasteriz5 {
+  top: 29.22px;
+  left: 137.04px;
+  width: 3.74px;
+  height: 3.74px;
+}
+.ellipse40NeedsToUseAutol,
+.ellipse8NeedsToUseAutola,
+.vectorNeedsToBeARasteriz6 {
+  position: absolute;
+  top: 27.78px;
+  left: 127.78px;
+  border: 4px solid red;
+  box-sizing: border-box;
+  width: 7.22px;
+  height: 7.22px;
+}
+.ellipse40NeedsToUseAutol,
+.ellipse8NeedsToUseAutola {
+  top: 13px;
+  left: 237px;
+  width: 7px;
+  height: 7px;
+}
+.ellipse8NeedsToUseAutola {
+  top: -10px;
+  left: 325px;
+  width: 86px;
+  height: 86px;
+}
+.exportToCodeErrorsDelete {
+  position: relative;
+  width: 100%;
+  height: 70px;
+  overflow: hidden;
+}
