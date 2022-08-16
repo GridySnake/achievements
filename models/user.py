@@ -149,6 +149,33 @@ class UserGetInfo:
                                         """)
         return initials['initials']
 
+    @staticmethod
+    async def get_interests_sphere(user_id: str, conn):
+        interests = await conn.fetch(f"""
+                                        select array_to_string(array_agg(distinct s.sphere_name), '') as sphere_name, 
+                                            count(a.achievement_id) as count_achievements
+                                            from users_information as ui
+                                            inner join achievements as a on a.achievement_id = any(ui.achievements_id)
+                                            inner join spheres as s on a.subsphere_id = s.subsphere_id
+                                            where ui.user_id = {user_id}
+                                            group by s.sphere_id
+                                       """)
+        return [dict(i) for i in interests]
+
+    @staticmethod
+    async def get_interests_subsphere(user_id: str, conn):
+        interests = await conn.fetch(f"""
+                                         select array_to_string(array_agg(distinct s.subsphere_name), '') 
+                                                as subsphere_name, 
+                                              count(a.achievement_id) as count_achievements
+                                              from users_information as ui
+                                              inner join achievements as a on a.achievement_id = any(ui.achievements_id)
+                                              inner join spheres as s on a.subsphere_id = s.subsphere_id
+                                              where ui.user_id = {user_id}
+                                              group by s.subsphere_name
+                                      """)
+        return [dict(i) for i in interests]
+
 
 class UserCreate:
     @staticmethod

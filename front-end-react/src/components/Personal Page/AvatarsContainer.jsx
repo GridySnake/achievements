@@ -18,9 +18,11 @@ const AvatarsContainer = ({user}) => {
       user.href?
           <div className={styles.avatarSlider}>
           <Slider  {...settings} >
-              {user.href.map((item, inx) => (
-              <img key={inx} src={StaticAvatars.StaticAvatars + item}/>
-              ))}
+              {user.href.map((item, inx) => {
+                  // <div className={styles.avatar} style={{backgroundImage: `url(${StaticAvatars.StaticAvatars + item})`}}/>
+                  return (<img key={inx} src={StaticAvatars.StaticAvatars + item}/>)
+              })
+              }
           </Slider>
               </div>
           :

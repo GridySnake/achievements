@@ -24,6 +24,8 @@ async def personal_page(request):
     user_id = json.loads(request.cookies['user'])['user_id']
     async with pool.acquire() as conn:
         user = await UserGetInfo.get_user_by_id(user_id=location, conn=conn)
+        interests_sphere = await UserGetInfo.get_interests_sphere(user_id=location, conn=conn)
+        interests_subsphere = await UserGetInfo.get_interests_subsphere(user_id=location, conn=conn)
         subscribes = await SubscribesGetInfo.get_user_subscribes_names(user_id=location, conn=conn)
         posts = await Post.get_posts_by_user(user_id=location, conn=conn)
         achievements = await AchievementsGetInfo.get_users_achievements(user_id=location, conn=conn)
@@ -88,4 +90,5 @@ async def personal_page(request):
                           'subscribes': subscribes, 'achievements': achievements, 'goals': goals,
                           'conditions': condition_to_chat, 'allow': allow, 'block': block, 'actions': actions,
                           'approve': approve, 'is_approved': is_approved, 'need_verify': need_verify,
-                          'approve_got': approve_got, 'is_approved_got': is_approved_got})
+                          'approve_got': approve_got, 'is_approved_got': is_approved_got,
+                          'interests_sphere': interests_sphere, 'interests_subsphere': interests_subsphere})

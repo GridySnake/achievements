@@ -25,8 +25,10 @@ const PersonalPageContainer = () => {
     const [recommends, setRecommends] = useState(null);
     const [followers, setFollowers] = useState(null);
     const [followings, setFollowings] = useState(null);
-    const {id} = useParams();
-    const {pathname} = useLocation();
+    const [interestsSphere, setInterestsSphere] = useState(null);
+    const [interestsSubsphere, setInterestsSubsphere] = useState(null);
+    const [needBubble, setNeedBubble] = useState(null);
+    const [hoverTag, setHoverTag] = useState(null);
     const [pEvent, setpEvent] = useState(null);
     const [approve, setApprove] = useState(null);
     const [isApproved, setIsApproved] = useState(null);
@@ -34,6 +36,10 @@ const PersonalPageContainer = () => {
     const [isApprovedGot, setIsApprovedGot] = useState(null);
     const [owner, setOwner] = useState(null);
     const [reload, setReload] = useState(0);
+
+    const {id} = useParams();
+    const {pathname} = useLocation();
+
 
     useEffect(() => {
         const fillUserInfo = (PersonalPage) => {
@@ -62,6 +68,8 @@ const PersonalPageContainer = () => {
             setOwner(PersonalPage.myPage)
             setApproveGot(PersonalPage.approve_got)
             setIsApprovedGot(PersonalPage.is_approved_got)
+            setInterestsSphere(PersonalPage.interests_sphere)
+            setInterestsSubsphere(PersonalPage.interests_subsphere)
             setPersonalPage(PersonalPage)
 
         }
@@ -149,17 +157,66 @@ const PersonalPageContainer = () => {
         'id': id
     }
 
+    const Detailed = (index) => {
+        setNeedBubble(index)
+        setHoverTag(interestsSphere[index].sphere_name)
+    }
+
+    const UnDetailed = () => {
+        setNeedBubble(null)
+        setHoverTag(null)
+    }
+
+    const Hover = (value) => {
+        setHoverTag(value)
+    }
+
+    const UnHover = () => {
+        setHoverTag(null)
+    }
+
     return (
         PersonalPage ?
             <div>
                 <div className={styles.groupDivInfo}>
                     <div className={styles.Div2} />
                     <div className={styles.Div3} />
+                    <AvatarsContainer user={PersonalPage.user} />
                     <b className={styles.nameAge}>{PersonalPage.user.name + ' ' + PersonalPage.user.surname + ', ' + PersonalPage.user.age}</b>
                     <div className={styles.cityCountry}>{PersonalPage.user.city + ', ' + PersonalPage.user.country}</div>
                     <div className={styles.bio}>{PersonalPage.user.bio}</div>
                     <img className={styles.employeeIcon} alt="" src={StaticFront + 'employee.png'} />
-                    <AvatarsContainer user={PersonalPage.user} />
+                    <div className={styles.employeeName}>1C Game Studios</div>
+                    <div className={styles.employeeTag}>Employee</div>
+                </div>
+
+                <div className={styles.interestsDiv}>
+                    <div className={styles.interestsDiv1} />
+                    <div className={styles.bubbleHoverTag}>{hoverTag}</div>
+                    <div className={styles.bubbleDiv}>
+                        {interestsSphere?
+                            interestsSphere.map((interest, index) => {
+                                if (needBubble !== null) {
+                                    if (index !== needBubble) {
+                                        return (<div key={index} className={styles.circleNoActive}
+                                                     onClick={() => Detailed(index)}
+                                        >{interest.count_achievements}</div>)
+                                    } else {
+                                        return (<div key={index} className={styles.circleActive}
+                                                     onClick={() => UnDetailed()}
+                                        >{interest.count_achievements}</div>)
+                                    }
+                                } else {
+                                    return (<div key={index} className={styles.circleDefault} onMouseEnter={() => Hover(interest.sphere_name)}
+                                                     onMouseLeave={UnHover} onClick={() => Detailed(index)}
+                                        >{interest.count_achievements}</div>)
+                                }
+                            })
+                            :
+                            <></>
+                        }
+                    </div>
+                    <div className={styles.interestsTag}>Interests</div>
                 </div>
                 <Button type="primary" htmlType="button" onClick={MakeLike} style={{background: likeColor,
                                 pointerEvents: pEvent}}

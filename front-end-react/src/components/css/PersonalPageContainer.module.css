@@ -44,7 +44,6 @@
   width: 445px;
   height: 1261px;
 }
-
 .Div3 {
   top: 103px;
   left: 478px;
@@ -61,6 +60,35 @@
   overflow: hidden;
 }
 
+.employeeTag {
+  position: absolute;
+  left: 47px;
+  line-height: 32px;
+  display: inline-block;
+  top: 650px;
+}
+.employeeTag {
+  top: 1189px;
+  left: 315px;
+}
+
+.employeeName {
+  position: absolute;
+  left: 47px;
+  line-height: 32px;
+  display: inline-block;
+}
+.employeeName {
+  top: 650px;
+}
+.employeeName {
+  top: 1189px;
+  left: 315px;
+}
+.employeeName {
+  top: 1157px;
+  left: 234px;
+}
 
 
 .avatarSlider {
@@ -79,4 +107,117 @@
   left: 262px;
   top: 227px;
   border-radius: 50px;
+}
+
+
+.interestsDiv {
+  position: absolute;
+  top: 817px;
+  left: 720px;
+  width: 1076px;
+  height: 639px;
+  text-align: right;
+}
+
+.interestsDiv1 {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: 22px;
+  background-color: #fff;
+}
+
+.interestsTag {
+  position: absolute;
+  height: 5.01%;
+  width: 26.3%;
+  top: 7.51%;
+  right: 86.9%;
+  bottom: 87.48%;
+  left: -13.2%;
+  display: inline-block;
+}
+
+.bubbleDiv {
+  position: absolute;
+  top: 20%;
+  left: 10%;
+  right: 10%;
+  bottom: 10%;
+  border-radius: 22px;
+}
+
+.circleDefault {
+  top: 5%;
+  left: 5%;
+  right: 5%;
+  bottom: 5%;
+  margin: 5%;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: #9D86F6;
+  color: white;
+  text-align: center;
+}
+
+.circleNoActive {
+  top: 5%;
+  left: 5%;
+  right: 5%;
+  bottom: 5%;
+  margin: 5%;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: rgba(190, 187, 202, 0.52);
+  color: white;
+  text-align: center;
+}
+
+.circleActive {
+  top: 5%;
+  left: 5%;
+  right: 5%;
+  bottom: 5%;
+  margin: 5%;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: #FFE614;
+  color: white;
+  text-align: center;
+}
+
+.circleHoverDetailed {
+  top: 5%;
+  left: 5%;
+  right: 5%;
+  bottom: 5%;
+  margin: 5%;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: #564E76;
+  color: white;
+  text-align: center;
+}
+
+.bubbleHoverTag {
+  position: absolute;
+  left: 57.53%;
+  right: 12.92%;
+  top: 78.92%;
+  bottom: 13.58%;
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 700;
+  font-size: 48px;
+  line-height: 56px;
+  text-align: right;
+  color: #FBE635;
 }

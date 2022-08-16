@@ -15,3 +15,14 @@
   top: 227px;
   border-radius: 50px;
 }
+
+.avatar {
+
+position: absolute;
+width: 405px;
+height: 540px;
+left: 262px;
+top: 227px;
+border-radius: 50px;
+
+}
