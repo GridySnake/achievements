@@ -27,7 +27,7 @@ function App() {
                     <NavbarContainer {...user}/>
                     <FrontRoutes {...user}/>
                     <FooterContainer/>
-                {/*// </div>*/}
+                {/*</div>*/}
                 </>
                 :
                 <>

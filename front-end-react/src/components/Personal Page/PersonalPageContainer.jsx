@@ -157,10 +157,8 @@ const PersonalPageContainer = () => {
                     <div className={styles.Div3} />
                     <b className={styles.nameAge}>{PersonalPage.user.name + ' ' + PersonalPage.user.surname + ', ' + PersonalPage.user.age}</b>
                     <div className={styles.cityCountry}>{PersonalPage.user.city + ', ' + PersonalPage.user.country}</div>
-                    <div className={styles.bio}>
-                        {PersonalPage.user.bio}
-                        <img className={styles.employeeIcon} alt="" src={StaticFront + 'employee.png'} />
-                    </div>
+                    <div className={styles.bio}>{PersonalPage.user.bio}</div>
+                    <img className={styles.employeeIcon} alt="" src={StaticFront + 'employee.png'} />
                     <AvatarsContainer user={PersonalPage.user} />
                 </div>
                 <Button type="primary" htmlType="button" onClick={MakeLike} style={{background: likeColor,
