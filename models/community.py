@@ -4,14 +4,26 @@ class CommunityGetInfo:
     async def get_some_communities(user_id, conn):
         user_id = int(user_id)
         communities = await conn.fetch(f"""
-            select c.community_id, c.community_name
+            select c.community_id, c.community_name, 
+                    s.sphere_name, s.subsphere_name, i.href
             from communities as c
+            left join (
+                        select c.community_id, array_agg(s.subsphere_name) as subsphere_name, 
+                        array_agg(s.sphere_name) as sphere_name
+                        from communities as c
+                            left join spheres s 
+                                on s.subsphere_id = any(c.subsphere_id)
+                        group by c.community_id
+                        ) s on c.community_id = s.community_id
+            left join images as i 
+                  on i.image_id = c.image_id[array_upper(c.image_id, 1)] 
+                      and i.image_type = 'community'
             where {user_id} not in (select unnest(user_id)
                                    from communities 
                                    where c.community_id = community_id)
             limit (10)
         """)
-        return communities
+        return [dict(i) for i in communities]
 
     @staticmethod
     async def get_community_info_by_value(community_id: str, value: str, conn):
@@ -58,9 +70,13 @@ class CommunityGetInfo:
         communities = await conn.fetch(f"""
                                            select c.community_id, c.community_name, s.sphere_name, s.subsphere_name
                                            from (
-                                                 select community_id, community_name, unnest(community_owner_id) as community_owner_id from communities) as c
+                                                 select community_id, community_name, 
+                                                 unnest(community_owner_id) as community_owner_id 
+                                                 from communities) as c
                                            right join (
-                                                       select unnest(community_owner_id) as community_owner_id from users_information where user_id = {user_id}
+                                                       select unnest(community_owner_id) as community_owner_id 
+                                                       from users_information 
+                                                       where user_id = {user_id}
                                                        ) as u on u.community_owner_id = c.community_owner_id
                                            left join (
                                                         select c.community_id, array_agg(s.subsphere_name) as subsphere_name, 
@@ -76,20 +92,37 @@ class CommunityGetInfo:
     @staticmethod
     async def get_community_info(community_id, conn):
         community = await conn.fetchrow(f"""
-                                           select u.user_id, u.name, u.surname, c.community_id, 
-                                                    c.community_name, c.community_type, c.community_bio, 
-                                                    c.condition_id, c.created_date, i.href, c.community_owner_id
-                                           from users_information as u
-                                           right join (select community_id, community_name, community_type, 
-                                                            unnest(user_id) as user_id, community_bio, unnest(conditions) as condition_id, 
-                                                            created_date, image_id, unnest(community_owner_id) as community_owner_id
-                                                        from communities) as c on c.user_id = u.user_id
-                                           left join images as i 
-                                           on i.image_id = c.image_id[array_upper(c.image_id, 1)] 
+                                           select c.community_id, c.community_name, c.community_type,
+                                                  c.community_bio, c.sphere_id, c.subsphere_id,
+                                                  c.community_type,
+                                                  --unnest(c.conditions) as condition_id,
+                                                  c.created_date:: varchar, i.href
+                                           from communities as c
+                                           left join images as i
+                                           on i.image_id = c.image_id[array_upper(c.image_id, 1)]
                                                 and i.image_type = 'community'
                                            where c.community_id = {community_id}
                                            """)
-        return community
+        return dict(community)
+    # async def get_community_info(community_id, conn):
+    #     community = await conn.fetchrow(f"""
+    #                                        select u.user_id, u.name, u.surname, c.community_id,
+    #                                                 c.community_name, c.community_type, c.community_bio,
+    #                                                 c.condition_id, c.created_date, i.href, c.community_owner_id
+    #                                        from users_information as u
+    #                                        right join (select community_id, community_name, community_type,
+    #                                                         unnest(user_id) as user_id, community_bio,
+    #                                                         unnest(conditions) as condition_id,
+    #                                                         created_date, image_id,
+    #                                                         unnest(community_owner_id) as community_owner_id
+    #                                                     from communities) as c
+    #                                                     on c.user_id = u.user_id
+    #                                        left join images as i
+    #                                        on i.image_id = c.image_id[array_upper(c.image_id, 1)]
+    #                                             and i.image_type = 'community'
+    #                                        where c.community_id = {community_id}
+    #                                        """)
+    #     return [dict(i) for i in community]
 
     @staticmethod
     async def user_in_community(community_id: str, user_id: str, conn):
@@ -102,6 +135,18 @@ class CommunityGetInfo:
         return in_community['in_community']
 
     @staticmethod
+    async def get_community_owners(community_id, conn):
+        community = await conn.fetch(f"""
+            select u.user_id, u.name, u.surname
+            from users_information as u
+            right join (select community_id, unnest(community_owner_id) as owner_id
+                         from communities) as c 
+                         on c.owner_id = u.user_id
+            where c.community_id = {community_id}
+        """)
+        return [dict(i) for i in community]
+
+    @staticmethod
     async def get_community_participants(community_id, conn):
         community = await conn.fetch(f"""
                                             select u.user_id, u.name, u.surname
@@ -110,7 +155,7 @@ class CommunityGetInfo:
                                                          from communities) as c on c.user_id = u.user_id
                                             where c.community_id = {community_id}
                                         """)
-        return community
+        return [dict(i) for i in community]
 
     @staticmethod
     async def get_generate_conditions(conn):
@@ -132,7 +177,7 @@ class CommunityGetInfo:
 
     @staticmethod
     async def is_owner(user_id: str, community_id: str, conn):
-        owner = await conn.fetch(f"""select case when count(*) > 0 then true else false end as owner
+        owner = await conn.fetchrow(f"""select case when count(*) > 0 then true else false end as owner
                                      from communities as com
                                      left join users_information ui on ui.user_id = any(com.community_owner_id)
                                      where com.community_id = {community_id} and ui.user_id = {user_id}
@@ -158,7 +203,7 @@ class CommunityGetInfo:
                                                 ({user_id} <> any(com.conditions_approved) or 
                                                 com.conditions_approved = array[]::integer[])
                                     """)
-        return conditions
+        return [dict(i) for i in conditions]
 
 
 class CommunityAvatarAction:
@@ -193,7 +238,7 @@ class CommunityAvatarAction:
                                    set community_id = array_append(community_id, {community_id})
                                    where user_id = {user_id}
                                    """)
-        else:
+        elif method == 'leave':
             await conn.execute(f"""
                                    update communities
                                    set user_id = user_id[:(select array_position(user_id, {user_id})

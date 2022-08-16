@@ -38,7 +38,7 @@ class CommunityWalletGoal:
                     where community_id = {community_id}
                         and is_active = {is_active}
                 """)
-        return payment_goals
+        return [dict(i) for i in payment_goals]
 
 
 class Wallet:
@@ -95,4 +95,4 @@ class Wallet:
             from community_wallet
             where community_id = {community_id}
         """)
-        return wallets
+        return [dict(i) for i in wallets]
