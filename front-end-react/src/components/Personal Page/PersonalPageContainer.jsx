@@ -9,6 +9,7 @@ import makeAction from "../../api/PageActions";
 import GoalsApproveContainer from "./GoalsApproveContainer";
 import styles from '../css/PersonalPageContainer.module.css'
 import StaticFrontPng from "../StaticRoutes";
+import InterestsBubblesContainer from "./InterestsBubblesContainer";
 
 const StaticFront = StaticFrontPng.StaticFrontPng
 
@@ -68,7 +69,7 @@ const PersonalPageContainer = () => {
             setOwner(PersonalPage.myPage)
             setApproveGot(PersonalPage.approve_got)
             setIsApprovedGot(PersonalPage.is_approved_got)
-            setInterestsSphere(PersonalPage.interests_sphere)
+            setInterestsSphere({'interest': PersonalPage.interests_sphere})
             setInterestsSubsphere(PersonalPage.interests_subsphere)
             setPersonalPage(PersonalPage)
 
@@ -194,27 +195,28 @@ const PersonalPageContainer = () => {
                     <div className={styles.interestsDiv1} />
                     <div className={styles.bubbleHoverTag}>{hoverTag}</div>
                     <div className={styles.bubbleDiv}>
-                        {interestsSphere?
-                            interestsSphere.map((interest, index) => {
-                                if (needBubble !== null) {
-                                    if (index !== needBubble) {
-                                        return (<div key={index} className={styles.circleNoActive}
-                                                     onClick={() => Detailed(index)}
-                                        >{interest.count_achievements}</div>)
-                                    } else {
-                                        return (<div key={index} className={styles.circleActive}
-                                                     onClick={() => UnDetailed()}
-                                        >{interest.count_achievements}</div>)
-                                    }
-                                } else {
-                                    return (<div key={index} className={styles.circleDefault} onMouseEnter={() => Hover(interest.sphere_name)}
-                                                     onMouseLeave={UnHover} onClick={() => Detailed(index)}
-                                        >{interest.count_achievements}</div>)
-                                }
-                            })
-                            :
-                            <></>
-                        }
+                        {<InterestsBubblesContainer {...interestsSphere}/>}
+                        {/*{interestsSphere?*/}
+                        {/*    interestsSphere.map((interest, index) => {*/}
+                        {/*        if (needBubble !== null) {*/}
+                        {/*            if (index !== needBubble) {*/}
+                        {/*                return (<div key={index} className={styles.circleNoActive}*/}
+                        {/*                             onClick={() => Detailed(index)}*/}
+                        {/*                >{interest.count_achievements}</div>)*/}
+                        {/*            } else {*/}
+                        {/*                return (<div key={index} className={styles.circleActive}*/}
+                        {/*                             onClick={() => UnDetailed()}*/}
+                        {/*                >{interest.count_achievements}</div>)*/}
+                        {/*            }*/}
+                        {/*        } else {*/}
+                        {/*            return (<div key={index} className={styles.circleDefault} onMouseEnter={() => Hover(interest.sphere_name)}*/}
+                        {/*                             onMouseLeave={UnHover} onClick={() => Detailed(index)}*/}
+                        {/*                >{interest.count_achievements}</div>)*/}
+                        {/*        }*/}
+                        {/*    })*/}
+                        {/*    :*/}
+                        {/*    <></>*/}
+                        {/*}*/}
                     </div>
                     <div className={styles.interestsTag}>Interests</div>
                 </div>

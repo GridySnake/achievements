@@ -1,0 +1,16 @@
+.myBubbleUI {
+    display: flex; justify-content: center; align-items: center;
+	width: 100%;
+	max-width: 1000px;
+	height: 500px;
+	border-radius: 50px;
+}
+
+.childComponent {
+  width: 100%; /* width expands to fit bubble */
+  height: 100%; /* width expands to fit bubble */
+  border-radius: 50%; /* rounded border forms a circle */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

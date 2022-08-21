@@ -8183,6 +8183,11 @@ react-app-polyfill@^3.0.0:
     regenerator-runtime "^0.13.9"
     whatwg-fetch "^3.6.2"
 
+react-bubble-ui@^1.1.2:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/react-bubble-ui/-/react-bubble-ui-1.1.2.tgz#ac862aa62a2be309a77b2de946305db380e7dcd3"
+  integrity sha512-JZEoHHte7IwIXCXdMc21id+6jBTNFSX5tLMDpFzGHMh45fT8ompWijNmKZiE8d/uPeTI1jUYdp4uDxIaObglsg==
+
 react-data-grid@^5.0.5:
   version "5.0.5"
   resolved "https://registry.yarnpkg.com/react-data-grid/-/react-data-grid-5.0.5.tgz#529f5acd4750ae0461e9da66f9f30d6f597eed76"

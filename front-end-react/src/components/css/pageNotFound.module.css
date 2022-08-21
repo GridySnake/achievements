@@ -1,0 +1,108 @@
+.ErrorCode {
+    position: absolute;
+    width: 1716px;
+    height: 436px;
+    left: 123px;
+    top: 185px;
+    font-family: 'Constantia';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 600px;
+    line-height: 732px;
+    text-align: center;
+    color: #000000;
+}
+
+.SWW {
+    position: absolute;
+    width: 655px;
+    height: 45px;
+    left: 692px;
+    top: 886px;
+    font-family: 'Bahnschrift';
+    font-style: normal;
+    font-weight: 700;
+    font-size: 50px;
+    line-height: 60px;
+    text-align: center;
+    color: #000000;
+}
+
+.TryAgain {
+    position: absolute;
+    width: 703px;
+    height: 45px;
+    left: 677px;
+    top: 965px;
+    font-family: 'Bahnschrift';
+    font-style: normal;
+    font-weight: 350;
+    font-size: 40px;
+    line-height: 48px;
+    text-align: center;
+    color: rgba(0, 0, 0, 0.46);
+}
+
+
+.buttonMainMenu {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: 50px;
+  background-color: #000;
+}
+.buttonText {
+  position: absolute;
+  height: 51.52%;
+  width: 65.19%;
+  top: 31.31%;
+  right: 17.28%;
+  bottom: 17.17%;
+  left: 20.52%;
+  display: inline-block;
+}
+.buttonGroup {
+  position: absolute;
+  top: 1063px;
+  left: 741px;
+  width: 581px;
+  height: 91px;
+  text-align: left;
+  font-size: 32px;
+  color: #fff;
+  font-family: Franklin Gothic Medium;
+}
+
+/*.buttonGroup {*/
+/*    position: absolute;*/
+/*    width: 590px;*/
+/*    height: 120px;*/
+/*    left: 741px;*/
+/*    top: 1063px;*/
+/*}*/
+
+/*.buttonMainMenu {*/
+/*    position: absolute;*/
+/*    height: 100%;*/
+/*    width: 100%;*/
+/*    background: #000000;*/
+/*    border-radius: 50px;*/
+/*}*/
+
+/*.buttonText {*/
+/*    position: absolute;*/
+/*    left: 20.52%;*/
+/*    right: 17.28%;*/
+/*    top: 31.31%;*/
+/*    bottom: 17.17%;*/
+/*    font-family: 'Franklin Gothic Medium';*/
+/*    font-style: normal;*/
+/*    font-weight: 400;*/
+/*    font-size: 32px;*/
+/*    line-height: 36px;*/
+/*    color: #FFFFFF;*/
+/*}*/

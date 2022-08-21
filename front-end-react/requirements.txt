@@ -8,6 +8,7 @@ slick-carousel
 moment
 react-yandex-maps
 react-player
+react-bubble-ui
 react-helmet
 react-doc-viewer?
 react-file-viewer?

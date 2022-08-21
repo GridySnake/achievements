@@ -15,15 +15,16 @@ import CourseContentTableContainer from "./Courses/CourseContentTableContainer";
 import CourseContentTaskContainer from "./Courses/CourseContentTaskContainer";
 import CommunityContainer from "./Communities/CommunityContainer";
 import CourseContentCreateContainer from "./Courses/CourseContentCreateContainer";
-import NavbarContainer from "./NavbarContainer";
 import AchievementQRVerifyContainer from "./Achievements/AchievementQRVerifyContainer";
 import AchievementGeoContainer from "./Achievements/AchievementGeoContainer";
 import {PersonalPage} from "./style";
+import PageNotFoundContainer from "./PageNotFoundContainer";
+// import {RouterProvider} from "../api/RouterProvider";
 
-// auth? <navbar + all> : <login + signup>
 const FrontRoutes = () => {
     return (
         <div>
+            {/*<RouterProvider>*/}
                 <Routes>
                     <Route path="/signup" key="signup" element={<FormSignUp/>}/>
                     <Route path="/login" key="login" element={<FormLogin/>}/>
@@ -47,7 +48,9 @@ const FrontRoutes = () => {
                     <Route path="/community/:id" key="community:id" element={<CommunityContainer/>}/>
                     <Route path="/verify_achievement_geo/:achievement_id" key='verify_achievement_geo:achievement_id' element={<AchievementGeoContainer/>}/>
                     <Route path='/1' key='1' element={<PersonalPage/>}/>
+                    <Route path='*' key='404' element={<PageNotFoundContainer/>}/>
                 </Routes>
+                {/*</RouterProvider>*/}
         </div>
 )
 }
