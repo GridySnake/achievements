@@ -1,9 +1,13 @@
 import React from "react";
 import {Statistic, Tooltip} from "antd";
 
+import styles from '../css/StatisticsContainer.module.css'
+
 const StatisticContainer = ({action=null, title, values, icon, setLikeColor=null, setDislikeColor=null,
                                 setRecommendColor=null, color=null, statical=null, setLike=null,
                             setDislike=null, setRecommend=null}) => {
+
+
 
     if (action !== null){
         if (setLikeColor !== null && !action[0]) {
@@ -22,6 +26,8 @@ const StatisticContainer = ({action=null, title, values, icon, setLikeColor=null
             setRecommend(false)
         }
     }
+
+
     return (
         statical?
                 <Tooltip title={title}>
@@ -33,6 +39,6 @@ const StatisticContainer = ({action=null, title, values, icon, setLikeColor=null
                        style={{background: color}} />
             </Tooltip>
     )
-    }
+}
 
-export default StatisticContainer
+export default StatisticContainer;

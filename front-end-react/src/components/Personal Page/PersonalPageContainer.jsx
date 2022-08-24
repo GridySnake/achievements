@@ -8,14 +8,16 @@ import { useParams, useLocation } from 'react-router-dom'
 import makeAction from "../../api/PageActions";
 import GoalsApproveContainer from "./GoalsApproveContainer";
 import styles from '../css/PersonalPageContainer.module.css'
+import styleStatistincs from '../css/StatisticsContainer.module.css'
 import StaticFrontPng from "../StaticRoutes";
 import InterestsBubblesContainer from "./InterestsBubblesContainer";
+
 
 const StaticFront = StaticFrontPng.StaticFrontPng
 
 const PersonalPageContainer = () => {
     const [PersonalPage, setPersonalPage] = useState(null);
-    const [likeColor, setLikeColor] = useState(null);
+    const [likeImage, setLikeImage] = useState(null);
     const [like, setLike] = useState(null);
     const [dislike, setDislike] = useState(null);
     const [recommend, setRecommend] = useState(null);
@@ -26,11 +28,12 @@ const PersonalPageContainer = () => {
     const [recommends, setRecommends] = useState(null);
     const [followers, setFollowers] = useState(null);
     const [followings, setFollowings] = useState(null);
+    const [courses, setCourses] = useState(null);
     const [interestsSphere, setInterestsSphere] = useState(null);
     const [interestsSubsphere, setInterestsSubsphere] = useState(null);
     const [needBubble, setNeedBubble] = useState(null);
     const [hoverTag, setHoverTag] = useState(null);
-    const [pEvent, setpEvent] = useState(null);
+    const [myPage, setMyPage] = useState(null);
     const [approve, setApprove] = useState(null);
     const [isApproved, setIsApproved] = useState(null);
     const [approveGot, setApproveGot] = useState(null);
@@ -55,7 +58,7 @@ const PersonalPageContainer = () => {
             setLike(PersonalPage.actions[0])
             setDislike(PersonalPage.actions[1])
             setRecommend(PersonalPage.actions[2])
-            setLikeColor(color(PersonalPage.actions[0]))
+            setLikeImage(imageLike(PersonalPage.actions[0]))
             setDislikeColor(color(PersonalPage.actions[1]))
             setRecommendColor(color(PersonalPage.actions[2]))
             setLikes(PersonalPage.statistics.likes)
@@ -63,7 +66,8 @@ const PersonalPageContainer = () => {
             setRecommends(PersonalPage.statistics.recommendations)
             setFollowers(PersonalPage.statistics.followers)
             setFollowings(PersonalPage.statistics.followings)
-            setpEvent(pointEvent(PersonalPage.myPage))
+            setCourses(PersonalPage.statistics.join_courses)
+            setMyPage(pointEvent(PersonalPage.myPage))
             setApprove(PersonalPage.approve)
             setIsApproved(PersonalPage.is_approved)
             setOwner(PersonalPage.myPage)
@@ -83,6 +87,14 @@ const PersonalPageContainer = () => {
         } else {
             return <></>;
         }}
+
+    const imageLike = (bool) => {
+        if (bool) {
+            return 'like_inactive.png'
+        } else {
+            return 'like_active.png'
+        }
+    }
 
     const color = (bool) => {
         if (bool) {
@@ -104,14 +116,14 @@ const PersonalPageContainer = () => {
         if (like) {
             makeAction('/unlike', {owner_id: id, owner_type: pathname.split('/')[1]}, (value)=> {
                 setLike(false)
-                setLikeColor("#00ee00")
+                setLikeImage('like_inactive.pnd')
                 setLikes(value)
             })
 
         } else {
             makeAction('/like', {owner_id: id, owner_type: pathname.split('/')[1]}, (value) => {
                 setLike(true)
-                setLikeColor("#ee004b")
+                setLikeImage('like_active.png')
                 setLikes(value)
             })
         }
@@ -141,6 +153,7 @@ const PersonalPageContainer = () => {
                 setRecommends(value)
             })
         } else {
+
             makeAction('/recommend', {owner_id: id, owner_type: pathname.split('/')[1]}, (value) => {
                 setRecommend(true)
                 setRecommendColor("#ee004b")
@@ -220,25 +233,70 @@ const PersonalPageContainer = () => {
                     </div>
                     <div className={styles.interestsTag}>Interests</div>
                 </div>
-                <Button type="primary" htmlType="button" onClick={MakeLike} style={{background: likeColor,
-                                pointerEvents: pEvent}}
-                                    icon={<LikeOutlined />} title="Likes">
-                                {likes}
-                </Button>
-                <Button type="primary" htmlType="button" onClick={MakeDislike} title="Dislikes"
-                                    style={{background: dislikeColor, pointerEvents: pEvent}} icon={<DislikeOutlined />}>
-                                {dislikes}
-                </Button>
-                <Button type="primary" htmlType="button" onClick={MakeRecommend} title="Recommendations"
-                                    style={{background: recommendColor, pointerEvents: pEvent}} icon={<CheckCircleOutlined />}>
-                                {recommends}
-                </Button>
-                <Button type="primary" title="Followers" style={{pointerEvents: "none"}} icon={<TeamOutlined />}>
-                                {followers}
-                </Button>
-                <Button type="primary" title="Followings" style={{pointerEvents: "none"}} icon={<UserOutlined />}>
-                                {followings}
-                </Button>
+                <>
+                    <div className={styleStatistincs.groupDiv}>
+                        <div className={styleStatistincs.e529a00d39108817f5cb7aea883a4Div} />
+                        <img
+                            className={styleStatistincs.recommendationsIcon}
+                            alt=""
+                            src={StaticFront + 'recommendations.png'}
+                            onClick={!myPage? MakeRecommend : false}
+                        />
+                        <img
+                            className={styleStatistincs.tablerchevronsDownIcon}
+                            alt=""
+                            src={StaticFront + 'arrow_hide.png'}
+                        />
+                        <img
+                            className={styleStatistincs.dislikeIcon}
+                            alt=""
+                            src={StaticFront + 'dislike.png'}
+                            onClick={!myPage? MakeDislike : false}
+                        />
+                        <img
+                            className={styleStatistincs.likeIcon}
+                            alt=""
+                            src={StaticFront + likeImage}
+                            onClick={!myPage? MakeLike : false}
+                        />
+                        <img
+                            className={styleStatistincs.subscribersIcon}
+                            alt=""
+                            src={StaticFront + 'subscribers.png'}
+                        />
+                        <img
+                            className={styleStatistincs.coursesIcon}
+                            alt=""
+                            src={StaticFront + 'courses.png'}
+                        />
+                        <div className={styleStatistincs.likeText}>{likes}</div>
+                        <div className={styleStatistincs.subscribersText}>{followers}</div>
+                        <div className={styleStatistincs.recommendationsText}>{recommends}</div>
+                        <div className={styleStatistincs.coursesText}>{courses}</div>
+                        <div className={styleStatistincs.dislikeText}>{dislikes}</div>
+                        <div className={styleStatistincs.infoDiv}>Info</div>
+                    </div>
+                </>
+
+                {/*<Button type="primary" htmlType="button" onClick={MakeLike} style={{background: likeColor,*/}
+                {/*                pointerEvents: pEvent}}*/}
+                {/*                    icon={<LikeOutlined />} title="Likes">*/}
+                {/*                {likes}*/}
+                {/*</Button>*/}
+                {/*<Button type="primary" htmlType="button" onClick={MakeDislike} title="Dislikes"*/}
+                {/*                    style={{background: dislikeColor, pointerEvents: pEvent}} icon={<DislikeOutlined />}>*/}
+                {/*                {dislikes}*/}
+                {/*</Button>*/}
+                {/*<Button type="primary" htmlType="button" onClick={MakeRecommend} title="Recommendations"*/}
+                {/*                    style={{background: recommendColor, pointerEvents: pEvent}} icon={<CheckCircleOutlined />}>*/}
+                {/*                {recommends}*/}
+                {/*</Button>*/}
+                {/*<Button type="primary" title="Followers" style={{pointerEvents: "none"}} icon={<TeamOutlined />}>*/}
+                {/*                {followers}*/}
+                {/*</Button>*/}
+                {/*<Button type="primary" title="Followings" style={{pointerEvents: "none"}} icon={<UserOutlined />}>*/}
+                {/*                {followings}*/}
+                {/*</Button>*/}
                             {/*<Button type="primary" htmlType="button" onClick={MakeDislike}>*/}
                             {/*    <StatisticContainer title='Dislikes' values={PersonalPage.statistics.dislikes}*/}
                             {/*                    icon={<DislikeOutlined />} action={PersonalPage.actions}*/}
